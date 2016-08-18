@@ -99,7 +99,7 @@ namespace ECS.Internal
 		/// <summary>
 		/// Returns Component ID of Component
 		/// </summary>
-		public static int GetComponentID<C>() where C: EntityComponent, new()
+		public static int GetComponentID<C>() where C: EntityComponent
 		{
 			int id = -1;
 			if (_componentTypes.TryGetValue(typeof(C), out id))

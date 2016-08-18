@@ -10,8 +10,8 @@ namespace ECS
 	/// Group of entites that contain both Components
 	/// </summary>
 	public class Group<C1, C2>: Groups 
-		where C1: EntityComponent, new()
-		where C2: EntityComponent, new()
+		where C1: EntityComponent
+		where C2: EntityComponent
 	{
 		public Group()
 		{

@@ -18,7 +18,7 @@ namespace ECS.Internal
 
 	}
 
-	public class ComponentPool<C> : ComponentPool where C : EntityComponent, new ()
+	public class ComponentPool<C> : ComponentPool where C : EntityComponent
 	{
 		ComponentPool(int _id)	// set pool ID on initialize
 		{
@@ -62,8 +62,8 @@ namespace ECS.Internal
 			else
 			{
 				index = (short)components.Count;	// get index of new component
-
-				components.Add(new C());			// them make new component
+				components.Add(Activator.CreateInstance<C>());
+				//components.Add(new C());			// them make new component
 			}
 			EntityPool.EntityLookup[e.ID][ID] = index; // set entity index
 			components[index].Entity = e;		// set components owner

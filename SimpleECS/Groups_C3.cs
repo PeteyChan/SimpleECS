@@ -10,9 +10,9 @@ namespace ECS
 	/// Group of entites that contain all Components
 	/// </summary>
 	public class Group<C1, C2, C3>: Groups 
-		where C1: EntityComponent, new()
-		where C2: EntityComponent, new()
-		where C3: EntityComponent, new()
+		where C1: EntityComponent
+		where C2: EntityComponent
+		where C3: EntityComponent
 	{
 		public Group()
 		{

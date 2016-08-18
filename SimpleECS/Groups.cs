@@ -17,7 +17,7 @@ namespace ECS
 		/// Fires Event when Component is Added.
 		/// Returns associated Entity.
 		/// </summary>
-		public static void AddComponentEvent<C>(ComponentEvent listener, bool subscribe) where C : EntityComponent, new()
+		public static void AddComponentEvent<C>(ComponentEvent listener, bool subscribe) where C : EntityComponent
 		{
 			if(subscribe)
 				ComponentPool<C>.AddComponentEvent += listener;
@@ -29,7 +29,7 @@ namespace ECS
 		/// Fires Event when Component is Removed.
 		/// Returns associated Entity.
 		/// </summary>
-		public static void RemoveComponentEvent<C>(ComponentEvent listener, bool subscribe) where C: EntityComponent, new()
+		public static void RemoveComponentEvent<C>(ComponentEvent listener, bool subscribe) where C: EntityComponent
 		{
 			if (subscribe)
 				ComponentPool<C>.RemoveComponentEvent += listener;
@@ -40,7 +40,7 @@ namespace ECS
 		/// <summary>
 		/// Gets Group that allows processing of all entities that have the component.
 		/// </summary>
-		public static Group<C> GetGroup<C>() where C: EntityComponent, new()
+		public static Group<C> GetGroup<C>() where C: EntityComponent
 		{
 			Groups lookUpGroup;
 			if (_groups.TryGetValue(typeof(Group<C>), out lookUpGroup))
@@ -110,7 +110,7 @@ namespace ECS
 		/// <summary>
 		/// Returns the component ID of Component
 		/// </summary>
-		public static int GetComponentID<C>() where C : EntityComponent, new()
+		public static int GetComponentID<C>() where C : EntityComponent
 		{
 			return EntityPool.GetComponentID<C>();
 		}

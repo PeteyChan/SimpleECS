@@ -19,7 +19,7 @@ namespace ECS
 	//	SINGLE COMPONENT GROUP
 	//
 
-	public class Group<C>: Groups where C: EntityComponent, new()
+	public class Group<C>: Groups where C: EntityComponent
 	{
 		public Group()
 		{

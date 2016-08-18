@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System;
 using ECS.Internal;
 
-namespace ECS
-{
 	public static class GameObjectPool
 	{
 		static Dictionary<string, ObjectPool> _pools = new Dictionary<string, ObjectPool>();
@@ -76,7 +74,6 @@ namespace ECS
 			return go;
 		}
 	}	
-}
 
 namespace ECS.Internal
 {

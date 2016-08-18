@@ -18,20 +18,20 @@ namespace ECS
 		}
 
 		// current components
-		int[] _components;
+		//public int[] _components;
 
 		/// <summary>
 		/// Adds the component. Can string adding components for ease.
 		/// </summary>
 		public Entity Add<C>() where C: EntityComponent, new()
 		{
-			if(Has(ComponentPool<C>.ID))
-			{
-				#if UNITY_EDITOR
-				//Debug.Log(string.Format("Enitity {0} already has {1} attached", ID, typeof(C).ToString()));
-				#endif
-				return this;
-			}
+//			if(Has(ComponentPool<C>.ID))
+//			{
+//				#if UNITY_EDITOR
+//				//Debug.Log(string.Format("Enitity {0} already has {1} attached", ID, typeof(C).ToString()));
+//				#endif
+//				return this;
+//			}
 			ComponentPool<C>.GetOrAddComponent(this);
 			return this;
 		}
@@ -49,23 +49,43 @@ namespace ECS
 		/// </summary>
 		public bool Has<C>() where C: EntityComponent, new()
 		{
-			return Has(ComponentPool<C>.ID); 
+			return EntityPool.EntityLookup[ID][ComponentPool<C>.ID] > -1;
 		}
+
+//		public bool Has(int ID)
+//		{
+//			return (_components[ID] > -1);
+//		}
+//
+//		public bool Has(int ID1, int ID2)
+//		{
+//			return (_components[ID1] > -1 && _components[ID2] > -1);
+//		}
+//
+//		public bool Has(int ID1, int ID2, int ID3)
+//		{
+//			return (_components[ID1] > -1 && _components[ID2] > -1 && _components[ID3] > -1);
+//		}
+//
+//		public bool Has(int ID1, int ID2, int ID3, int ID4)
+//		{
+//			return (_components[ID1] > -1 && _components[ID2] > -1 && _components[ID3] > -1 && _components[ID3] > -1);
+//		}
 
 		/// <summary>
 		/// Checks if Entity has all components with ID
 		/// </summary>
-		public bool Has(params int[] ComponentIDs)
-		{
-			for (int i = 0; i < ComponentIDs.Length; ++i)
-			{
-				if (_components[ComponentIDs[i]] < 0)
-				{
-					return false;
-				}
-			}
-			return true;
-		}
+//		public bool HasIDs(params int[] ComponentIDs)
+//		{
+//			for (int i = 0; i < ComponentIDs.Length; ++i)
+//			{
+//				if (_components[ComponentIDs[i]] < 0)
+//				{
+//					return false;
+//				}
+//			}
+//			return true;
+//		}
 			
 		/// <summary>
 		/// Gets the component. Returns null if none.
@@ -100,36 +120,7 @@ namespace ECS
 		{
 			EntityPool.DestroyEntity(this);
 		}
-
-
-		/// <summary>
-		/// Internal Component DO NOT use
-		/// </summary>
-		public void _SetComponentIndex(int ComponentID, int Value)
-		{
-			_components[ComponentID] = Value;
-		}
-
-		/// <summary>
-		/// Internal Component DO NOT use
-		/// </summary>
-		public int _GetComponentIndex(int ComponentID)
-		{
-			return _components[ComponentID];
-		}
-
-		/// <summary>
-		/// Internal Component DO NOT use
-		/// </summary>
-		public void _SetComponentIndexSize(int size)
-		{
-			_components = new int[size];
-			for (int i = 0; i < size; ++i)
-			{
-				_components[i] = -1;
-			}
-		}
-
+			
 		public static Entity GetEntity(int ID)
 		{
 			return EntityPool.GetEntity(ID);
@@ -167,7 +158,6 @@ namespace ECS
 //	{
 //		int EntityID	{get; set;}	// ID of Entity in lookup
 //	}
-
 
 	public abstract class EntityComponent
 	{

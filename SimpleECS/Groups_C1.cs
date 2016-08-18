@@ -25,7 +25,6 @@ namespace ECS
 		{
 			ID = ComponentPool<C>.ID;
 			_components = ComponentPool<C>.GetComponentList();
-			ComponentPool<C>._activeEntities = _activeEntities;
 
 			ComponentPool<C>.AddComponentEvent += OnAddComponent;
 			ComponentPool<C>.RemoveComponentEvent += OnRemoveComponent;
@@ -33,7 +32,7 @@ namespace ECS
 
 		int ID;		// component ID
 		static List<C> _components;		// reference to all components
-		static HashSet<Entity> _activeEntities = new HashSet<Entity>();	// all current active entities
+		static List<Entity> _activeEntities = new List<Entity>();	// all current active entities, lists are much faster than hashsets < a few thousand elements
 		public delegate void componentMethod(C component);			// method to call when processing components
 			
 		/// <summary>
@@ -54,7 +53,7 @@ namespace ECS
 			
 			foreach(Entity e in _activeEntities)
 			{
-				method(_components[e._GetComponentIndex(ID)]);
+				method(_components[EntityPool.EntityLookup[e.ID][ID]]);
 			}	
 		}
 
@@ -64,7 +63,7 @@ namespace ECS
 			while (NewEntities.Count > 0)
 			{
 				Entity e = NewEntities.Dequeue();
-				if (e.Has(ID))
+				if (EntityPool.EntityLookup[e.ID][ID] > -1)
 				{
 					_activeEntities.Add(e);	
 				}
@@ -89,6 +88,10 @@ namespace ECS
 			return _activeEntities.Count;
 		}
 
+		public static List<Entity> GetActiveEntities()
+		{
+			return _activeEntities;
+		}
 
 //		public  ActiveEntities()
 //		{

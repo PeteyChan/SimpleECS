@@ -5,8 +5,8 @@ using System;
 namespace ECS.Internal
 {
 	/// <summary>
-	/// The comonent pool is separated from the groups pool simply because I didn't
-	/// want add and remove function and other variables visible during general use
+	/// Keeps tracks of component pool and Entities that current have those components
+	/// 
 	/// </summary>
 
 	public delegate void ComponentEvent(Entity e);
@@ -15,7 +15,6 @@ namespace ECS.Internal
 	{
 		public virtual void BaseRemoveComponent(Entity e)	// used to remove components without knowing the generic's type
 		{}
-
 	}
 
 	public class ComponentPool<C> : ComponentPool where C : EntityComponent
@@ -32,19 +31,24 @@ namespace ECS.Internal
 			{
 				if (_ID < 0)	// if pool not initialized, initialize pool
 				{
-					ComponentPool pool = new ComponentPool<C>(EntityPool.GetComponentID<C>());
-					EntityPool._componentLookUPs[ID] = pool;
-					Groups.GetGroup<C>();	// Initialize associated Group
+					ComponentPool pool = new ComponentPool<C>(EntityManager.GetComponentID<C>());
+					EntityManager._componentLookUPs[ID] = pool;
 				}
 				return _ID;
 			}
 		}
 
 		// List of all available components
-		static List<C> components = new List<C>(); 					
+		public static List<C> components = new List<C>(){null}; 					
 
 		// index of components not currently in use
-		static Stack<short> pooledComponents = new Stack<short>();		
+		static Stack<ushort> pooledComponents = new Stack<ushort>();		
+
+		// list of active entities
+		public static List<Entity> ActiveEntities = new List<Entity>();
+
+		// list of new entities added last frame
+		static Queue<Entity> newEntities = new Queue<Entity>();
 
 		// Add and remove events
 		static public ComponentEvent AddComponentEvent;				
@@ -52,55 +56,74 @@ namespace ECS.Internal
 
 		public static C GetOrAddComponent(Entity e)
 		{
-			short index = EntityPool.EntityLookup[e.ID][ID];	// get the index to component
-			if (index > -1)						// if has component return component
+			ushort index = EntityManager.EntityLookup[e.ID][ID];	// get the index to component
+			if (index > 0)										// if has component return component
 				return components[index];		
-			if (pooledComponents.Count > 0)		// if there is an available component
+			if (pooledComponents.Count > 0)						// if there is an available component
 			{
-				index = pooledComponents.Pop();	// get index of pooled component
+				index = pooledComponents.Pop();					// get index of pooled component
+				components[index] = Activator.CreateInstance<C>();	// this is to ensure Set<C> works properly and not setting references everywhere
 			}
 			else
 			{
-				index = (short)components.Count;	// get index of new component
-				components.Add(Activator.CreateInstance<C>());
-				//components.Add(new C());			// them make new component
+				index = (ushort)components.Count;				// get index of new component
+				components.Add(Activator.CreateInstance<C>()); 	// them make new component		
 			}
-			EntityPool.EntityLookup[e.ID][ID] = index; // set entity index
-			components[index].Entity = e;		// set components owner
-			components[index].OnAdd();			// intialize the component
-			AddComponentEvent(e);				// fire add component event
-			return components[index];			// and return the component
+
+			EntityManager.EntityLookup[e.ID][ID] = index; 		// set entity index
+			components[index].entity = e;						// set components owner
+
+			if (AddComponentEvent != null)						// fire add component event
+				AddComponentEvent(e);
+
+			newEntities.Enqueue(e);								// Enqueue Entity to be processed
+			return components[index];							// and return the component
+		}
+
+		/// <summary>
+		/// Adds new entities to active list if any and returns if active list has any entities
+		/// </summary>
+		public static void ProcessEntities()
+		{
+			while (newEntities.Count > 0)
+			{
+				Entity e = newEntities.Dequeue();
+				if (e.Has(ID))
+					ActiveEntities.Add(e);
+			}
 		}
 
 		// It's safe to remove components that don't exist
 		public static void RemoveComponent(Entity e)
-		{
-			short index = EntityPool.EntityLookup[e.ID][ID];	// get the index to component
-			if (index < 0)	// early out if no component
+		{	
+			ushort index = EntityManager.EntityLookup[e.ID][ID];	// get the index to component
+			if (index == 0)										// early out if no component
 				return;
-			components[index].OnRemove();			// fire clean up code if any, this is probably pointless
-			pooledComponents.Push(index);			// add reference to pooled components
-			EntityPool.EntityLookup[e.ID][ID] = -1; // remove reference to component
-			RemoveComponentEvent(e);				// fire remove component event
+
+			ActiveEntities.Remove(e);							// remove entitiy from active list
+			if (RemoveComponentEvent != null)
+				RemoveComponentEvent(e);							// fire event to update pools
+
+			//components[index].OnRemove();
+			pooledComponents.Push(index);						// add reference to pooled components
+			EntityManager.EntityLookup[e.ID][ID] = 0; 			// remove reference to component
 		}
 
-		public override void BaseRemoveComponent (Entity e)	// used to call remove component from base class
+		public override void BaseRemoveComponent (Entity e)		// used to call remove component from base class
 		{
 			RemoveComponent(e);
 		}
 
-		public static C GetComponent(Entity e)	// does a lookup and returns component if any
-		{
-			short index = EntityPool.EntityLookup[e.ID][ID];
-			if (index < 0)								
-				return null; 
-			return components[index];							
+		public static C GetComponent(Entity e)					// returns component if any
+		{ 
+			return components[EntityManager.EntityLookup[e.ID][ID]];							
 		}
 
 		public static List<C> GetComponentList()
 		{
 			return components;
 		}
+
 	}
 }
 

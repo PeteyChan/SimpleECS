@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System;
 using ECS.Internal;
 
+namespace ECS
+{
 	public static class GameObjectPool
 	{
 		static Dictionary<string, ObjectPool> _pools = new Dictionary<string, ObjectPool>();
@@ -32,34 +34,25 @@ using ECS.Internal;
 			pool.PoolObject(obj);
 		}
 
-
 		//
 		//	GET OBJECT METHODS
 		//
 
-		public static GameObject Get(GameObject go)
+		public static GameObject Get(this GameObject go, Entity e)
 		{
-			return Get(go.name);
-		}
-
-		public static GameObject Get(GameObject go, Transform parent)
-		{
-			return Get(go.name, parent);
-		}
-
-		public static GameObject Get(string path)
-		{
-			return Get (path, _parent);
+			if (e.Has<ResourceComponent>())
+				go.name = e.Get<ResourceComponent>().path;
+			return Get(go.name, e);
 		}
 
 		/// <summary>
 		/// Returns Prefab from path and sets it up using method
 		/// </summary>
-		public static GameObject Get(string path, Transform parent)
+		public static GameObject Get(string path, Entity e)
 		{
 			#if UNITY_EDITOR
 			if (string.IsNullOrEmpty(path))
-				Debug.LogError("Must provide a path to object file");
+				Debug.LogError("Must provide a path name to object file");
 			#endif
 
 			ObjectPool pool;
@@ -69,15 +62,21 @@ using ECS.Internal;
 				_pools.Add(path, pool);
 			}
 			GameObject go = pool.GetObject(path);
-			go.transform.parent = parent;
+			go.transform.parent = _parent;
 			go.SetActive(true);
+
+			EntityLink link = go.GetComponent<EntityLink>();	// Add Entity Link and Set up components
+			if (link == null)
+				link = go.AddComponent<EntityLink>();
+			link.SetEntity(e);
+			link.SetUpComponents();
 			return go;
 		}
-	}	
+	}
+}
 
 namespace ECS.Internal
 {
-
 	public class ObjectPool
 	{
 		Stack<GameObject> _pool = new Stack<GameObject>();
@@ -105,4 +104,3 @@ namespace ECS.Internal
 		}
 	}
 }
-

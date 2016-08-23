@@ -60,45 +60,16 @@ namespace ECS
 	[System.Serializable]
 	public class EntitySystemManager
 	{
-		public EntitySystemManager(string name)
+		static Dictionary<Type, EntitySystem> _systemLookup = new Dictionary<Type, EntitySystem>();					// System Lookup
+		static List<EntitySystem> _updateSystems = new List<EntitySystem>();										// list of update systems																						// if set to false, system manager stops updates
+		public static List<EntitySystem> _systems = new List<EntitySystem>();										// List of systems in system Manager, mainly for Inspector
+
+		public EntitySystemManager(params EntitySystem[] system)
 		{
-			SetName(name);	
-		}
-		static Dictionary<string, EntitySystemManager> systemManagers = new Dictionary<string, EntitySystemManager>();	// keeps track if multiple system managers
-		static Dictionary<Type, EntitySystem> _systemLookup = new Dictionary<Type, EntitySystem>();	// System Lookup
-		List<EntitySystem> _updateSystems = new List<EntitySystem>();	// list of update systems
-		bool _stopped = false;	// if set to false, system manager stops updates
-
-		public List<EntitySystem> Systems = new List<EntitySystem>();	// List of systems, mainly for Inspector
-
-
-		public EntitySystemManager(string name, params EntitySystem[] system)
-		{
-			SetName(name);
 			for(int i = 0; i < system.Length; ++i)
 			{
 				Add(system[i]);
 			}
-		}
-
-		void SetName(string name)
-		{
-			if (string.IsNullOrEmpty(name))
-			{
-				throw new Exception("System Manager needs to be named");
-			}
-			if (systemManagers.ContainsKey(name))
-			{
-				throw new Exception("Cannot have system managers with same name");
-			}
-			systemManagers.Add(name, this);
-			_name = name;
-		}
-
-		string _name;	// name of EntitySystem;
-		public string Name
-		{
-			get {return _name;}
 		}
 
 		/// <summary>
@@ -117,17 +88,16 @@ namespace ECS
 			if (_systemLookup.ContainsKey(system.GetType()))	// Only allowing 1 instance of a system since a system manipulates all components. Systems will update components irrespective of managers
 			{
 				#if UNITY_EDITOR
-				Debug.LogError(string.Format("{0} already exsits. Can only have 1 instance of system across all managers", system.GetType(), Name));
+				Debug.LogError(string.Format("{0} already exsits in {1}. Can only have 1 instance of system in Manager", system.GetType()));
 				#endif
 				return this;
 			}
 			_systemLookup.Add(system.GetType(), system);
-			Systems.Add(system);
+			_systems.Add(system);
 			if (system is IUpdateSystem)
 			{
 				_updateSystems.Add(system);
 			}
-
 			system.SetGroups();
 			system.enabled = setEnabled;
 			return this;
@@ -144,50 +114,19 @@ namespace ECS
 			else 
 			{
 				#if UNITY_EDITOR
-				Debug.LogError(string.Format("System not found in {0} manager.", Name));
+				Debug.LogError(string.Format("{0} not found. Add {0} to Event Manager", typeof(C)));
 				#endif
 			}
 			return this;
 		}
 
-		/// <summary>
-		/// Stops all update systems
-		/// </summary>
-		public static void StopManager(string name)
+		public void Start()
 		{
-			EntitySystemManager manager;
-			if (systemManagers.TryGetValue(name, out manager))
+			EntityLink[] links = GameObject.FindObjectsOfType<EntityLink>();
+			foreach( var link in links)
 			{
-				manager.Stop();
+				link.SetUpComponents();
 			}
-		}
-		
-		/// <summary>
-		/// Resumes all update systems
-		/// </summary>
-		public static void ResumeManager(string name)
-		{
-			EntitySystemManager manager;
-			if (systemManagers.TryGetValue(name, out manager))
-			{
-				manager.Resume();
-			}
-		}
-
-		/// <summary>
-		/// Stops All update Systems
-		/// </summary>
-		public void Stop()
-		{
-			_stopped = true;
-		}
-
-		/// <summary>
-		/// Resumes All update Systems
-		/// </summary>
-		public void Resume()
-		{
-			_stopped = false;
 		}
 
 		/// <summary>
@@ -195,32 +134,21 @@ namespace ECS
 		/// </summary>
 		public void Update()
 		{
-			if (_stopped)
-				return;
-
-			for (int i = 0; i < _updateSystems.Count; ++i)
+			for (int i = 0; i < _updateSystems.Count; ++i)	// process all update systems
 			{
 				if (_updateSystems[i].enabled)
 					_updateSystems[i].Update();
 			}
 		}
 
-		public int SystemsCount
+		public static int SystemsCount
 		{
 			get{return _systemLookup.Count;}
 		}
 
-		public int UpdateSystemsCount
+		public static int UpdateSystemsCount
 		{
-			
-			get
-			{
-				if (string.IsNullOrEmpty(Name))
-				{
-					return 0;
-				}
-				return _updateSystems.Count;
-			}
+			get{return _updateSystems.Count;}
 		}
 
 	}

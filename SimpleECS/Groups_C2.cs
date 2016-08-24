@@ -23,9 +23,8 @@ namespace ECS
 			c1_components = ComponentPool<C1>.GetComponentList();
 			c2_components = ComponentPool<C2>.GetComponentList();
 
-			_activeEntities = Group<C1>.GetActiveEntities().
-				Intersect(Group<C2>.GetActiveEntities()).ToList();
-
+			_activeEntities = ComponentPool<C1>.ActiveEntities.
+				Intersect(ComponentPool<C2>.ActiveEntities).ToList();
 
 			// listen for changes to components to update groups
 			ComponentPool<C1>.AddComponentEvent += AddComponent;
@@ -42,29 +41,30 @@ namespace ECS
 
 		public delegate void componentMethod(C1 c1, C2 c2);	// method signature to call when processing components
 
-		public void Process(componentMethod method)
+		public void Process(componentMethod Method)
 		{
-			ProcessNewEntities();
+			//Debug.Log(string.Format("{0} Active Entities", _activeEntities.Count));
 
-			if (_activeEntities.Count == 0)
-				return;
-			
-			foreach(Entity e in _activeEntities)
+			for (int i = 0; i < _activeEntities.Count; ++i)
 			{
-				method(
-					c1_components[EntityPool.EntityLookup[e.ID][C1_ID]],
-					c2_components[EntityPool.EntityLookup[e.ID][C2_ID]]);
+				Method
+				(
+					c1_components[EntityManager.EntityLookup[_activeEntities[i].ID][C1_ID]],
+					c2_components[EntityManager.EntityLookup[_activeEntities[i].ID][C2_ID]]
+				);
 			}
+				
+			ProcessEntities();
 		}
 
 		Queue<Entity> NewEntities = new Queue<Entity>();	// new entities, added before update
-		void ProcessNewEntities()	// when new entity is added 
+		void ProcessEntities()	// when new entity is added 
 		{
 			while (NewEntities.Count > 0)
 			{
 				Entity e = NewEntities.Dequeue();
-				if (EntityPool.EntityLookup[e.ID][C1_ID] > -1 &&
-					EntityPool.EntityLookup[e.ID][C2_ID] > -1)
+				if (EntityManager.EntityLookup[e.ID][C1_ID] > 0 &&
+					EntityManager.EntityLookup[e.ID][C2_ID] > 0)
 				{
 					_activeEntities.Add(e);	
 				}
@@ -74,8 +74,8 @@ namespace ECS
 		// updates group when component is added
 		void AddComponent(Entity e)
 		{
-			if(	EntityPool.EntityLookup[e.ID][C1_ID] > -1 &&
-				EntityPool.EntityLookup[e.ID][C2_ID] > -1)
+			if(	EntityManager.EntityLookup[e.ID][C1_ID] > 0 &&
+				EntityManager.EntityLookup[e.ID][C2_ID] > 0)
 			{
 				NewEntities.Enqueue(e);
 			}

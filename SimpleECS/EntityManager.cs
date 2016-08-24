@@ -5,12 +5,12 @@ using System;
 
 namespace ECS.Internal
 {
-	public static class EntityPool
+	public static class EntityManager
 	{
 		//
 		// CONSTRUCTOR
 		//
-		static EntityPool()
+		static EntityManager()
 		{
 			var assemblies = AppDomain.CurrentDomain.GetAssemblies();	// Get a list of all IComponents
 			foreach(var assembly in assemblies)
@@ -26,6 +26,7 @@ namespace ECS.Internal
 				}
 			}
 			_componentLookUPs = new ComponentPool[_componentTypes.Count];
+
 		}
 
 		//
@@ -34,7 +35,7 @@ namespace ECS.Internal
 
 
 		// Entity component index lookup
-		public static List<short[]> EntityLookup = new List<short[]>();	// short to save some space, max 16000 ish components
+		public static List<ushort[]> EntityLookup = new List<ushort[]>();	// short to save some space, max 53k ish components
 
 		// reference to obtain component ID's by type
 		static Dictionary<Type, int> _componentTypes = new Dictionary<Type, int>();
@@ -127,10 +128,10 @@ namespace ECS.Internal
 			{
 				e = new Entity(EntityLookup.Count);
 				//e._SetComponentIndexSize(_componentTypes.Count);
-				EntityLookup.Add(new short[_componentTypes.Count]);
+				EntityLookup.Add(new ushort[_componentTypes.Count]);
 				for (int i = 0; i < _componentTypes.Count; ++i)
 				{
-					EntityLookup[e.ID][i] = -1;	// set all components to 0
+					EntityLookup[e.ID][i] = 0;	// set all components to 0
 				}
 			}
 			_entities.Add(e);
@@ -149,7 +150,7 @@ namespace ECS.Internal
 
 				for(int i=0; i < _componentTypes.Count; ++i)
 				{
-					if (EntityLookup[e.ID][i] > -1)
+					if (EntityLookup[e.ID][i] > 0)
 					{
 						_componentLookUPs[i].BaseRemoveComponent(e);	// remove component
 						//EntityLookup[e.ID][i] = -1;					// set lookup value
@@ -158,10 +159,6 @@ namespace ECS.Internal
 			}
 		}
 	}
-
-
-
-
 }
 
 

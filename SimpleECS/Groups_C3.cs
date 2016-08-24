@@ -26,9 +26,9 @@ namespace ECS
 			c2_components = ComponentPool<C2>.GetComponentList();
 			c3_components = ComponentPool<C3>.GetComponentList();
 
-			_activeEntities = Group<C1>.GetActiveEntities()
-				.Intersect(Group<C2>.GetActiveEntities())
-				.Intersect(Group<C3>.GetActiveEntities()).ToList();
+			_activeEntities = ComponentPool<C1>.ActiveEntities
+				.Intersect(ComponentPool<C2>.ActiveEntities)
+				.Intersect(ComponentPool<C3>.ActiveEntities).ToList();
 
 			// listen for changes to components to update groups
 			ComponentPool<C1>.AddComponentEvent += AddComponent;
@@ -50,31 +50,28 @@ namespace ECS
 
 		public void Process(componentMethod Method)
 		{
-			ProcessNewEntities();
-
-			if (_activeEntities.Count == 0)	// early out if no subscribed components
-				return;
-
-			foreach(Entity e in _activeEntities)
+			for (int i = 0; i < _activeEntities.Count; ++i)
 			{
 				Method
 				(
-					c1_components[EntityPool.EntityLookup[e.ID][C1_ID]],
-					c2_components[EntityPool.EntityLookup[e.ID][C2_ID]],
-					c3_components[EntityPool.EntityLookup[e.ID][C3_ID]]
+					c1_components[EntityManager.EntityLookup[_activeEntities[i].ID][C1_ID]],
+					c2_components[EntityManager.EntityLookup[_activeEntities[i].ID][C2_ID]],
+					c3_components[EntityManager.EntityLookup[_activeEntities[i].ID][C3_ID]]
 				);
 			}
+
+			ProcessEntities();
 		}
 
 		Queue<Entity> NewEntities = new Queue<Entity>();	// new entities, added before update
-		void ProcessNewEntities()	// when new entity is added 
+		void ProcessEntities()	// when new entity is added 
 		{
 			while (NewEntities.Count > 0)
 			{
 				Entity e = NewEntities.Dequeue();
-				if (EntityPool.EntityLookup[e.ID][C1_ID] > -1 &&
-					EntityPool.EntityLookup[e.ID][C2_ID] > -1 &&
-					EntityPool.EntityLookup[e.ID][C3_ID] > -1)		// one last check before begin processing
+				if (EntityManager.EntityLookup[e.ID][C1_ID] > 0 &&
+					EntityManager.EntityLookup[e.ID][C2_ID] > 0 &&
+					EntityManager.EntityLookup[e.ID][C3_ID] > 0)		// one last check before begin processing
 				{
 					_activeEntities.Add(e);	
 				}
@@ -84,9 +81,9 @@ namespace ECS
 		// updates group when component is added
 		void AddComponent(Entity e)
 		{
-			if(	EntityPool.EntityLookup[e.ID][C1_ID] > -1 &&
-				EntityPool.EntityLookup[e.ID][C2_ID] > -1 &&
-				EntityPool.EntityLookup[e.ID][C3_ID] > -1)
+			if(	EntityManager.EntityLookup[e.ID][C1_ID] > 0 &&
+				EntityManager.EntityLookup[e.ID][C2_ID] > 0 &&
+				EntityManager.EntityLookup[e.ID][C3_ID] > 0)
 			{
 				NewEntities.Enqueue(e);
 			}

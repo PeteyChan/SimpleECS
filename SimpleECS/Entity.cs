@@ -21,9 +21,9 @@ namespace ECS
 		//public int[] _components;
 
 		/// <summary>
-		/// Adds the component. Can string adding components for ease.
+		/// Adds the component.
 		/// </summary>
-		public Entity Add<C>() where C: EntityComponent, new()
+		public Entity Add<C>() where C: EntityComponent
 		{
 //			if(Has(ComponentPool<C>.ID))
 //			{
@@ -37,56 +37,53 @@ namespace ECS
 		}
 
 		/// <summary>
-		/// Gets the component or adds one and returns if if none.
+		/// Gets Component or Adds a new one if not found
 		/// </summary>
-		public C GetOrAdd<C>() where C: EntityComponent, new()
+		public C GetAdd<C>() where C: EntityComponent
 		{
 			return ComponentPool<C>.GetOrAddComponent(this);
 		}
 
 		/// <summary>
-		/// Check for component
+		/// Returns true if has component
 		/// </summary>
-		public bool Has<C>() where C: EntityComponent, new()
+		public bool Has<C>() where C: EntityComponent
 		{
-			return EntityPool.EntityLookup[ID][ComponentPool<C>.ID] > -1;
+			return EntityManager.EntityLookup[ID][ComponentPool<C>.ID] > 0;
 		}
 
-//		public bool Has(int ID)
-//		{
-//			return (_components[ID] > -1);
-//		}
-//
-//		public bool Has(int ID1, int ID2)
-//		{
-//			return (_components[ID1] > -1 && _components[ID2] > -1);
-//		}
-//
-//		public bool Has(int ID1, int ID2, int ID3)
-//		{
-//			return (_components[ID1] > -1 && _components[ID2] > -1 && _components[ID3] > -1);
-//		}
-//
-//		public bool Has(int ID1, int ID2, int ID3, int ID4)
-//		{
-//			return (_components[ID1] > -1 && _components[ID2] > -1 && _components[ID3] > -1 && _components[ID3] > -1);
-//		}
+		public bool Has(int componentID)
+		{
+			return EntityManager.EntityLookup[ID][componentID] > 0;
+		}
 
 		/// <summary>
-		/// Checks if Entity has all components with ID
+		/// Sets the component to value
+		/// If no component found adds it to entity
 		/// </summary>
-//		public bool HasIDs(params int[] ComponentIDs)
-//		{
-//			for (int i = 0; i < ComponentIDs.Length; ++i)
-//			{
-//				if (_components[ComponentIDs[i]] < 0)
-//				{
-//					return false;
-//				}
-//			}
-//			return true;
-//		}
-			
+		public Entity Set<C>(C value) where C:EntityComponent
+		{
+			if (!Has<C>())
+				Add<C>();
+			ComponentPool<C>.components[EntityManager.EntityLookup[ID][ComponentPool<C>.ID]] = value;
+			value.entity = this;
+			return this;
+		}
+
+		/// <summary>
+		/// Sets the component to value
+		/// If no component found adds it to entity
+		/// Returns Component
+		/// </summary>
+		public C GetSet<C>(C value) where C : EntityComponent
+		{
+			if (!Has<C>())
+				Add<C>();
+			ComponentPool<C>.components[EntityManager.EntityLookup[ID][ComponentPool<C>.ID]] = value;
+			value.entity = this;
+			return value;
+		}
+
 		/// <summary>
 		/// Gets the component. Returns null if none.
 		/// </summary>
@@ -100,9 +97,8 @@ namespace ECS
 		/// </summary>
 		public bool TryGet<C>(out C Component) where C: EntityComponent, new()
 		{
-			C component = Get<C>();
-			Component = component;
-			if(component == null)
+			Component = Get<C>();
+			if(Component == null)
 				return false;
 			return true;
 		}
@@ -118,32 +114,32 @@ namespace ECS
 
 		public void Destroy()
 		{
-			EntityPool.DestroyEntity(this);
+			EntityManager.DestroyEntity(this);
 		}
 			
 		public static Entity GetEntity(int ID)
 		{
-			return EntityPool.GetEntity(ID);
+			return EntityManager.GetEntity(ID);
 		}
 
 		public static Entity CreateEntity()
 		{
-			return EntityPool.CreateEntity();
+			return EntityManager.CreateEntity();
 		}
 
 		public static int TotalEntitiesCount()
 		{
-			return EntityPool.TotalEntitiesCount();
+			return EntityManager.TotalEntitiesCount();
 		}
 
 		public static int PooledEntitiesCount()
 		{
-			return EntityPool.PooledEntitiesCount();
+			return EntityManager.PooledEntitiesCount();
 		}
 
 		public static int ActiveEntitiesCount()
 		{
-			return EntityPool.ActiveEntitiesCount();
+			return EntityManager.ActiveEntitiesCount();
 		}
 
 
@@ -164,14 +160,12 @@ namespace ECS
 		/// <summary>
 		/// Reference to owning entity
 		/// </summary>
-		public Entity Entity;
+		[HideInInspector]
+		public Entity entity;
 
 		/// <summary>
-		/// Used to Initialize Entity ComponentValues
+		/// Gets called before Removed from Entity
 		/// </summary>
-		public virtual void OnAdd()
-		{}
-
 		public virtual void OnRemove()
 		{}
 	}

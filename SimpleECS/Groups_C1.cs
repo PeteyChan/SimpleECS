@@ -25,14 +25,12 @@ namespace ECS
 		{
 			ID = ComponentPool<C>.ID;
 			_components = ComponentPool<C>.GetComponentList();
-
-			ComponentPool<C>.AddComponentEvent += OnAddComponent;
-			ComponentPool<C>.RemoveComponentEvent += OnRemoveComponent;
+			_activeEntities = ComponentPool<C>.ActiveEntities;
 		}
 
 		int ID;		// component ID
 		static List<C> _components;		// reference to all components
-		static List<Entity> _activeEntities = new List<Entity>();	// all current active entities, lists are much faster than hashsets < a few thousand elements
+		static List<Entity> _activeEntities;	// all current active entities, lists are much faster than hashsets < a few thousand elements
 		public delegate void componentMethod(C component);			// method to call when processing components
 			
 		/// <summary>
@@ -44,40 +42,14 @@ namespace ECS
 		/// 	component.value ++;
 		/// } );
 		/// </summary>
-		public void Process(componentMethod method)
+		public void Process(componentMethod Method)
 		{
-			ProcessNewEntities();
-
-			if (_activeEntities.Count == 0)
-				return;
-			
-			foreach(Entity e in _activeEntities)
+			for (int i= 0; i < _activeEntities.Count; ++i)
 			{
-				method(_components[EntityPool.EntityLookup[e.ID][ID]]);
-			}	
-		}
-
-		Queue<Entity> NewEntities = new Queue<Entity>();	// new entities, added before update
-		void ProcessNewEntities()	// when new entity is added 
-		{
-			while (NewEntities.Count > 0)
-			{
-				Entity e = NewEntities.Dequeue();
-				if (EntityPool.EntityLookup[e.ID][ID] > -1)
-				{
-					_activeEntities.Add(e);	
-				}
+				Method(_components[EntityManager.EntityLookup[_activeEntities[i].ID][ID]]);
 			}
-		}
 
-		public void OnAddComponent(Entity e)
-		{
-			NewEntities.Enqueue(e);
-		}
-
-		public void OnRemoveComponent(Entity e)
-		{
-			_activeEntities.Remove(e);
+			ComponentPool<C>.ProcessEntities();		
 		}
 
 		/// <summary>
@@ -87,15 +59,5 @@ namespace ECS
 		{
 			return _activeEntities.Count;
 		}
-
-		public static List<Entity> GetActiveEntities()
-		{
-			return _activeEntities;
-		}
-
-//		public  ActiveEntities()
-//		{
-//			return new ActiveEntities(_activeEntities);
-//		}
 	}
 }

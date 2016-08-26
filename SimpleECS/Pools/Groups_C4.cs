@@ -72,23 +72,6 @@ namespace ECS
 				);
 			}
 
-			ProcessEntities();
-		}
-
-		Queue<Entity> NewEntities = new Queue<Entity>();	// new entities, added before update
-		void ProcessEntities()	// when new entity is added 
-		{
-			while (NewEntities.Count > 0)
-			{
-				Entity e = NewEntities.Dequeue();
-				if (EntityManager.EntityLookup[e.ID][C1_ID] > 0 &&
-					EntityManager.EntityLookup[e.ID][C2_ID] > 0 &&
-					EntityManager.EntityLookup[e.ID][C3_ID] > 0 &&
-					EntityManager.EntityLookup[e.ID][C4_ID] > 0)	// one last check before begin processing
-				{
-					_activeEntities.Add(e);	
-				}
-			}
 		}
 
 		// updates group when component is added
@@ -99,7 +82,7 @@ namespace ECS
 				EntityManager.EntityLookup[e.ID][C3_ID] > 0 &&
 				EntityManager.EntityLookup[e.ID][C4_ID] > 0)
 			{
-				NewEntities.Enqueue(e);
+				_activeEntities.Add(e);
 			}
 		}
 

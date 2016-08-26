@@ -53,22 +53,6 @@ namespace ECS
 					c2_components[EntityManager.EntityLookup[_activeEntities[i].ID][C2_ID]]
 				);
 			}
-				
-			ProcessEntities();
-		}
-
-		Queue<Entity> NewEntities = new Queue<Entity>();	// new entities, added before update
-		void ProcessEntities()	// when new entity is added 
-		{
-			while (NewEntities.Count > 0)
-			{
-				Entity e = NewEntities.Dequeue();
-				if (EntityManager.EntityLookup[e.ID][C1_ID] > 0 &&
-					EntityManager.EntityLookup[e.ID][C2_ID] > 0)
-				{
-					_activeEntities.Add(e);	
-				}
-			}
 		}
 
 		// updates group when component is added
@@ -77,7 +61,7 @@ namespace ECS
 			if(	EntityManager.EntityLookup[e.ID][C1_ID] > 0 &&
 				EntityManager.EntityLookup[e.ID][C2_ID] > 0)
 			{
-				NewEntities.Enqueue(e);
+				_activeEntities.Add(e);
 			}
 		}
 
@@ -89,9 +73,12 @@ namespace ECS
 		/// <summary>
 		/// Total amount of Entities in this Group
 		/// </summary>
-		public int EntityCount()
+		public int EntityCount
 		{
-			return _activeEntities.Count;
+			get
+			{
+				return _activeEntities.Count;
+			}
 		}
 
 		/// <summary>

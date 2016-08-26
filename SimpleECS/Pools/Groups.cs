@@ -47,9 +47,12 @@ namespace ECS
 			{
 				return lookUpGroup as Group<C>;
 			}
-			Group<C> newGroup = new Group<C>();
-			_groups.Add(typeof(Group<C>), newGroup);
-			return newGroup;
+			else
+			{
+				Group<C> newGroup = new Group<C>();
+				_groups[typeof(Group<C>)] = newGroup;
+				return newGroup;	
+			}
 		}
 
 		/// <summary>

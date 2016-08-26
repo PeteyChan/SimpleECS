@@ -162,11 +162,5 @@ namespace ECS
 		/// </summary>
 		[HideInInspector]
 		public Entity entity;
-
-		/// <summary>
-		/// Gets called before Removed from Entity
-		/// </summary>
-		public virtual void OnRemove()
-		{}
 	}
 }

@@ -47,17 +47,18 @@ namespace ECS
 			for (int i= 0; i < _activeEntities.Count; ++i)
 			{
 				Method(_components[EntityManager.EntityLookup[_activeEntities[i].ID][ID]]);
-			}
-
-			ComponentPool<C>.ProcessEntities();		
+			}	
 		}
 
 		/// <summary>
 		/// Total amount of Entities in this Group
 		/// </summary>
-		public int EntityCount()
+		public int EntityCount
 		{
-			return _activeEntities.Count;
+			get
+			{
+				return _activeEntities.Count;
+			}
 		}
 	}
 }

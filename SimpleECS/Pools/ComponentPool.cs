@@ -33,6 +33,7 @@ namespace ECS.Internal
 				{
 					ComponentPool pool = new ComponentPool<C>(EntityManager.GetComponentID<C>());
 					EntityManager._componentLookUPs[ID] = pool;
+					Groups.GetGroup<C>();	// initialize groups
 				}
 				return _ID;
 			}
@@ -46,9 +47,6 @@ namespace ECS.Internal
 
 		// list of active entities
 		public static List<Entity> ActiveEntities = new List<Entity>();
-
-		// list of new entities added last frame
-		static Queue<Entity> newEntities = new Queue<Entity>();
 
 		// Add and remove events
 		static public ComponentEvent AddComponentEvent;				
@@ -76,21 +74,8 @@ namespace ECS.Internal
 			if (AddComponentEvent != null)						// fire add component event
 				AddComponentEvent(e);
 
-			newEntities.Enqueue(e);								// Enqueue Entity to be processed
+			ActiveEntities.Add(e);							// Enqueue Entity to be processed
 			return components[index];							// and return the component
-		}
-
-		/// <summary>
-		/// Adds new entities to active list if any and returns if active list has any entities
-		/// </summary>
-		public static void ProcessEntities()
-		{
-			while (newEntities.Count > 0)
-			{
-				Entity e = newEntities.Dequeue();
-				if (e.Has(ID))
-					ActiveEntities.Add(e);
-			}
 		}
 
 		// It's safe to remove components that don't exist

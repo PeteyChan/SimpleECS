@@ -10,8 +10,8 @@ public class EntityViewerSystem : EntitySystem
 		foreach(var link in links)
 			link.gameObject.AddComponent<EntityViewer>();
 
-		Groups.AddComponentEvent<ViewComponent>(OnAddView, true);
-		Groups.RemoveComponentEvent<ViewComponent>(OnRemoveView, true);
+		Groups.ListenAddEvent<ViewComponent>(OnAddView, true);
+		Groups.ListenRemoveEvent<ViewComponent>(OnRemoveView, true);
 	}
 
 	public override void OnDisable ()
@@ -20,8 +20,8 @@ public class EntityViewerSystem : EntitySystem
 		foreach(var viewer in viewers)
 			GameObject.Destroy(viewer);
 
-		Groups.AddComponentEvent<ViewComponent>(OnAddView, false);
-		Groups.RemoveComponentEvent<ViewComponent>(OnRemoveView, false);
+		Groups.ListenAddEvent<ViewComponent>(OnAddView, false);
+		Groups.ListenRemoveEvent<ViewComponent>(OnRemoveView, false);
 	}
 
 	void OnAddView(Entity e)

@@ -20,6 +20,7 @@ public class PlayerLink : EntityLink
 		
 		entity.GetAdd<ViewComponent>().gameobject = gameObject;
 		entity.Set<ResourceComponent>(res);
+
 	}
 
 	public MoveComponent move;
@@ -27,6 +28,8 @@ public class PlayerLink : EntityLink
 	public ResourceComponent res;
 	public ShootBulletComponent shoot;
 	public FactionComponent faction;
+
+
 }
 
 

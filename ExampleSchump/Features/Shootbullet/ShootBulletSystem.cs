@@ -29,6 +29,7 @@ public class ShootBulletSystem : EntitySystem , IUpdate
 			});
 	}
 
+
 	void SpawnBullet(ShootBulletComponent shoot)
 	{
 		Entity e = Entity.Create();

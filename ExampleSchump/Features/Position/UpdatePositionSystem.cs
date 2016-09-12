@@ -2,7 +2,7 @@
 using System.Collections;
 using ECS;
 
-public class UpdatePositionSystem : EntitySystem, IUpdateSystem
+public class UpdatePositionSystem : EntitySystem, IUpdate
 {
 	Group<ViewComponent, PositionComponent> gViewPos;
 

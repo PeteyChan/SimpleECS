@@ -2,7 +2,7 @@
 using System.Collections;
 using ECS;
 
-public class MoveInputSystem : EntitySystem, IUpdateSystem
+public class MoveInputSystem : EntitySystem, IUpdate
 {
 	Group<MoveInputComponent, MoveComponent> gInputMove;
 	public override void SetGroups ()

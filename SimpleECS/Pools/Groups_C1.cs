@@ -35,18 +35,18 @@ namespace ECS
 			
 		/// <summary>
 		/// Processes all entites in pool.
-		/// Use Lamba function for ease.
+		/// Use Lamba function for ease. Signature must match group
 		/// E.g.
 		/// group.Process( (MyComponent component) =>
 		/// {
-		/// 	component.value ++;
+		/// 	// Do something with component
 		/// } );
 		/// </summary>
 		public void Process(componentMethod Method)
 		{
 			for (int i= 0; i < _activeEntities.Count; ++i)
 			{
-				Method(_components[EntityManager.EntityLookup[_activeEntities[i].ID][ID]]);
+				Method(_components[ECSManager.EntityLookup[_activeEntities[i].ID][ID]]);
 			}	
 		}
 

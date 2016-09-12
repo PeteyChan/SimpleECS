@@ -2,7 +2,7 @@
 using System.Collections;
 using ECS;
 
-public class SpawnEnemySystem : EntitySystem , IUpdateSystem
+public class SpawnEnemySystem : EntitySystem , IUpdate
 {
 	int MaxEnemies = 5;
 	float RespawnTimer = 0;
@@ -30,7 +30,7 @@ public class SpawnEnemySystem : EntitySystem , IUpdateSystem
 
 	void SpawnEnemy()
 	{
-		Entity e = Entity.CreateEntity();
+		Entity e = Entity.Create();
 		e.GetAdd<ResourceComponent>().path = Loader.Enemy;
 		e.Add<ViewComponent>();
 	}

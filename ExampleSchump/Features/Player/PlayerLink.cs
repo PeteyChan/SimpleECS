@@ -27,7 +27,6 @@ public class PlayerLink : EntityLink
 	public ResourceComponent res;
 	public ShootBulletComponent shoot;
 	public FactionComponent faction;
-
 }
 
 

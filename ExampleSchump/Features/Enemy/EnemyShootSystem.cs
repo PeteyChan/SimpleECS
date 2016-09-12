@@ -2,7 +2,7 @@
 using System.Collections;
 using ECS;
 
-public class EnemyShootSystem : EntitySystem , IUpdateSystem
+public class EnemyShootSystem : EntitySystem , IUpdate
 {
 	Group<EnemyComponent, ShootBulletComponent> gEnemyShoot;
 

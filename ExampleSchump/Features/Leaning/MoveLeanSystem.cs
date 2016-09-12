@@ -2,7 +2,7 @@
 using System.Collections;
 using ECS;
 
-public class EulerBankSystem : EntitySystem, IUpdateSystem 
+public class EulerBankSystem : EntitySystem, IUpdate 
 {
 	Group<MoveComponent, EulerAnglesComponent> gMoveEuler;
 

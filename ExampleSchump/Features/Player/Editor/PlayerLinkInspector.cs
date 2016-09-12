@@ -17,7 +17,6 @@ public class PlayerLinkInspector : Editor
 		}
 
 		Entity e = ((EntityLink)target).entity;
-
 		foldout = EditorGUILayout.Foldout(foldout, string.Format("Entity {0}", e.ID));
 		if (foldout)
 			ECSInspector.ListComponents(e);

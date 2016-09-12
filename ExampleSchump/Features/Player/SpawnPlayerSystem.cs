@@ -18,7 +18,7 @@ public class SpawnPlayerSystem : EntitySystem
 
 	void SpawnPlayer()
 	{
-		player = Entity.CreateEntity();
+		player = Entity.Create();
 		player.GetAdd<ResourceComponent>().path = Loader.SpaceShip;
 		player.Add<ViewComponent>();
 	}

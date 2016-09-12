@@ -17,21 +17,11 @@ namespace ECS
 			ID = id;
 		}
 
-		// current components
-		//public int[] _components;
-
 		/// <summary>
 		/// Adds the component.
 		/// </summary>
 		public Entity Add<C>() where C: EntityComponent
 		{
-//			if(Has(ComponentPool<C>.ID))
-//			{
-//				#if UNITY_EDITOR
-//				//Debug.Log(string.Format("Enitity {0} already has {1} attached", ID, typeof(C).ToString()));
-//				#endif
-//				return this;
-//			}
 			ComponentPool<C>.GetOrAddComponent(this);
 			return this;
 		}
@@ -49,12 +39,16 @@ namespace ECS
 		/// </summary>
 		public bool Has<C>() where C: EntityComponent
 		{
-			return EntityManager.EntityLookup[ID][ComponentPool<C>.ID] > 0;
+			return ECSManager.EntityLookup[ID][ComponentPool<C>.ID] > 0;
 		}
 
+		/// <summary>
+		/// Returns true if entity has component with ID
+		/// Alot faster than generic version
+		/// </summary>
 		public bool Has(int componentID)
 		{
-			return EntityManager.EntityLookup[ID][componentID] > 0;
+			return ECSManager.EntityLookup[ID][componentID] > 0;
 		}
 
 		/// <summary>
@@ -63,10 +57,7 @@ namespace ECS
 		/// </summary>
 		public Entity Set<C>(C value) where C:EntityComponent
 		{
-			if (!Has<C>())
-				Add<C>();
-			ComponentPool<C>.components[EntityManager.EntityLookup[ID][ComponentPool<C>.ID]] = value;
-			value.entity = this;
+			ComponentPool<C>.SetComponent(this, value);
 			return this;
 		}
 
@@ -77,10 +68,7 @@ namespace ECS
 		/// </summary>
 		public C GetSet<C>(C value) where C : EntityComponent
 		{
-			if (!Has<C>())
-				Add<C>();
-			ComponentPool<C>.components[EntityManager.EntityLookup[ID][ComponentPool<C>.ID]] = value;
-			value.entity = this;
+			ComponentPool<C>.SetComponent(this, value);
 			return value;
 		}
 
@@ -89,7 +77,8 @@ namespace ECS
 		/// </summary>
 		public C Get<C>() where C: EntityComponent, new()
 		{
-			return ComponentPool<C>.GetComponent(this);
+			return ComponentPool<C>.components[ECSManager.EntityLookup[ID][ComponentPool<C>.ID]];
+			//return ComponentPool<C>.GetComponent(this); // slightly slower than above
 		}
 			
 		/// <summary>
@@ -114,34 +103,36 @@ namespace ECS
 
 		public void Destroy()
 		{
-			EntityManager.DestroyEntity(this);
+			ECSManager.DestroyEntity(this);
 		}
 			
-		public static Entity GetEntity(int ID)
+		public static Entity GetEntity(int ID) // can't really think of a use for this
 		{
-			return EntityManager.GetEntity(ID);
+			return ECSManager.GetEntity(ID);
 		}
 
-		public static Entity CreateEntity()
+		/// <summary>
+		/// Creates a new Entity.
+		/// </summary>
+		public static Entity Create()
 		{
-			return EntityManager.CreateEntity();
+			return ECSManager.CreateEntity();
 		}
 
 		public static int TotalEntitiesCount()
 		{
-			return EntityManager.TotalEntitiesCount();
+			return ECSManager.TotalEntitiesCount();
 		}
 
 		public static int PooledEntitiesCount()
 		{
-			return EntityManager.PooledEntitiesCount();
+			return ECSManager.PooledEntitiesCount();
 		}
 
 		public static int ActiveEntitiesCount()
 		{
-			return EntityManager.ActiveEntitiesCount();
+			return ECSManager.ActiveEntitiesCount();
 		}
-
 
 		public override int GetHashCode ()
 		{

@@ -43,14 +43,12 @@ namespace ECS
 
 		public void Process(componentMethod Method)
 		{
-			//Debug.Log(string.Format("{0} Active Entities", _activeEntities.Count));
-
 			for (int i = 0; i < _activeEntities.Count; ++i)
 			{
 				Method
 				(
-					c1_components[EntityManager.EntityLookup[_activeEntities[i].ID][C1_ID]],
-					c2_components[EntityManager.EntityLookup[_activeEntities[i].ID][C2_ID]]
+					c1_components[ECSManager.EntityLookup[_activeEntities[i].ID][C1_ID]],
+					c2_components[ECSManager.EntityLookup[_activeEntities[i].ID][C2_ID]]
 				);
 			}
 		}
@@ -58,8 +56,8 @@ namespace ECS
 		// updates group when component is added
 		void AddComponent(Entity e)
 		{
-			if(	EntityManager.EntityLookup[e.ID][C1_ID] > 0 &&
-				EntityManager.EntityLookup[e.ID][C2_ID] > 0)
+			if(	ECSManager.EntityLookup[e.ID][C1_ID] > 0 &&
+				ECSManager.EntityLookup[e.ID][C2_ID] > 0)
 			{
 				_activeEntities.Add(e);
 			}
@@ -80,17 +78,6 @@ namespace ECS
 				return _activeEntities.Count;
 			}
 		}
-
-		/// <summary>
-		/// Returns active entity collection
-		/// Read Only
-		/// </summary>
-//		public ICollection<Entity> ActiveEntityCollection
-//		{
-//			get 
-//			{
-//				return new ReadOnlyCollection<Entity>(_activeEntities);
-//			}
-//		}
+			
 	}
 }

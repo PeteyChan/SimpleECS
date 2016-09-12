@@ -2,7 +2,7 @@
 using System.Collections;
 using ECS;
 
-public class UpdateEulerAnglesSystem : EntitySystem , IUpdateSystem
+public class UpdateEulerAnglesSystem : EntitySystem , IUpdate
 {
 	Group<ViewComponent, EulerAnglesComponent> gViewEuler;
 

@@ -4,10 +4,19 @@ using ECS;
 
 public class ProjectileDamageSystem : EntitySystem
 {
+	public override void SetGroups ()
+	{
+		enabled = false;
+	}
 
 	public override void OnEnable ()
 	{
 		CustomEvent.AddListener<CollisionEvent>(OnCollision);
+	}
+
+	public override void OnDisable ()
+	{
+		CustomEvent.RemoveListener<CollisionEvent>(OnCollision);
 	}
 
 

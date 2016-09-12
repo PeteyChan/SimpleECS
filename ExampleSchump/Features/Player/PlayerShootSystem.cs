@@ -2,7 +2,7 @@
 using System.Collections;
 using ECS;
 
-public class PlayerShootSystem : EntitySystem, IUpdateSystem
+public class PlayerShootSystem : EntitySystem, IUpdate
 {
 	Group<ShootInputComponent, ShootBulletComponent> gInputBullet;
 

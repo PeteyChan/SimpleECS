@@ -31,9 +31,8 @@ namespace ECS.Internal
 			{
 				if (_ID < 0)	// if pool not initialized, initialize pool
 				{
-					ComponentPool pool = new ComponentPool<C>(EntityManager.GetComponentID<C>());
-					EntityManager._componentLookUPs[ID] = pool;
-					Groups.GetGroup<C>();	// initialize groups
+					ComponentPool pool = new ComponentPool<C>(ECSManager.GetComponentID<C>());
+					ECSManager._componentLookUPs[ID] = pool;
 				}
 				return _ID;
 			}
@@ -54,7 +53,7 @@ namespace ECS.Internal
 
 		public static C GetOrAddComponent(Entity e)
 		{
-			ushort index = EntityManager.EntityLookup[e.ID][ID];	// get the index to component
+			ushort index = ECSManager.EntityLookup[e.ID][ID];	// get the index to component
 			if (index > 0)										// if has component return component
 				return components[index];		
 			if (pooledComponents.Count > 0)						// if there is an available component
@@ -68,7 +67,7 @@ namespace ECS.Internal
 				components.Add(Activator.CreateInstance<C>()); 	// them make new component		
 			}
 
-			EntityManager.EntityLookup[e.ID][ID] = index; 		// set entity index
+			ECSManager.EntityLookup[e.ID][ID] = index; 		// set entity index
 			components[index].entity = e;						// set components owner
 
 			if (AddComponentEvent != null)						// fire add component event
@@ -78,20 +77,50 @@ namespace ECS.Internal
 			return components[index];							// and return the component
 		}
 
+		// sets entity component to value
+		// used to hook into unity prefabs
+		public static void SetComponent(Entity e, C c)
+		{
+			c.entity = e;											// sets component's owner
+			ushort index = ECSManager.EntityLookup[e.ID][ID];	// get the index to component
+			if (index > 0)											// if has component, replace it and return
+			{
+				components[index] = c;
+				return;
+			}		
+			if (pooledComponents.Count > 0)						// if there is an available component slot
+			{
+				index = pooledComponents.Pop();					// get index of component slot
+			}
+			else
+			{
+				index = (ushort)components.Count;				// get index of new component
+				components.Add(null); 							// then add new slot		
+			}
+			ECSManager.EntityLookup[e.ID][ID] = index; 		// set entity indexer to slot
+			components[index] = c;								// set component to index
+
+			if (AddComponentEvent != null)						// fire add component event
+				AddComponentEvent(e);
+
+			ActiveEntities.Add(e);								// Add Entity to active list
+		}
+
+
 		// It's safe to remove components that don't exist
 		public static void RemoveComponent(Entity e)
 		{	
-			ushort index = EntityManager.EntityLookup[e.ID][ID];	// get the index to component
-			if (index == 0)										// early out if no component
+			ushort index = ECSManager.EntityLookup[e.ID][ID];	// get the index to component
+			if (index == 0)											// early out if no component
 				return;
 
 			ActiveEntities.Remove(e);							// remove entitiy from active list
+
 			if (RemoveComponentEvent != null)
 				RemoveComponentEvent(e);							// fire event to update pools
 
-			//components[index].OnRemove();
 			pooledComponents.Push(index);						// add reference to pooled components
-			EntityManager.EntityLookup[e.ID][ID] = 0; 			// remove reference to component
+			ECSManager.EntityLookup[e.ID][ID] = 0; 			// remove reference to component
 		}
 
 		public override void BaseRemoveComponent (Entity e)		// used to call remove component from base class
@@ -101,7 +130,7 @@ namespace ECS.Internal
 
 		public static C GetComponent(Entity e)					// returns component if any
 		{ 
-			return components[EntityManager.EntityLookup[e.ID][ID]];							
+			return components[ECSManager.EntityLookup[e.ID][ID]];							
 		}
 
 		public static List<C> GetComponentList()

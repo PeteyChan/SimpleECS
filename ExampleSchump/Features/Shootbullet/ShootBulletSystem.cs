@@ -2,7 +2,7 @@
 using System.Collections;
 using ECS;
 
-public class ShootBulletSystem : EntitySystem , IUpdateSystem
+public class ShootBulletSystem : EntitySystem , IUpdate
 {
 	Group<ShootBulletComponent> gShootBullet;
 
@@ -31,7 +31,7 @@ public class ShootBulletSystem : EntitySystem , IUpdateSystem
 
 	void SpawnBullet(ShootBulletComponent shoot)
 	{
-		Entity e = Entity.CreateEntity();
+		Entity e = Entity.Create();
 		e.GetAdd<FactionComponent>().faction = shoot.faction;
 		e.GetAdd<ResourceComponent>().path = shoot.BulletResource;
 		e.Add<ViewComponent>();

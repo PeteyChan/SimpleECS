@@ -2,7 +2,7 @@
 using System.Collections;
 using ECS;
 
-public class ProjectileBoundsSystem : EntitySystem , IUpdateSystem
+public class ProjectileBoundsSystem : EntitySystem , IUpdate
 {
 	Group<ProjectileComponent, PositionComponent> gProjPos;
 

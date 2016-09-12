@@ -2,7 +2,7 @@
 using System.Collections;
 using ECS;
 
-public class PlayerBoundsSystem : EntitySystem , IUpdateSystem
+public class PlayerBoundsSystem : EntitySystem , IUpdate
 {
 	Group<PlayerComponent, PositionComponent> gPlayerPos;
 

@@ -7,14 +7,13 @@ namespace ECS
 	// used to link unity gameobjects into Simple ECS
 	public class EntityLink : MonoBehaviour 
 	{
-		//[SerializeField]
 		Entity _entity;
 		public Entity entity
 		{
 			get
 			{
 				if (_entity == null)
-					_entity = Entity.CreateEntity();
+					_entity = Entity.Create();
 				return _entity;
 			}
 		}
@@ -24,6 +23,9 @@ namespace ECS
 			_entity = e;
 		}
 
+		/// <summary>
+		/// Sets up components attached to Entity
+		/// </summary>
 		public virtual void SetUpComponents()
 		{}
 	}

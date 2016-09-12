@@ -10,7 +10,7 @@ namespace ECS
 		// reference to all groups
 		static Dictionary<Type, Groups> _groups
 		{
-			get {return EntityManager._groups;}
+			get {return ECSManager._groups;}
 		}
 
 		/// <summary>
@@ -115,7 +115,7 @@ namespace ECS
 		/// </summary>
 		public static int GetComponentID<C>() where C : EntityComponent
 		{
-			return EntityManager.GetComponentID<C>();
+			return ECSManager.GetComponentID<C>();
 		}
 	}
 

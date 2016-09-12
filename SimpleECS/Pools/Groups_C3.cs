@@ -54,9 +54,9 @@ namespace ECS
 			{
 				Method
 				(
-					c1_components[EntityManager.EntityLookup[_activeEntities[i].ID][C1_ID]],
-					c2_components[EntityManager.EntityLookup[_activeEntities[i].ID][C2_ID]],
-					c3_components[EntityManager.EntityLookup[_activeEntities[i].ID][C3_ID]]
+					c1_components[ECSManager.EntityLookup[_activeEntities[i].ID][C1_ID]],
+					c2_components[ECSManager.EntityLookup[_activeEntities[i].ID][C2_ID]],
+					c3_components[ECSManager.EntityLookup[_activeEntities[i].ID][C3_ID]]
 				);
 			}
 		}
@@ -64,9 +64,9 @@ namespace ECS
 		// updates group when component is added
 		void AddComponent(Entity e)
 		{
-			if(	EntityManager.EntityLookup[e.ID][C1_ID] > 0 &&
-				EntityManager.EntityLookup[e.ID][C2_ID] > 0 &&
-				EntityManager.EntityLookup[e.ID][C3_ID] > 0)
+			if(	ECSManager.EntityLookup[e.ID][C1_ID] > 0 &&
+				ECSManager.EntityLookup[e.ID][C2_ID] > 0 &&
+				ECSManager.EntityLookup[e.ID][C3_ID] > 0)
 			{
 				_activeEntities.Add(e);
 			}

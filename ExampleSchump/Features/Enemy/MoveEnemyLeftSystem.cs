@@ -2,7 +2,7 @@
 using System.Collections;
 using ECS;
 
-public class MoveEnemyLeftSystem : EntitySystem , IUpdateSystem
+public class MoveEnemyLeftSystem : EntitySystem , IUpdate
 {
 	Group<EnemyComponent, MoveComponent, PositionComponent> gEnemyMove;
 

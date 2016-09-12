@@ -2,7 +2,7 @@
 using System.Collections;
 using ECS;
 
-public class MoveSystem : EntitySystem , IUpdateSystem
+public class MoveSystem : EntitySystem , IUpdate
 {
 	Group<MoveComponent, PositionComponent> gMovePos;
 

@@ -17,9 +17,9 @@ namespace ECS
 		/// Fires Event when Component is Added.
 		/// Returns associated Entity.
 		/// </summary>
-		public static void AddComponentEvent<C>(ComponentEvent listener, bool subscribe) where C : EntityComponent
+		public static void ListenAddEvent<C>(ComponentEvent listener, bool listen) where C : EntityComponent
 		{
-			if(subscribe)
+			if(listen)
 				ComponentPool<C>.AddComponentEvent += listener;
 			else
 				ComponentPool<C>.AddComponentEvent -= listener;
@@ -29,9 +29,9 @@ namespace ECS
 		/// Fires Event when Component is Removed.
 		/// Returns associated Entity.
 		/// </summary>
-		public static void RemoveComponentEvent<C>(ComponentEvent listener, bool subscribe) where C: EntityComponent
+		public static void ListenRemoveEvent<C>(ComponentEvent listener, bool listen) where C: EntityComponent
 		{
-			if (subscribe)
+			if (listen)
 				ComponentPool<C>.RemoveComponentEvent += listener;
 			else
 				ComponentPool<C>.RemoveComponentEvent -= listener;

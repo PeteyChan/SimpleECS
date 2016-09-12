@@ -6,8 +6,8 @@ public class ViewSystem : EntitySystem
 {
 	public override void SetGroups ()
 	{
-		Groups.AddComponentEvent<ViewComponent>(OnAddView, true);
-		Groups.RemoveComponentEvent<ViewComponent>(OnRemoveView, true);
+		Groups.ListenAddEvent<ViewComponent>(OnAddView, true);
+		Groups.ListenRemoveEvent<ViewComponent>(OnRemoveView, true);
 	}
 
 	void OnAddView(Entity e)

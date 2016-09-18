@@ -10,13 +10,22 @@ public class UpdateScore : MonoBehaviour
 	void Start()
 	{
 		_scoreLabel = GetComponent<Text>();
-		CustomEvent.AddListener<UpdateScoreEvent>(OnUpdateScoreEvent);
 	}
 
 	void OnUpdateScoreEvent(UpdateScoreEvent args)
 	{
 		_score += args.points;
 		_scoreLabel.text = _score.ToString();
+	}
+
+	void OnEnable()
+	{
+		CustomEvent.AddListener<UpdateScoreEvent>(OnUpdateScoreEvent);
+	}
+
+	void OnDisable()
+	{
+		CustomEvent.RemoveListener<UpdateScoreEvent>(OnUpdateScoreEvent);
 	}
 
 }

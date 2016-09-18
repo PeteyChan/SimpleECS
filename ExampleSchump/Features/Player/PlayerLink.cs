@@ -6,6 +6,9 @@ public class PlayerLink : EntityLink
 {
 	public override void SetUpComponents ()
 	{
+		ViewComponent view = new ViewComponent();
+		view.gameobject = gameObject;
+
 		entity
 			.Set<MoveComponent>(move)
 			.Set<PositionComponent>(pos)
@@ -18,7 +21,7 @@ public class PlayerLink : EntityLink
 
 			;
 		
-		entity.GetAdd<ViewComponent>().gameobject = gameObject;
+		entity.Set<ViewComponent>(view);
 		entity.Set<ResourceComponent>(res);
 
 	}

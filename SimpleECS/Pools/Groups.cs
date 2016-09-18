@@ -7,17 +7,22 @@ namespace ECS
 {
 	public abstract class Groups	// To allow dictionary use
 	{
+		static int _groupsCount
+		{
+			get {return _groups.Count;}	
+		}
+
 		// reference to all groups
 		static Dictionary<Type, Groups> _groups
 		{
-			get {return ECSManager._groups;}
+			get {return ECSManager._groupsByType;}
 		}
 
 		/// <summary>
 		/// Fires Event when Component is Added.
-		/// Returns associated Entity.
+		/// Returns Component
 		/// </summary>
-		public static void ListenAddEvent<C>(ComponentEvent listener, bool listen) where C : EntityComponent
+		public static void ListenAddEvent<C>(ComponentEvent<C> listener, bool listen) where C : EntityComponent
 		{
 			if(listen)
 				ComponentPool<C>.AddComponentEvent += listener;
@@ -27,9 +32,9 @@ namespace ECS
 
 		/// <summary>
 		/// Fires Event when Component is Removed.
-		/// Returns associated Entity.
+		/// Returns Component
 		/// </summary>
-		public static void ListenRemoveEvent<C>(ComponentEvent listener, bool listen) where C: EntityComponent
+		public static void ListenRemoveEvent<C>(ComponentEvent<C> listener, bool listen) where C: EntityComponent
 		{
 			if (listen)
 				ComponentPool<C>.RemoveComponentEvent += listener;
@@ -47,12 +52,9 @@ namespace ECS
 			{
 				return lookUpGroup as Group<C>;
 			}
-			else
-			{
-				Group<C> newGroup = new Group<C>();
-				_groups[typeof(Group<C>)] = newGroup;
-				return newGroup;	
-			}
+			Group<C> newGroup = new Group<C>();
+			_groups[typeof(Group<C>)] = newGroup;
+			return newGroup;	
 		}
 
 		/// <summary>
@@ -116,6 +118,15 @@ namespace ECS
 		public static int GetComponentID<C>() where C : EntityComponent
 		{
 			return ECSManager.GetComponentID<C>();
+		}
+
+		/// <summary>
+		/// Returns how many groups exisit
+		/// </summary>
+		/// <returns>The count.</returns>
+		public static int Count()
+		{
+			return _groupsCount;
 		}
 	}
 

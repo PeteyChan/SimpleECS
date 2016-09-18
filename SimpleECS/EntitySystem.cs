@@ -14,7 +14,7 @@ namespace ECS
 	{
 		bool _enabled = false;
 		/// <summary>
-		/// Gets or sets a value indicating whether this <see cref="ECS.EntitySystem"/> is enabled.
+		/// Sets system enabled
 		/// </summary>
 		public bool enabled
 		{

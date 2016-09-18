@@ -5,44 +5,37 @@ using ECS.Internal;
 
 namespace ECS
 {
-	public static class GameObjectPool
+	public class GameObjectPool : MonoBehaviour
 	{
-		static Dictionary<string, ObjectPool> _pools = new Dictionary<string, ObjectPool>();
-
-		static Transform _p;
-		static Transform _parent
+		public bool loaded = true;
+		static GameObjectPool _i;
+		static GameObjectPool Instance
 		{
 			get
 			{
-				if (_p == null)
+				if (_i == null)
 				{
-					_p = new GameObject("Object Pool").transform;
+					_i = new GameObject("GameObject Pool").AddComponent<GameObjectPool>();
 				}
-				return _p;
+				return _i;
 			}
 		}
 
-		public static void Pool(this GameObject obj)
+		public Dictionary<string, ObjectPool> pools = new Dictionary<string, ObjectPool>();
+
+		public static void Pool(GameObject obj)
 		{
+			if (Instance.loaded == false)
+				return;
+			
 			ObjectPool pool;
-			obj.transform.parent = _parent;
-			if (_pools.TryGetValue(obj.name, out pool) == false)
+			obj.transform.parent = Instance.transform;
+			if (Instance.pools.TryGetValue(obj.name, out pool) == false)
 			{
 				pool = new ObjectPool();
-				_pools.Add(obj.name, pool);	
+				Instance.pools.Add(obj.name, pool);	
 			}
 			pool.PoolObject(obj);
-		}
-
-		//
-		//	GET OBJECT METHODS
-		//
-
-		public static GameObject Get(this GameObject go, Entity e)
-		{
-			if (e.Has<ResourceComponent>())
-				go.name = e.Get<ResourceComponent>().path;
-			return Get(go.name, e);
 		}
 
 		/// <summary>
@@ -55,14 +48,17 @@ namespace ECS
 				Debug.LogError("Must provide a path name to object file");
 			#endif
 
+			if (Instance.loaded == false)
+				return null;
+
 			ObjectPool pool;
-			if (_pools.TryGetValue(path, out pool) == false)
+			if (Instance.pools.TryGetValue(path, out pool) == false)
 			{
 				pool = new ObjectPool();
-				_pools.Add(path, pool);
+				Instance.pools.Add(path, pool);
 			}
 			GameObject go = pool.GetObject(path);
-			go.transform.parent = _parent;
+			go.transform.parent = Instance.transform;
 			go.SetActive(true);
 
 			EntityLink link = go.GetComponent<EntityLink>();	// Add Entity Link and Set up components
@@ -72,6 +68,17 @@ namespace ECS
 			link.SetUpComponents();
 			return go;
 		}
+
+		public static int poolCount()
+		{
+			return Instance.pools.Count;
+		}
+
+		void OnDestroy()
+		{
+			Instance.loaded = false;
+		}
+
 	}
 }
 

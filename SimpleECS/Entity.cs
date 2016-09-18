@@ -39,7 +39,7 @@ namespace ECS
 		/// </summary>
 		public bool Has<C>() where C: EntityComponent
 		{
-			return ECSManager.EntityLookup[ID][ComponentPool<C>.ID] > 0;
+			return ECSManager.EntityComponentIndexLookup[ID][ComponentPool<C>.ID] > 0;
 		}
 
 		/// <summary>
@@ -48,7 +48,7 @@ namespace ECS
 		/// </summary>
 		public bool Has(int componentID)
 		{
-			return ECSManager.EntityLookup[ID][componentID] > 0;
+			return ECSManager.EntityComponentIndexLookup[ID][componentID] > 0;
 		}
 
 		/// <summary>
@@ -77,7 +77,7 @@ namespace ECS
 		/// </summary>
 		public C Get<C>() where C: EntityComponent, new()
 		{
-			return ComponentPool<C>.components[ECSManager.EntityLookup[ID][ComponentPool<C>.ID]];
+			return ComponentPool<C>.components[ECSManager.EntityComponentIndexLookup[ID][ComponentPool<C>.ID]];
 			//return ComponentPool<C>.GetComponent(this); // slightly slower than above
 		}
 			

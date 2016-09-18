@@ -13,7 +13,6 @@ namespace ECS.Internal
 		// CONSTRUCTOR
 		//
 		//
-
 		static ECSManager()
 		{
 			var assemblies = AppDomain.CurrentDomain.GetAssemblies();	// Get a list of all IComponents
@@ -24,20 +23,14 @@ namespace ECS.Internal
 				{
 					if (type.IsSubclassOf(typeof(EntityComponent)))
 					{
-						_componentTypes.Add(type, _componentTypes.Count);
-						_componentTypeIndex.Add(type);
+						_componentIDbyType.Add(type, _componentIDbyType.Count);
+						_componentTypeByIndex.Add(type);
 					}
 				}
 			}
-			_componentLookUPs = new ComponentPool[_componentTypes.Count];
-
-			EntityLink[] links = GameObject.FindObjectsOfType<EntityLink>();	// make sure all enitity links are set up
-			foreach( var link in links)
-			{
-				if (link.entity == null)
-					link.SetEntity(CreateEntity());
-				link.SetUpComponents();
-			}
+			_componentPoolByID = new ComponentPool[_componentIDbyType.Count];
+		
+			LoadSceneEvent += OnLoadScene;
 		}
 
 		//
@@ -47,16 +40,16 @@ namespace ECS.Internal
 		//
 
 		// Entity component index lookup
-		public static List<ushort[]> EntityLookup = new List<ushort[]>();	// short to save some space, max 53k ish components
+		public static List<ushort[]> EntityComponentIndexLookup = new List<ushort[]>();	// short to save some space, max 53k ish components
 
 		// reference to obtain component ID's by type
-		static Dictionary<Type, int> _componentTypes = new Dictionary<Type, int>();
+		static Dictionary<Type, int> _componentIDbyType = new Dictionary<Type, int>();
 
 		// fast lookups to component pools by index, used by destory method
-		public static ComponentPool[] _componentLookUPs;
+		public static ComponentPool[] _componentPoolByID;
 
 		// fast lookup to component type by index
-		static List<Type> _componentTypeIndex = new List <Type>();
+		static List<Type> _componentTypeByIndex = new List <Type>();
 
 		// entity pool
 		static Queue<Entity> _pooledEntities = new Queue<Entity>();
@@ -68,10 +61,9 @@ namespace ECS.Internal
 		static List<Entity> _entities = new List<Entity>();		// List of all current entities
 
 		// Reference to get group by type
-		public static Dictionary<Type, Groups> _groups = new Dictionary<Type, Groups>();
+		public static Dictionary<Type, Groups> _groupsByType = new Dictionary<Type, Groups>();
 
-		// Reference to get systems by group name
-		public static Dictionary <string, SystemGroup> _systemGroups = new Dictionary<string, SystemGroup>();
+		public static int componentPoolCount = 0;
 
 		//
 		//
@@ -101,28 +93,22 @@ namespace ECS.Internal
 
 		public static int UniqueComponentCount()
 		{
-			return _componentTypeIndex.Count;
+			return _componentTypeByIndex.Count;
 		}
-
-		/// <summary>
-		/// Returns component type with component ID
-		/// </summary>
-		public static Type GetComponentType (int ID)
+			
+		public static Type GetComponentType (int ID)	/// Returns component type with component ID
 		{
-			if (ID < 0 || ID > _componentTypeIndex.Count)
+			if (ID < 0 || ID > _componentTypeByIndex.Count)
 				return null;
-			return _componentTypeIndex[ID];
+			return _componentTypeByIndex[ID];
 		}
 
-		/// <summary>
-		/// Returns Component ID of Component
-		/// </summary>
-		public static int GetComponentID<C>() where C: EntityComponent
+		public static int GetComponentID<C>() where C: EntityComponent	/// Returns Component ID of Component
 		{
 			int id = -1;
-			if (_componentTypes.TryGetValue(typeof(C), out id))
+			if (_componentIDbyType.TryGetValue(typeof(C), out id))
 			{
-				id = _componentTypes[typeof(C)];
+				id = _componentIDbyType[typeof(C)];
 			}
 			return id;
 		}
@@ -134,8 +120,9 @@ namespace ECS.Internal
 			return (_entities[ID]);
 		}
 
-		public static Entity CreateEntity()
+		public static Entity CreateEntity()	// makes a new entity
 		{
+			//Debug.Log("Created Entity");
 			Entity e;
 			if (_pooledEntities.Count > 0)
 			{
@@ -143,8 +130,8 @@ namespace ECS.Internal
 			}
 			else
 			{
-				e = new Entity(EntityLookup.Count);
-				EntityLookup.Add(new ushort[_componentTypes.Count]);
+				e = new Entity(EntityComponentIndexLookup.Count);
+				EntityComponentIndexLookup.Add(new ushort[_componentIDbyType.Count]);
 			}
 			_entities.Add(e);
 			_activeEntities.Add(e);
@@ -157,23 +144,42 @@ namespace ECS.Internal
 		//
 		//
 
-		public static void DestroyEntity(Entity e)
+		public static Action LoadSceneEvent;
+
+		public static void DestroyEntity(Entity e)	// removes all entities components and marks it available for reuse
 		{
 			if (_activeEntities.Contains(e))
 			{
 				_activeEntities.Remove(e);
 				_pooledEntities.Enqueue(e);
 
-				for(int i=0; i < _componentTypes.Count; ++i)
+				for(int i=0; i < _componentIDbyType.Count; ++i)
 				{
-					if (EntityLookup[e.ID][i] > 0)
+					if (EntityComponentIndexLookup[e.ID][i] > 0)
 					{
-						_componentLookUPs[i].BaseRemoveComponent(e);	// remove component
-						//EntityLookup[e.ID][i] = -1;					// set lookup value
+						_componentPoolByID[i].BaseRemoveComponent(e);	// remove component
 					}
 				}
 			}
 		}
+
+		public static void OnLoadScene()
+		{
+			_groupsByType.Clear();
+
+			foreach(ComponentPool pool in _componentPoolByID)
+			{
+				if (pool != null)
+					pool.ClearPools();
+			}
+
+			EntityComponentIndexLookup.Clear();
+			ActiveEntities.Clear();
+			_pooledEntities.Clear();
+			_entities.Clear();
+			componentPoolCount = 0;
+		}
+
 	}
 }
 

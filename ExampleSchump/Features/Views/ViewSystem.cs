@@ -10,20 +10,19 @@ public class ViewSystem : EntitySystem
 		Groups.ListenRemoveEvent<ViewComponent>(OnRemoveView, true);
 	}
 
-	void OnAddView(Entity e)
+	void OnAddView(ViewComponent view)
 	{
-		if (e.Has<ResourceComponent>())
+		if (view.entity.Has<ResourceComponent>())
 		{
-			ViewComponent view = e.Get<ViewComponent>();
-			ResourceComponent res = e.Get<ResourceComponent>();
-			view.gameobject = GameObjectPool.Get(res.path, e);
+			ResourceComponent res = view.entity.Get<ResourceComponent>();
+			view.gameobject = GameObjectPool.Get(res.path, view.entity);
 			view.gameobject.name = res.path;
 			view.transform.position = Vector3.zero;
 		}
 	}
 
-	void OnRemoveView(Entity e)
+	void OnRemoveView(ViewComponent view)
 	{
-		GameObjectPool.Pool(e.Get<ViewComponent>().gameobject);
+		GameObjectPool.Pool(view.gameobject);
 	}
 }

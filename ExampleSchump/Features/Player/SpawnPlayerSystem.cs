@@ -2,7 +2,7 @@
 using System.Collections;
 using ECS;
 
-public class SpawnPlayerSystem : EntitySystem 
+public class SpawnPlayerSystem : EntitySystem , IUpdate
 {
 	Entity player;
 
@@ -14,6 +14,12 @@ public class SpawnPlayerSystem : EntitySystem
 	public override void OnDisable ()
 	{
 		player.Destroy();
+	}
+
+	public override void Update ()
+	{
+		if (Input.GetKeyDown(KeyCode.I))
+			SpawnPlayer();
 	}
 
 	void SpawnPlayer()

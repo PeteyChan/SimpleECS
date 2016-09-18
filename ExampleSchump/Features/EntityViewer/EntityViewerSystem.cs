@@ -24,16 +24,14 @@ public class EntityViewerSystem : EntitySystem
 		Groups.ListenRemoveEvent<ViewComponent>(OnRemoveView, false);
 	}
 
-	void OnAddView(Entity e)
+	void OnAddView(ViewComponent view)
 	{
-		ViewComponent view = e.Get<ViewComponent>();
 		if (view.gameobject.GetComponent<EntityViewer>() == null)
 			view.gameobject.AddComponent<EntityViewer>();
 	}
 
-	void OnRemoveView(Entity e)
+	void OnRemoveView(ViewComponent view)
 	{
-		ViewComponent view = e.Get<ViewComponent>();
 		EntityViewer viewer = view.gameobject.GetComponent<EntityViewer>();
 		if (viewer != null)
 			GameObject.Destroy(viewer);

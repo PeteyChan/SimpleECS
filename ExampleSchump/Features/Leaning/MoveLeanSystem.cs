@@ -15,7 +15,7 @@ public class EulerBankSystem : EntitySystem, IUpdate
 	{
 		gMoveEuler.Process( (MoveComponent move, EulerAnglesComponent euler) => 
 			{
-				euler.Angle.y = 50f* move.xAxis;
+				euler.Angle.y = -50f* move.xAxis;
 				euler.Angle.x = 10f* move.yAxis;
 			});
 	}

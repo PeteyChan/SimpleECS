@@ -46,8 +46,8 @@ namespace ECS
 		{
 			for (int i= 0; i < _activeEntities.Count; ++i)
 			{
-				Method(_components[ECSManager.EntityLookup[_activeEntities[i].ID][ID]]);
-			}	
+				Method(_components[ECSManager.EntityComponentIndexLookup[_activeEntities[i].ID][ID]]);
+			}
 		}
 
 		/// <summary>

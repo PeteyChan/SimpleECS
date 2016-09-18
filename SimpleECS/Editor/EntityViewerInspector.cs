@@ -17,10 +17,31 @@ namespace ECS.Internal
 				return;
 			}
 			EditorGUILayout.LabelField(string.Format("Entity {0}", e.ID));
-			ECSInspector.ListComponents(e);
+			ListComponents(e);
 			EditorUtility.SetDirty(target);
 		}
 	
+		public void ListComponents(Entity e)
+		{
+			if (e == null)
+				return;
+			int count = 0;
+			EditorGUI.indentLevel ++;
+			for (int i = 0; i < ECSManager.UniqueComponentCount(); ++i)
+			{
+				if (e.Has(i))
+				{
+					count ++;
+					string name = string.Format("{0} : {1}", count ,ECSManager.GetComponentType(i));
+					if (name.EndsWith("Component"))
+						name = name.Substring(0, name.Length - 9);
+					if (name.StartsWith("C_"))
+						name = name.Substring(2);
+					EditorGUILayout.LabelField(name);
+				}
+			}
+			EditorGUI.indentLevel --;
+		}
 	}
 
 }

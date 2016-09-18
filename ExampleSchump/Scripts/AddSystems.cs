@@ -2,17 +2,16 @@
 using System.Collections;
 using ECS;
 
-public class SystemInterface : MonoBehaviour 
+public class AddSystems : MonoBehaviour 
 {
-	public EntitySystemManager manager = new EntitySystemManager();
 	// Use this for initialization
 	void Start () 
 	{
-		manager
+		EntitySystemManager
 			.Add(new ViewSystem())				// handles adding and removing views
 			.Add(new MoveSystem())				// adds move vector to position
 
-			.Add(new SpawnPlayerSystem())
+			//.Add(new SpawnPlayerSystem())
 			.Add("Input", new MoveInputSystem())		// updates move via input
 			.Add("Input", new PlayerShootSystem())		// allows the player to shoot via input
 
@@ -32,11 +31,5 @@ public class SystemInterface : MonoBehaviour
 
 			.Add("Debug", new EntityViewerSystem())
 			;
-	}
-	
-	// Update is called once per frame
-	void Update () 
-	{
-		manager.Update();
 	}
 }

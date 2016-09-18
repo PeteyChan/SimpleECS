@@ -31,13 +31,13 @@ namespace ECS
 				.Intersect(ComponentPool<C3>.ActiveEntities).ToList();
 
 			// listen for changes to components to update groups
-			ComponentPool<C1>.AddComponentEvent += AddComponent;
-			ComponentPool<C2>.AddComponentEvent += AddComponent;
-			ComponentPool<C3>.AddComponentEvent += AddComponent;
+			ComponentPool<C1>.AddEntityEvent += AddComponent;
+			ComponentPool<C2>.AddEntityEvent += AddComponent;
+			ComponentPool<C3>.AddEntityEvent += AddComponent;
 
-			ComponentPool<C1>.RemoveComponentEvent += RemoveComponent;
-			ComponentPool<C2>.RemoveComponentEvent += RemoveComponent;
-			ComponentPool<C3>.RemoveComponentEvent += RemoveComponent;
+			ComponentPool<C1>.RemoveEntityEvent += RemoveComponent;
+			ComponentPool<C2>.RemoveEntityEvent += RemoveComponent;
+			ComponentPool<C3>.RemoveEntityEvent += RemoveComponent;
 		}
 
 		int C1_ID, C2_ID, C3_ID;							// component ID
@@ -54,9 +54,9 @@ namespace ECS
 			{
 				Method
 				(
-					c1_components[ECSManager.EntityLookup[_activeEntities[i].ID][C1_ID]],
-					c2_components[ECSManager.EntityLookup[_activeEntities[i].ID][C2_ID]],
-					c3_components[ECSManager.EntityLookup[_activeEntities[i].ID][C3_ID]]
+					c1_components[ECSManager.EntityComponentIndexLookup[_activeEntities[i].ID][C1_ID]],
+					c2_components[ECSManager.EntityComponentIndexLookup[_activeEntities[i].ID][C2_ID]],
+					c3_components[ECSManager.EntityComponentIndexLookup[_activeEntities[i].ID][C3_ID]]
 				);
 			}
 		}
@@ -64,9 +64,9 @@ namespace ECS
 		// updates group when component is added
 		void AddComponent(Entity e)
 		{
-			if(	ECSManager.EntityLookup[e.ID][C1_ID] > 0 &&
-				ECSManager.EntityLookup[e.ID][C2_ID] > 0 &&
-				ECSManager.EntityLookup[e.ID][C3_ID] > 0)
+			if(	ECSManager.EntityComponentIndexLookup[e.ID][C1_ID] > 0 &&
+				ECSManager.EntityComponentIndexLookup[e.ID][C2_ID] > 0 &&
+				ECSManager.EntityComponentIndexLookup[e.ID][C3_ID] > 0)
 			{
 				_activeEntities.Add(e);
 			}

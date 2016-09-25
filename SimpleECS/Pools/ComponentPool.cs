@@ -9,11 +9,15 @@ namespace ECS.Internal
 	/// 
 	/// </summary>
 
+	public delegate void EntityEvent (Entity e);
 	public delegate void ComponentEvent<C>(C Component) where C : EntityComponent;
 
 	public abstract class ComponentPool
 	{
 		public virtual void BaseRemoveComponent(Entity e)	// used to remove components without knowing the generic's type
+		{}
+
+		public virtual void BaseAddComponent(Entity e)
 		{}
 
 		public virtual void ClearPools()
@@ -62,8 +66,6 @@ namespace ECS.Internal
 		// Add and remove events
 		static public ComponentEvent<C> AddComponentEvent;				
 		static public ComponentEvent<C> RemoveComponentEvent;
-
-		public delegate void EntityEvent (Entity e);
 
 		static public EntityEvent AddEntityEvent;
 		static public EntityEvent RemoveEntityEvent;
@@ -159,6 +161,11 @@ namespace ECS.Internal
 			RemoveComponent(e);
 		}
 
+		public override void BaseAddComponent (Entity e)
+		{
+			GetOrAddComponent(e);
+		}
+
 		public static C GetComponent(Entity e)					// returns component if any
 		{ 
 			return components[ECSManager.EntityComponentIndexLookup[e.ID][ID]];							
@@ -177,7 +184,6 @@ namespace ECS.Internal
 			RemoveEntityEvent = null;
 			_ID = -1;
 		}
-
 	}
 }
 

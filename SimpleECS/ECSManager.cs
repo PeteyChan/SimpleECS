@@ -21,10 +21,13 @@ namespace ECS.Internal
 				Type[] types = assembly.GetTypes();
 				foreach( Type type in types)
 				{
-					if (type.IsSubclassOf(typeof(EntityComponent)))
+					if (type.IsSubclassOf(typeof(EntityComponent)))	// check if entity component
 					{
-						_componentIDbyType.Add(type, _componentIDbyType.Count);
-						_componentTypeByIndex.Add(type);
+						if (!type.IsAbstract)	// and check that it's not an abstract class
+						{
+							_componentIDbyType.Add(type, _componentIDbyType.Count);	// add to references
+							_componentTypeByIndex.Add(type);	
+						}
 					}
 				}
 			}

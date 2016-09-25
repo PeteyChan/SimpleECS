@@ -29,8 +29,9 @@ namespace ECS
 		}
 
 		int ID;		// component ID
-		static List<C> _components;		// reference to all components
-		static List<Entity> _activeEntities;	// all current active entities, lists are much faster than hashsets < a few thousand elements
+		List<C> _components;		// reference to all components
+		List<Entity> _activeEntities;	// all current active entities, lists are much faster than hashsets < a few thousand elements
+
 		public delegate void componentMethod(C component);			// method to call when processing components
 			
 		/// <summary>

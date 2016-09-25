@@ -57,6 +57,13 @@ namespace ECS
 		/// </summary>
 		public Entity Set<C>(C value) where C:EntityComponent
 		{
+			if (value == null)
+			{
+				#if UNITY_EDITOR
+				Debug.LogError(string.Format("Attempted to assign {0} with a value of null on enitity {1}. Ensure Component exists", typeof(C), ID));
+				#endif
+				return this;
+			}
 			ComponentPool<C>.SetComponent(this, value);
 			return this;
 		}
@@ -68,6 +75,13 @@ namespace ECS
 		/// </summary>
 		public C GetSet<C>(C value) where C : EntityComponent
 		{
+			if (value == null)
+			{
+				#if UNITY_EDITOR
+				Debug.LogError(string.Format("Attempted to assign {0} with a value of null on enitity {1}. Ensure Component exists", typeof(C), ID));
+				#endif
+				return null;
+			}
 			ComponentPool<C>.SetComponent(this, value);
 			return value;
 		}
@@ -78,7 +92,6 @@ namespace ECS
 		public C Get<C>() where C: EntityComponent, new()
 		{
 			return ComponentPool<C>.components[ECSManager.EntityComponentIndexLookup[ID][ComponentPool<C>.ID]];
-			//return ComponentPool<C>.GetComponent(this); // slightly slower than above
 		}
 			
 		/// <summary>
@@ -87,9 +100,7 @@ namespace ECS
 		public bool TryGet<C>(out C Component) where C: EntityComponent, new()
 		{
 			Component = Get<C>();
-			if(Component == null)
-				return false;
-			return true;
+			return Component == null ? false : true;
 		}
 
 		/// <summary>

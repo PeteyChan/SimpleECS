@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using ECS.Internal;
+using System;
 
 namespace ECS
 {
@@ -28,6 +29,13 @@ namespace ECS
 		/// </summary>
 		public virtual void SetUpComponents()
 		{}
+
+		/// <summary>
+		/// Gets called after SetUpComponents.
+		/// Allows outside classes to setup thier components
+		/// </summary>
+		public EntityEvent SetUpComponentsEvent;
 	}
 
 }
+

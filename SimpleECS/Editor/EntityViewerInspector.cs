@@ -9,6 +9,9 @@ namespace ECS.Internal
 	{
 		public override void OnInspectorGUI ()
 		{
+			if (!Application.isPlaying)
+				return;
+
 			Entity e = ((EntityViewer)target).entity;
 
 			if (e == null)
@@ -35,8 +38,7 @@ namespace ECS.Internal
 					string name = string.Format("{0} : {1}", count ,ECSManager.GetComponentType(i));
 					if (name.EndsWith("Component"))
 						name = name.Substring(0, name.Length - 9);
-					if (name.StartsWith("C_"))
-						name = name.Substring(2);
+					name = name.Replace("_", " ");
 					EditorGUILayout.LabelField(name);
 				}
 			}

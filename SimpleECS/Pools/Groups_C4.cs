@@ -50,12 +50,12 @@ namespace ECS
 
 		int C1_ID, C2_ID, C3_ID, C4_ID;							// component ID
 
-		static List<C1> c1_components;				// reference to all components
-		static List<C2> c2_components;
-		static List<C3> c3_components;
-		static List<C4> c4_components;
+		List<C1> c1_components;				// reference to all components
+		List<C2> c2_components;
+		List<C3> c3_components;
+		List<C4> c4_components;
 
-		static List<Entity> _activeEntities;		// all current active entities
+		List<Entity> _activeEntities;		// all current active entities
 
 		public delegate void componentMethod(C1 c1, C2 c2, C3 c3, C4 c4);	// method to call when processing components
 

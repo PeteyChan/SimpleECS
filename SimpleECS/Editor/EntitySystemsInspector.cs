@@ -43,8 +43,7 @@ namespace ECS.Internal
 						string name = system.GetType().ToString();
 						if (name.EndsWith("System"))
 							name = name.Substring(0, name.Length-6);
-						if (name.StartsWith("S_"))
-							name = name.Substring(2);
+						name = name.Replace("_", " ");
 						system.enabled = EditorGUILayout.ToggleLeft( name, system.enabled, GUILayout.MaxWidth(Screen.width/2f-15f));
 						if (system is IUpdate)
 							EditorGUILayout.LabelField(" :Update", GUILayout.MaxWidth( Screen.width/4f));

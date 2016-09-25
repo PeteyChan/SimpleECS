@@ -66,6 +66,8 @@ namespace ECS
 				link = go.AddComponent<EntityLink>();
 			link.SetEntity(e);
 			link.SetUpComponents();
+			if (link.SetUpComponentsEvent != null)
+				link.SetUpComponentsEvent(e);
 			return go;
 		}
 

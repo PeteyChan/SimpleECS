@@ -6,7 +6,8 @@ using UnityEngine;
 namespace ECS
 {
 	/// <summary>
-	/// Interface for Entity Systems
+	/// Manages Systems
+	/// Resets during Scene Changes
 	/// </summary>
 	[System.Serializable]
 	public static class EntitySystemManager
@@ -52,6 +53,11 @@ namespace ECS
 		{
 			return systems.Add(groupName, system);
 		}
+			
+		public static EntitySystems Add(string groupName, params EntitySystem[] system)
+		{
+			return systems.Add(groupName, system);
+		}
 
 		/// <summary>
 		/// Add the specified system to Group and sets enabled.
@@ -81,7 +87,6 @@ namespace ECS
 		{
 			_systems = null;
 		}
-
 	}
 }
 
@@ -124,6 +129,16 @@ namespace ECS.Internal
 		{
 			return Add(Group, system, true);
 		}
+
+		public EntitySystems Add(string Group, params EntitySystem[] systems)
+		{
+			foreach (EntitySystem system in systems)
+			{
+				Add(Group, system, true);
+			}
+			return this;
+		}
+
 
 		/// <summary>
 		/// Add the specified system to Group and sets enabled.
@@ -198,7 +213,7 @@ namespace ECS.Internal
 		}
 
 
-		void Awake()
+		void Start()
 		{
 			SetEntityLinks();
 		}
@@ -247,6 +262,8 @@ namespace ECS.Internal
 			{
 				link.SetEntity(ECSManager.CreateEntity());
 				link.SetUpComponents();
+				if (link.SetUpComponentsEvent != null)
+					link.SetUpComponentsEvent(link.entity);
 			}
 		}
 

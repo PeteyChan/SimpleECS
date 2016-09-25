@@ -76,12 +76,6 @@ namespace ECS.Internal
 			if (eventDelegate != null)
 				eventDelegate((T)e);
 		}
-
-		public void Invoke (T e)
-		{
-			if (eventDelegate != null)
-				eventDelegate(e);
-		}
 	}
 
 }

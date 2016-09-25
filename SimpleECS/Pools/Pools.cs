@@ -61,8 +61,8 @@ namespace ECS
 		/// Gets Group that allows processing of all entities that have all components.
 		/// </summary>
 		public static Group<C1, C2> GetGroup<C1, C2>()
-			where C1: EntityComponent, new()
-			where C2: EntityComponent, new()
+			where C1: EntityComponent
+			where C2: EntityComponent
 		{
 			Groups lookUpGroup;
 			if (_groups.TryGetValue(typeof(Group<C1, C2>), out lookUpGroup))
@@ -79,9 +79,9 @@ namespace ECS
 		/// Gets Group that allows processing of all entities that have all components.
 		/// </summary>
 		public static Group<C1, C2, C3> GetGroup<C1, C2, C3>()
-			where C1: EntityComponent, new()
-			where C2: EntityComponent, new()
-			where C3: EntityComponent, new()
+			where C1: EntityComponent
+			where C2: EntityComponent
+			where C3: EntityComponent
 		{
 			Groups lookUpGroup;
 			if (_groups.TryGetValue(typeof(Group<C1, C2, C3>), out lookUpGroup))
@@ -97,10 +97,10 @@ namespace ECS
 		/// Gets Group that allows processing of all entities that have all components.
 		/// </summary>
 		public static Group<C1, C2, C3, C4> GetGroup<C1, C2, C3, C4>()
-			where C1: EntityComponent, new()
-			where C2: EntityComponent, new()
-			where C3: EntityComponent, new()
-			where C4: EntityComponent, new()
+			where C1: EntityComponent
+			where C2: EntityComponent
+			where C3: EntityComponent
+			where C4: EntityComponent
 		{
 			Groups lookUpGroup;
 			if (_groups.TryGetValue(typeof(Group<C1, C2, C3, C4>), out lookUpGroup))

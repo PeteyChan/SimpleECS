@@ -11,9 +11,9 @@ public abstract class EntityComponent<C> : EntityComponent where C : EntityCompo
 		if (entity == null)
 			entity = gameObject.AddComponent<Entity>();
 
-		if (entity.componentLookup[Group<C>.instance.ID] == null)
+		if (entity[Group<C>.instance.ID] == null)
 		{
-			entity.componentLookup[Group<C>.instance.ID] = this;
+			entity[Group<C>.instance.ID] = this;
 			_reg = true;
 		}
 		else
@@ -32,17 +32,27 @@ public abstract class EntityComponent<C> : EntityComponent where C : EntityCompo
 	void OnDisable()
 	{
 		if (_reg)
-			Group<C>.instance.RemoveComponent((C)this);
+		{
+			Group<C>.instance.RemoveComponent((C)this);	
+		}
 	}
 
 	void OnDestroy()
 	{
 		if (_reg)
-			entity.componentLookup[Group<C>.instance.ID] = null;
+			entity[Group<C>.instance.ID] = null;
 	}
+
+
 }
 
 public abstract class EntityComponent : MonoBehaviour
 {
+	[ReadOnly]
 	public Entity entity;
+
+	public void SendEvent<E>(Entity sender, E args)
+	{
+		entity.SendEvent(sender, args);
+	}
 }

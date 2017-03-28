@@ -6,13 +6,19 @@ using System;
 [DisallowMultipleComponent]
 public class Entity : MonoBehaviour
 {
-	public int ID;
-	public EntityComponent[] componentLookup;
+	[ReadOnly, SerializeField]
+	int id;
+	public int ID
+	{
+		get {return id;}
+	}
+
+	EntityComponent[] componentLookup;
 
 	void Awake()
 	{
 		if (EntityManager.instance == null) return;
-		ID = EntityManager.instance.GetID;
+		id = EntityManager.instance.GetID;
 		componentLookup = new EntityComponent[EntityManager.instance.GetComponentCount()];
 	}
 
@@ -46,6 +52,21 @@ public class Entity : MonoBehaviour
 		return (C)componentLookup[Group<C>.instance.ID];
 	}
 
+	public C GetOrAdd<C>() where C : EntityComponent<C>
+	{
+		var c = Get<C>();
+		if (c == null) 
+			c = gameObject.AddComponent<C>();
+		return c;
+	}
+
+	public void Remove<C>() where C : EntityComponent<C>
+	{
+		var c = Get<C>();
+		if (c != null)
+			Destroy(c);
+	}
+
 	public override bool Equals (object other)
 	{
 		if (other is Entity)
@@ -58,7 +79,7 @@ public class Entity : MonoBehaviour
 		return ID;
 	}
 
-	public void InovkeEvent<E>(Entity sender, E args)
+	public void SendEvent<E>(Entity sender, E args)
 	{
 		EntityManager.instance.InvokeEvent(sender, this, args);
 	}

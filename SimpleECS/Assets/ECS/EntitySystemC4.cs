@@ -4,13 +4,12 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
-public class EntitySystem<C1, C2, C3, C4>: EntitySystem 
+public class EntitySystem<C1, C2, C3, C4>: MonoBehaviour 
 	where C1 : EntityComponent<C1> 
 	where C2 : EntityComponent<C2>
 	where C3 : EntityComponent<C3>
 	where C4 : EntityComponent<C4>
 {
-
 	// TODO Add and Remove component Events
 	class Processor
 	{
@@ -29,8 +28,6 @@ public class EntitySystem<C1, C2, C3, C4>: EntitySystem
 		public C3 c3;
 		public C4 c4;
 	}
-
-	public int PoolCount;
 
 	List<Processor> processor = new List<Processor>();
 	HashSet<int> id = new HashSet<int>();
@@ -52,10 +49,8 @@ public class EntitySystem<C1, C2, C3, C4>: EntitySystem
 			Group<C2>.instance.RemoveComponentCallback += RemoveEntity;
 			Group<C3>.instance.RemoveComponentCallback += RemoveEntity;
 			Group<C4>.instance.RemoveComponentCallback += RemoveEntity;
-
-			SubscribeEvents();
 		}
-
+		OnEnableCallback();
 	}
 
 	void OnDisable()
@@ -74,16 +69,26 @@ public class EntitySystem<C1, C2, C3, C4>: EntitySystem
 			Group<C2>.instance.RemoveComponentCallback -= RemoveEntity;
 			Group<C3>.instance.RemoveComponentCallback -= RemoveEntity;
 			Group<C4>.instance.RemoveComponentCallback -= RemoveEntity;
-
-			UnSubscribeEvents();
 		}
+		OnDisableCallback();
 	}
 
-	public virtual void SubscribeEvents()
+	void Awake()
+	{
+		InitializeSystem();
+	}
+
+	public virtual void InitializeSystem()
 	{}
 
-	public virtual void UnSubscribeEvents()
-	{}
+	Action OnEnableCallback = delegate {};
+	Action OnDisableCallback = delegate {};
+
+	public void AddEvent<E>(EntityEvent<E> callback)
+	{
+		OnEnableCallback += () => EntityManager.instance.AddEvent(callback);
+		OnDisableCallback += () => EntityManager.instance.RemoveEvent(callback);
+	}
 
 
 	void AddEntity(Entity e)
@@ -137,13 +142,13 @@ public class EntitySystem<C1, C2, C3, C4>: EntitySystem
 
 		foreach(var entity in entities)
 		{
+			id.Add(entity.ID);
 			processor.Add(new Processor(entity));
 		}
 	}
 
 	void _ProcessUpdate()
 	{
-		PoolCount = processor.Count;
 		for (int i = 0; i < processor.Count; ++i)
 		{
 			var process = processor[i];
@@ -153,7 +158,6 @@ public class EntitySystem<C1, C2, C3, C4>: EntitySystem
 
 	void _ProcessFixedUpdate()
 	{
-		PoolCount = processor.Count;
 		for (int i = 0; i < processor.Count; ++i)
 		{
 			var process = processor[i];
@@ -176,13 +180,11 @@ public class EntitySystem<C1, C2, C3, C4>: EntitySystem
 		}
 	}
 
-	public void AddEvent<E>(EntityEvent<E> callback)
+	/// <summary>
+	/// Returns how many Entities using this System
+	/// </summary>
+	public int EntityCount
 	{
-		EntityManager.instance.AddEvent(callback);
-	}
-
-	public void RemoveEvent<E>(EntityEvent<E> callback)
-	{
-		EntityManager.instance.RemoveEvent(callback);
+		get {return processor.Count;}
 	}
 }

@@ -1,0 +1,9 @@
+﻿using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+
+[AddComponentMenu("EntitySystem/#SCRIPTNAME#")]
+public class #SCRIPTNAME# : EntitySystem<C1>, IUpdate
+{
+	
+}

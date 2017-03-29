@@ -5,13 +5,11 @@ using System.Collections.Generic;
 [AddComponentMenu("EntitySystem/BulletContact")]
 public class BulletContact : EntitySystem
 {
-
 	public override void InitializeSystem ()
 	{
 		AddEvent<PlayerAttackEvent>(OnPlayerAttack);
 		AddEvent<EnemyAttackEvent>(OnEnemyAttack);
 	}
-
 
 	void OnPlayerAttack(Entity sender, Entity reciever, PlayerAttackEvent args)
 	{

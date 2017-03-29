@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using SimpleECS.Internal;
 
 public abstract class EntityComponent<C> : EntityComponent where C : EntityComponent<C>
 {
@@ -42,10 +43,8 @@ public abstract class EntityComponent<C> : EntityComponent where C : EntityCompo
 		if (_reg)
 			entity[Group<C>.instance.ID] = null;
 	}
-
-
 }
-
+	
 public abstract class EntityComponent : MonoBehaviour
 {
 	[ReadOnly]

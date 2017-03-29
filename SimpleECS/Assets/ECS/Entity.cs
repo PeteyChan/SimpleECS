@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using SimpleECS.Internal;
 
 [DisallowMultipleComponent]
 public class Entity : MonoBehaviour
@@ -83,7 +84,4 @@ public class Entity : MonoBehaviour
 	{
 		EntityManager.instance.InvokeEvent(sender, this, args);
 	}
-
 }
-
-public delegate void EntityEvent<E>(Entity sender, Entity reciever, E args);

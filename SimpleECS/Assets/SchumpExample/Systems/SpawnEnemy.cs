@@ -49,8 +49,11 @@ public class SpawnEnemy : EntitySystem, IUpdate
 		if (!reciever.enabled) return;
 
 		GameObjectPool.Pool(reciever.gameObject);
-		spawned --;
-		if (spawned < 0) spawned = 0;
+		if (reciever.Has<EnemyComponent>())
+		{
+			spawned --;
+			if (spawned < 0) spawned = 0;	
+		}
 	}
 }
 

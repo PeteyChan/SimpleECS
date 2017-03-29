@@ -12,9 +12,12 @@ public class ShakeSystem : EntitySystem<ShakeComponent>, IUpdate
 	public override void InitializeSystem ()
 	{
 		AddEvent<DamageHealthEvent>(OnHealthDamage);
-		AddEvent<DespawnEvent>(OnDespawn);
+		AddEvent<ResetEvent>(OnReset);
 	}
 
+	/// <summary>
+	/// While Updating apply shake formula
+	/// </summary>
 	public override void UpdateSystem (ShakeComponent shake)
 	{
 		shake.currentShakeTime += Time.deltaTime;
@@ -28,14 +31,20 @@ public class ShakeSystem : EntitySystem<ShakeComponent>, IUpdate
 		}
 	}
 
-	void OnDespawn(Entity sender, Entity reciever, DespawnEvent args)
+	/// <summary>
+	/// When object is reset, turn off shake compoennt
+	/// </summary>
+	void OnReset(Entity sender, Entity reciever, ResetEvent args)
 	{
 		var shake = reciever.Get<ShakeComponent>();
 
-		if (shake)
+		if (shake.enabled)
 			shake.enabled = false;
 	}
 
+	/// <summary>
+	/// Enables the shake component when recieving the event
+	/// </summary>
 	void OnHealthDamage(Entity sender, Entity reciever, DamageHealthEvent args)
 	{
 		var shake = reciever.Get<ShakeComponent>();

@@ -2,49 +2,72 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using SimpleECS.Internal;
 
-public abstract class EntitySystem : MonoBehaviour 
+namespace SimpleECS.Internal
 {
+
+	public interface IEntityCount
+	{
+		int GetEntityCount();
+	}
+
+	public abstract class BaseEntitySystem : MonoBehaviour
+	{
+		
+	}
+}
+
+public abstract class EntitySystem : BaseEntitySystem
+{
+	Action OnEnableCallback = delegate {};
+	Action OnDisableCallback = delegate {};
+
 	void Awake()
 	{
+		EntityManager.instance.Systems.Add(this);
 		InitializeSystem();
+		if (this is IUpdate) EntityManager.instance.UpdateCallback += _ProcessUpdate;
+		if (this is IFixedUpdate) EntityManager.instance.FixedUpdateCallback += _ProcessFixedUpdate;
+	}
+
+	void OnDestroy()
+	{
+		EntityManager.instance.Systems.Remove(this);
+		OnEnableCallback = null;
+		OnDisableCallback = null;
+		if (this is IUpdate) EntityManager.instance.UpdateCallback -= _ProcessUpdate;
+		if (this is IFixedUpdate) EntityManager.instance.FixedUpdateCallback -= _ProcessFixedUpdate;
 	}
 
 	void OnEnable()
 	{
-		if (EntityManager.instance != null)
-		{
-			if (this is IUpdate)
-				EntityManager.instance.UpdateCallback += UpdateSystem;
-			if (this is IFixedUpdate)
-				EntityManager.instance.FixedUpdateCallback += FixedUpdateSystem;
-		}
 		OnEnableCallback();
 	}
 
 	void OnDisable()
 	{
-		if (EntityManager.instance != null)
-		{
-			if (this is IUpdate)
-				EntityManager.instance.UpdateCallback -= UpdateSystem;
-			if (this is IFixedUpdate)
-				EntityManager.instance.FixedUpdateCallback -= FixedUpdateSystem;
-		}
 		OnDisableCallback();
 	}
+
+	void _ProcessUpdate()
+	{
+		if (enabled) UpdateSystem();
+	}
+
+	void _ProcessFixedUpdate()
+	{
+		if (enabled) FixedUpdateSystem();
+	}
+
+	public virtual void InitializeSystem()
+	{}
 
 	public virtual void UpdateSystem()
 	{}
 
 	public virtual void FixedUpdateSystem()
 	{}
-
-	public virtual void InitializeSystem()
-	{}
-
-	Action OnEnableCallback = delegate {};
-	Action OnDisableCallback = delegate {};
 
 	public void AddEvent<E>(EntityEvent<E> callback)
 	{
@@ -53,62 +76,63 @@ public abstract class EntitySystem : MonoBehaviour
 	}
 }
 
-public abstract class EntitySystem<C> : MonoBehaviour where C : EntityComponent<C>
+public abstract class EntitySystem<C> : BaseEntitySystem, IEntityCount
+	where C : EntityComponent<C>
 {
 	List<C> components;
 
+	Action OnEnableCallback = delegate {};
+	Action OnDisableCallback = delegate {};
+
 	void Awake()
 	{
-		if (EntityManager.instance != null)
-			components = Group<C>.instance.componentList;
+		EntityManager.instance.Systems.Add(this);
+		components = Group<C>.instance.componentList;
 		InitializeSystem();
+		if (this is IUpdate) EntityManager.instance.UpdateCallback += _ProcessUpdate;
+		if (this is IFixedUpdate) EntityManager.instance.FixedUpdateCallback += _ProcessFixedUpdate;
+	}
+
+	void OnDestroy()
+	{
+		EntityManager.instance.Systems.Remove(this);
+		OnEnableCallback = null;
+		OnDisableCallback = null;
+		if (this is IUpdate) EntityManager.instance.UpdateCallback -= _ProcessUpdate;
+		if (this is IFixedUpdate) EntityManager.instance.FixedUpdateCallback -= _ProcessFixedUpdate;
 	}
 
 	void OnEnable()
 	{
-		if (EntityManager.instance != null)
-		{
-			if (this is IUpdate)
-				EntityManager.instance.UpdateCallback += _ProcessUpdate;
-			if (this is IFixedUpdate)
-				EntityManager.instance.FixedUpdateCallback += _ProcessFixedUpdate;
-		}
 		OnEnableCallback();
 	}
 
 	void OnDisable()
 	{
-		if (EntityManager.instance != null)
-		{
-			if (this is IUpdate)
-				EntityManager.instance.UpdateCallback -= _ProcessUpdate;
-			if (this is IFixedUpdate)
-				EntityManager.instance.FixedUpdateCallback -= _ProcessFixedUpdate;
-		}
 		OnDisableCallback();
 	}
 
 	void _ProcessUpdate()
 	{
-		for (int i = 0; i < components.Count; ++i)
+		if (enabled)
 		{
-			UpdateSystem(components[i]);
+			for (int i = 0; i < components.Count; ++i)
+			{
+				UpdateSystem(components[i]);
+			}
 		}
 	}
 
 	void _ProcessFixedUpdate()
 	{
-		for (int i = 0; i < components.Count; ++i)
+		if (enabled)
 		{
-			FixedUpdateSystem(components[i]);
+			for (int i = 0; i < components.Count; ++i)
+			{
+				FixedUpdateSystem(components[i]);
+			}
 		}
 	}
-
-	public virtual void UpdateSystem(C component)
-	{}
-
-	public virtual void FixedUpdateSystem(C component)
-	{}
 
 	/// <summary>
 	/// Allows manual processing of compoennts
@@ -121,24 +145,28 @@ public abstract class EntitySystem<C> : MonoBehaviour where C : EntityComponent<
 		}
 	}
 
-	/// <summary>
-	/// Returns how many Entities using this System
-	/// </summary>
-	public int EntityCount
-	{
-		get {return components.Count;}
-	}
-
-	public virtual void InitializeSystem()
-	{}
-
-	Action OnEnableCallback = delegate {};
-	Action OnDisableCallback = delegate {};
-
 	public void AddEvent<E>(EntityEvent<E> callback)
 	{
 		OnEnableCallback += () => EntityManager.instance.AddEvent(callback);
 		OnDisableCallback += () => EntityManager.instance.RemoveEvent(callback);
 	}
+
+	/// <summary>
+	/// Returns how many Entities using this System
+	/// </summary>
+	public int GetEntityCount ()
+	{
+		return components.Count;
+	}
+
+	public virtual void InitializeSystem()
+	{}
+
+	public virtual void UpdateSystem(C component)
+	{}
+
+	public virtual void FixedUpdateSystem(C component)
+	{}
+
 }
 

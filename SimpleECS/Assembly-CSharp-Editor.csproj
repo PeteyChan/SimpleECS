@@ -49,7 +49,6 @@
      <Compile Include="Assets\ECS\Attributes\Editor\ReadOnlyPropertyDrawer.cs" />
      <None Include="Assets\ECS\ScriptTemplates\52-EntitySystem-NewEntitySystem.cs.txt" />
      <None Include="Assets\ECS\ScriptTemplates\51-EntityComponent-NewEntityComponent.cs.txt" />
-     <None Include="Assets\SchumpExample\Setup Guide.txt" />
  <Reference Include="UnityEditor.Advertisements">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Advertisements/Editor/UnityEditor.Advertisements.dll</HintPath>
  </Reference>

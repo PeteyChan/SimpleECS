@@ -6,7 +6,6 @@ using SimpleECS.Internal;
 
 namespace SimpleECS.Internal
 {
-
 	public interface IEntityCount
 	{
 		int GetEntityCount();
@@ -40,24 +39,27 @@ public abstract class EntitySystem : BaseEntitySystem
 		if (this is IFixedUpdate) EntityManager.instance.FixedUpdateCallback -= _ProcessFixedUpdate;
 	}
 
+	bool _active;
 	void OnEnable()
 	{
+		_active = true;
 		OnEnableCallback();
 	}
 
 	void OnDisable()
 	{
+		_active = false;
 		OnDisableCallback();
 	}
 
 	void _ProcessUpdate()
 	{
-		if (enabled) UpdateSystem();
+		if (_active) UpdateSystem();
 	}
 
 	void _ProcessFixedUpdate()
 	{
-		if (enabled) FixedUpdateSystem();
+		if (_active) FixedUpdateSystem();
 	}
 
 	public virtual void InitializeSystem()
@@ -102,19 +104,23 @@ public abstract class EntitySystem<C> : BaseEntitySystem, IEntityCount
 		if (this is IFixedUpdate) EntityManager.instance.FixedUpdateCallback -= _ProcessFixedUpdate;
 	}
 
+	bool _active;
+
 	void OnEnable()
 	{
+		_active = true;
 		OnEnableCallback();
 	}
 
 	void OnDisable()
 	{
+		_active = false;
 		OnDisableCallback();
 	}
 
 	void _ProcessUpdate()
 	{
-		if (enabled)
+		if (_active)
 		{
 			for (int i = 0; i < components.Count; ++i)
 			{
@@ -125,7 +131,7 @@ public abstract class EntitySystem<C> : BaseEntitySystem, IEntityCount
 
 	void _ProcessFixedUpdate()
 	{
-		if (enabled)
+		if (_active)
 		{
 			for (int i = 0; i < components.Count; ++i)
 			{

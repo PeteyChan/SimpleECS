@@ -19,8 +19,14 @@ public class Entity : MonoBehaviour
 	void Awake()
 	{
 		if (EntityManager.instance == null) return;
+		EntityManager.instance.totalEntityCount ++;
 		id = EntityManager.instance.GetID;
 		componentLookup = new EntityComponent[EntityManager.instance.GetComponentCount()];
+	}
+
+	void OnDestroy()
+	{
+		EntityManager.instance.totalEntityCount --;
 	}
 
 	public EntityComponent this[int key]
@@ -43,9 +49,8 @@ public class Entity : MonoBehaviour
 	public bool HasEnabled<C>() where C : EntityComponent<C>
 	{
 		var c = componentLookup[Group<C>.instance.ID];
-		if (c == null)
-			return false;
-		return c.enabled;
+		if (c) return c.enabled;
+		return false;
 	}
 
 	public C Get<C>() where C : EntityComponent<C>
@@ -66,6 +71,11 @@ public class Entity : MonoBehaviour
 		var c = Get<C>();
 		if (c != null)
 			Destroy(c);
+	}
+
+	public void Destroy()
+	{
+		Destroy(gameObject);
 	}
 
 	public override bool Equals (object other)

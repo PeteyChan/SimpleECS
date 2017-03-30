@@ -15,8 +15,12 @@ namespace SimpleECS.Internal
 
 	public class EntityManager : MonoBehaviour
 	{
+		public bool dontDestroyOnLoad = true;
 		public static EntityManager instance;
 
+		[HideInInspector]
+		public int totalEntityCount;
+		[HideInInspector]
 		public List<BaseEntitySystem> Systems = new List<BaseEntitySystem>();
 
 		int ComponentCount = -1;
@@ -26,13 +30,17 @@ namespace SimpleECS.Internal
 
 		public Action UpdateCallback = delegate {};
 		public Action FixedUpdateCallback = delegate {};
-			
+
+		bool reg;
 		void Awake()
 		{
-			DontDestroyOnLoad(this);
-
 			if (instance == null)
+			{
+				reg = true;
 				instance = this;
+				if (dontDestroyOnLoad)
+					DontDestroyOnLoad(this);
+			}
 			else DestroyImmediate(this);
 		}
 
@@ -93,7 +101,10 @@ namespace SimpleECS.Internal
 
 		void OnDestroy()	// clean up all entity components to avoid mass null exceptions
 		{
+			if (!reg) return;
+
 			UpdateCallback = null;
+			FixedUpdateCallback = null;
 
 			var Entities = FindObjectsOfType<Entity>();
 			var EntitySystems = FindObjectsOfType<EntitySystem>();
@@ -227,21 +238,55 @@ namespace SimpleECS.Internal
 		{
 			if (Application.isPlaying)
 			{
+				EditorGUILayout.TextArea("", GUI.skin.horizontalSlider);
+
+				EditorGUILayout.LabelField(string.Format("Total Entities : {0}", manager.totalEntityCount));
+
+				EditorGUILayout.TextArea("", GUI.skin.horizontalSlider);
 				int count = 1;
 				foreach(var system in manager.Systems)
 				{
 					if (system is IEntityCount)
 					{
-						EditorGUILayout.LabelField(string.Format("{3} : {0} : {1} : {2} Entities ", system.GetType(), GetEnabled(system), (system as IEntityCount).GetEntityCount(), count));		
+						if (system.enabled && system.gameObject.activeInHierarchy)
+						{
+							EditorGUILayout.BeginHorizontal();
+								int eCount = (system as IEntityCount).GetEntityCount();
+								EditorGUILayout.LabelField(string.Format("{0} : {1}", count, system.GetType()));
+								EditorGUILayout.LabelField(string.Format("| {0} Entities", eCount), GUILayout.MaxWidth(128f));
+							EditorGUILayout.EndHorizontal();
+						}
+						else
+						{
+							EditorGUILayout.BeginHorizontal();
+								EditorGUILayout.LabelField(string.Format("{0} : {1}", count, system.GetType()));
+								EditorGUILayout.LabelField("| Disabled" , GUILayout.MaxWidth(128f));
+							EditorGUILayout.EndHorizontal();
+						}
 					}
 					else
 					{
-						EditorGUILayout.LabelField(string.Format("{2} : {0} : {1} ", system.GetType(), GetEnabled(system), count));	
+						if (system.enabled && system.gameObject.activeInHierarchy)
+						{
+							EditorGUILayout.LabelField(string.Format("{0} : {1}", count, system.GetType()));	
+						}
+						else
+						{
+							EditorGUILayout.BeginHorizontal();
+							EditorGUILayout.LabelField(string.Format("{0} : {1}", count, system.GetType()));
+							EditorGUILayout.LabelField("| Disabled" , GUILayout.MaxWidth(128f));
+							EditorGUILayout.EndHorizontal();	
+						}
 					}
 					count ++;
 				}
+				EditorGUILayout.TextArea("", GUI.skin.horizontalSlider);
+				EditorUtility.SetDirty(target);
 			}
-			EditorUtility.SetDirty(target);
+			else
+			{
+				DrawDefaultInspector();
+			}
 		}
 
 		string GetEnabled(BaseEntitySystem system)

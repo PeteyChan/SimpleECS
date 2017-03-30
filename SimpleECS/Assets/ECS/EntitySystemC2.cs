@@ -50,8 +50,10 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount
 		if (this is IFixedUpdate) EntityManager.instance.FixedUpdateCallback -= _ProcessFixedUpdate;
 	}
 
+	bool _active;
 	void OnEnable()
 	{
+		_active = true;
 		if (EntityManager.instance != null)
 		{
 			SetUP();
@@ -69,6 +71,7 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount
 
 	void OnDisable()
 	{
+		_active = false;
 		if (EntityManager.instance != null)
 		{
 			Group<C1>.instance.AddComponentCallback -= AddEntity;
@@ -148,7 +151,7 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount
 
 	void _ProcessUpdate()
 	{
-		if (enabled)
+		if (_active)
 		{
 			for (int i = 0; i < processor.Count; ++i)
 			{
@@ -160,7 +163,7 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount
 
 	void _ProcessFixedUpdate()
 	{
-		if (enabled)
+		if (_active)
 		{
 			for (int i = 0; i < processor.Count; ++i)
 			{

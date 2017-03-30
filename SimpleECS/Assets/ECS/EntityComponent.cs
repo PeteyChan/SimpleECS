@@ -5,16 +5,22 @@ using SimpleECS.Internal;
 
 public abstract class EntityComponent<C> : EntityComponent where C : EntityComponent<C>
 {
+	ComponentHolder holder = new ComponentHolder();
+
+	int _id;
 	bool _reg;
 	void Awake()
 	{
+		_id = Group<C>.instance.ID;
 		entity = GetComponentInParent<Entity>();
 		if (entity == null)
 			entity = gameObject.AddComponent<Entity>();
 
-		if (entity[Group<C>.instance.ID] == null)
+		if (entity[_id].component == null)
 		{
-			entity[Group<C>.instance.ID] = this;
+			holder.component = this;
+			holder.has = true;
+			entity[_id] = holder;
 			_reg = true;
 		}
 		else
@@ -27,21 +33,31 @@ public abstract class EntityComponent<C> : EntityComponent where C : EntityCompo
 	void OnEnable()
 	{
 		if (_reg)
+		{
+			holder.enabled = true;
+			entity[_id] = holder;
 			Group<C>.instance.AddComponent((C)this);
+		}
 	}
 
 	void OnDisable()
 	{
 		if (_reg)
 		{
-			Group<C>.instance.RemoveComponent((C)this);	
+			holder.enabled = false;
+			entity[_id] = holder;
+			Group<C>.instance.RemoveComponent((C)this);
 		}
 	}
 
 	void OnDestroy()
 	{
 		if (_reg)
-			entity[Group<C>.instance.ID] = null;
+		{
+			holder.component = null;
+			holder.has = false;
+			entity[_id] = holder;
+		}
 	}
 }
 	

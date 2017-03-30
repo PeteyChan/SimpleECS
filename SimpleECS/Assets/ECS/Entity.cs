@@ -13,15 +13,15 @@ public class Entity : MonoBehaviour
 	{
 		get {return id;}
 	}
-
-	EntityComponent[] componentLookup;
+		
+	ComponentHolder[] componentLookup;
 
 	void Awake()
 	{
 		if (EntityManager.instance == null) return;
 		EntityManager.instance.totalEntityCount ++;
 		id = EntityManager.instance.GetID;
-		componentLookup = new EntityComponent[EntityManager.instance.GetComponentCount()];
+		componentLookup = new ComponentHolder[EntityManager.instance.GetComponentCount()];
 	}
 
 	void OnDestroy()
@@ -29,7 +29,7 @@ public class Entity : MonoBehaviour
 		EntityManager.instance.totalEntityCount --;
 	}
 
-	public EntityComponent this[int key]
+	public ComponentHolder this[int key]
 	{
 		get
 		{
@@ -43,19 +43,17 @@ public class Entity : MonoBehaviour
 
 	public bool Has<C>() where C : EntityComponent<C>
 	{
-		return componentLookup[Group<C>.instance.ID] != null;
+		return componentLookup[Group<C>.instance.ID].has;
 	}
 
 	public bool HasEnabled<C>() where C : EntityComponent<C>
 	{
-		var c = componentLookup[Group<C>.instance.ID];
-		if (c) return c.enabled;
-		return false;
+		return componentLookup[Group<C>.instance.ID].enabled;
 	}
 
 	public C Get<C>() where C : EntityComponent<C>
 	{
-		return (C)componentLookup[Group<C>.instance.ID];
+		return (C)componentLookup[Group<C>.instance.ID].component;
 	}
 
 	public C GetOrAdd<C>() where C : EntityComponent<C>
@@ -93,5 +91,15 @@ public class Entity : MonoBehaviour
 	public void SendEvent<E>(Entity sender, E args)
 	{
 		EntityManager.instance.InvokeEvent(sender, this, args);
+	}
+}
+
+namespace SimpleECS.Internal
+{
+	public struct ComponentHolder
+	{
+		public bool has;
+		public bool enabled;
+		public EntityComponent component;
 	}
 }

@@ -9,36 +9,37 @@ using UnityEditor;
 public interface IUpdate{};
 public interface IFixedUpdate{};
 
-namespace SimpleECS.Internal
+namespace SimpleECS.Internal	// putting it in this name space to clean up Intellisense and hide unnecessary classes
 {
 	public delegate void EntityEvent<E>(Entity sender, Entity reciever, E args);
 
-	public class EntityManager : MonoBehaviour
+	public sealed class EntityManager : MonoBehaviour
 	{
+		public static EntityManager instance; 	// yes it's singleton pattern
+
 		public bool dontDestroyOnLoad = true;
-		public static EntityManager instance;
 
 		[HideInInspector]
-		public int totalEntityCount;
-		[HideInInspector]
-		public List<BaseEntitySystem> Systems = new List<BaseEntitySystem>();
+		public int totalEntityCount; 	// this and the systems list below are only used for the custom inspector nothing else
+		[HideInInspector]				// entity count is updated by the entity on awake
+		public List<BaseEntitySystem> Systems = new List<BaseEntitySystem>();	// systems is added to by the system on awake
 
-		int ComponentCount = -1;
-		Dictionary<System.Type, int> componentIDLookup = new Dictionary<System.Type, int>();
-		Dictionary<Type, Group> groupLookup = new Dictionary<Type, Group>(); 
-		Dictionary<int , object> entityEventLookup = new Dictionary<int, object>();	// stored here so it's cleaned up with this class
+		int ComponentCount = -1; 	// Cache of how many components are in the Assembly
+		Dictionary<System.Type, int> componentIDLookup = new Dictionary<System.Type, int>();	// Lookup table for component ID's
+		Dictionary<Type, Group> groupLookup = new Dictionary<Type, Group>(); 					// Lookup table for Groups, stored here so they are cleaned up with this class on destroy
+		Dictionary<int , object> entityEventLookup = new Dictionary<int, object>();				// Lookup table for Events, same reason as above
 
-		public Action UpdateCallback = delegate {};
-		public Action FixedUpdateCallback = delegate {};
+		public Action UpdateCallback = delegate {};			// this is the actual update callback, Systems just register thier Update calls to this
+		public Action FixedUpdateCallback = delegate {};	// same as above except with fixed update
 
-		bool reg;
+		bool reg;		// flag to notify that this is the Entity Manager being used, stops the Destroy function being called if that's not the case
 		void Awake()
 		{
-			if (instance == null)
+			if (instance == null)	// singleton pattern, thought about using lazy load, but had to write too much boiler plate and decided this was simpler
 			{
 				reg = true;
 				instance = this;
-				if (dontDestroyOnLoad)
+				if (dontDestroyOnLoad)		// besides this becomes less elegant with lazy load
 					DontDestroyOnLoad(this);
 			}
 			else DestroyImmediate(this);
@@ -46,7 +47,7 @@ namespace SimpleECS.Internal
 
 		void Update()
 		{
-			UpdateCallback();
+			UpdateCallback();	
 		}
 
 		void FixedUpdate()
@@ -54,22 +55,22 @@ namespace SimpleECS.Internal
 			FixedUpdateCallback();
 		}
 
-		int id;
-		public int GetID
+		int id; // this value is only used here
+		public int GetID	// small simple function to doll out Entity ID's
 		{
 			get {return ++id;}
 		}
 
-		public int GetComponentCount()
+		public int GetComponentCount()	// Returns Total amount of Entity Components in Assembly
 		{
-			if (ComponentCount == -1)
+			if (ComponentCount == -1)	
 			{
-				var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+				var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();	// populates component IDs while it's at it, this probably should go in it's own method but I'll leave if for now
 				foreach (var assembly in assemblies)
 				{
 					foreach(var type in assembly.GetTypes())
 					{
-						if (type.IsSubclassOf(typeof(EntityComponent)) && !type.IsAbstract)	//TODO Get types and put them in the lookup table, then make sure Groups have their ID's set
+						if (type.IsSubclassOf(typeof(EntityComponent)) && !type.IsAbstract)
 						{
 							componentIDLookup.Add(type, componentIDLookup.Count);
 						}
@@ -80,7 +81,7 @@ namespace SimpleECS.Internal
 			return ComponentCount;
 		}
 
-		public int GetEntityComponentID<C>()
+		public int GetEntityComponentID<C>() // Retrieve Component ID's from lookup	
 		{
 			int id;
 			if (componentIDLookup.TryGetValue(typeof(C), out id))
@@ -88,10 +89,10 @@ namespace SimpleECS.Internal
 			return -1;
 		}
 
-		public Group<C> GetGroup<C>() where C : EntityComponent<C>
+		public Group<C> GetGroup<C>() where C : EntityComponent<C>	// Returns an instance of a group
 		{
 			Group g;
-			if (groupLookup.TryGetValue(typeof(C), out g))
+			if (groupLookup.TryGetValue(typeof(C), out g))	// looking back at this I could just Instantiate them and dump them in a list since this function only gets called once
 				return (Group<C>)g;
 
 			Group<C> newG = new Group<C>(GetEntityComponentID<C>());
@@ -99,11 +100,11 @@ namespace SimpleECS.Internal
 			return newG;
 		}
 
-		void OnDestroy()	// clean up all entity components to avoid mass null exceptions
+		void OnDestroy()	// clean up all entity components to avoid mass null exceptions clogging up the inspector
 		{
-			if (!reg) return;
+			if (!reg) return;	// only if it's been registered
 
-			UpdateCallback = null;
+			UpdateCallback = null;	// clear out delegates to avoid keeping references alive
 			FixedUpdateCallback = null;
 
 			var Entities = FindObjectsOfType<Entity>();
@@ -123,7 +124,7 @@ namespace SimpleECS.Internal
 		/// Entity Events
 		/// </summary>
 
-		public class EventHolder<E>
+		public class EventHolder<E>	// helper class to store Event delegates
 		{
 			public EntityEvent<E> entityEvent = delegate{};
 		}
@@ -133,7 +134,7 @@ namespace SimpleECS.Internal
 			protected static int id;
 		}
 
-		public class EventID<C>:EventID
+		public class EventID<C>:EventID	// cheap trick to lookup Events using Int instead of Type
 		{
 			static bool hasID;
 			static int _id;
@@ -149,7 +150,7 @@ namespace SimpleECS.Internal
 			}
 		}
 
-		public void AddEvent<E>(EntityEvent<E> callback)
+		public void AddEvent<E>(EntityEvent<E> callback) // Adds an Event Listener
 		{
 			object e;
 			if (entityEventLookup.TryGetValue(EventID<E>.ID, out e))
@@ -164,7 +165,7 @@ namespace SimpleECS.Internal
 			entityEventLookup.Add(EventID<E>.ID, newEvent);
 		}
 
-		public void RemoveEvent<E>(EntityEvent<E> callback)
+		public void RemoveEvent<E>(EntityEvent<E> callback)	// Removes Event Listener
 		{
 			object e;
 			if (entityEventLookup.TryGetValue(EventID<E>.ID, out e))
@@ -173,14 +174,18 @@ namespace SimpleECS.Internal
 			}
 		}
 
-		public void InvokeEvent<E>(Entity sender, Entity reciever, E args)
+		public void InvokeEvent<E>(Entity sender, Entity reciever, E args)	// Calls Event with Arguments
 		{
 			object e;
 			if (entityEventLookup.TryGetValue(EventID<E>.ID, out e))
 				((EventHolder<E>)e).entityEvent(sender, reciever, args);
 		}
 	}
-		
+
+
+
+
+
 	public class Group{}
 	public class Group<C>: Group where C : EntityComponent<C>
 	{
@@ -190,37 +195,40 @@ namespace SimpleECS.Internal
 		}
 
 		static Group<C> _i;
-		public static Group<C> instance
+		public static Group<C> instance	// Yes this is singleton pattern. Fastest way I could find to get Component IDs
 		{
 			get 
 			{
 				if (_i == null)
 				{
-					_i = EntityManager.instance.GetGroup<C>();
+					_i = EntityManager.instance.GetGroup<C>();	// Instances are actually created by Entity Manager and dies with it
 				}
 				return _i;
 			}
 		}
 
-		public List<C> componentList = new List<C>();
+		public List<C> componentList = new List<C>();	// current list of all enabled components of type
 
-		public System.Action<Entity> AddComponentCallback = delegate {};
-		public System.Action<Entity> RemoveComponentCallback = delegate {};
+		public System.Action<Entity> EnabledComponentCallback = delegate {};	// gets called when a component is enabled
+		public System.Action<Entity> DisabledComponentCallback = delegate {};	// gets called when a component is disabled
 
-		public void AddComponent(C c)
+		public void EnableComponet(C c)	// Called by the component when enabled
 		{
 			componentList.Add(c);
-			AddComponentCallback(c.entity);
-		}
+			EnabledComponentCallback(c.entity);		// using entity instead of components otherwise I'd have to write methods for each component in the System instead of just one for the entity
+		}											// using Components saves me only 1 has and get operation so it's not worth it
 
 		public void RemoveComponent(C c)
 		{
-			componentList.Remove(c);
-			RemoveComponentCallback(c.entity);
+			componentList.Remove(c);	// as far as I'm aware removing from a list is a O(n) operation but using a Hashset means slow iteration loops. Maybe I'll use arrays in the future
+			DisabledComponentCallback(c.entity);
 		}
 
-		public int ID;
+		public int ID;	// this makes it trivial to find the Component ID's
 	}
+
+
+
 
 
 	#if UNITY_EDITOR

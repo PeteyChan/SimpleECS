@@ -17,4 +17,11 @@ public class MoveBulletSystem : EntitySystem<BulletComponent, RigidbodyComponent
 		if (bullet.timeAlive > bulletLife)
 			Destroy(bullet.entity.gameObject);
 	}
+
+
+	[ContextMenu("Disable")]
+	void Disable()
+	{
+		this.enabled = false;
+	}
 }

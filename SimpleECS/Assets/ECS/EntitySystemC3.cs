@@ -56,6 +56,10 @@ public class EntitySystem<C1, C2, C3>: BaseEntitySystem , IEntityCount
 		if (this is IFixedUpdate) EntityManager.instance.FixedUpdateCallback -= _ProcessFixedUpdate;
 	}
 
+	/// <summary>
+	/// Method is Called Only Once during System Instantiation.
+	/// This is where you should add all AddEvent Code
+	/// </summary>
 	public virtual void InitializeSystem()
 	{}
 
@@ -65,6 +69,10 @@ public class EntitySystem<C1, C2, C3>: BaseEntitySystem , IEntityCount
 	public virtual void FixedUpdateSystem(C1 c1, C2 c2, C3 c3)
 	{}
 
+	/// <summary>
+	/// Subscribes Callback to the Event Handler.
+	/// Events are automatically added and removed when System is enabled or disabled
+	/// </summary>
 	public void AddEvent<E>(EntityEvent<E> callback)
 	{
 		OnEnableCallback += () => EntityManager.instance.AddEvent(callback);
@@ -80,13 +88,13 @@ public class EntitySystem<C1, C2, C3>: BaseEntitySystem , IEntityCount
 		{
 			SetUP();
 
-			Group<C1>.instance.AddComponentCallback += AddEntity;
-			Group<C2>.instance.AddComponentCallback += AddEntity;
-			Group<C3>.instance.AddComponentCallback += AddEntity;
+			Group<C1>.instance.EnabledComponentCallback += AddEntity;
+			Group<C2>.instance.EnabledComponentCallback += AddEntity;
+			Group<C3>.instance.EnabledComponentCallback += AddEntity;
 
-			Group<C1>.instance.RemoveComponentCallback += RemoveEntity;
-			Group<C2>.instance.RemoveComponentCallback += RemoveEntity;
-			Group<C3>.instance.RemoveComponentCallback += RemoveEntity;
+			Group<C1>.instance.DisabledComponentCallback += RemoveEntity;
+			Group<C2>.instance.DisabledComponentCallback += RemoveEntity;
+			Group<C3>.instance.DisabledComponentCallback += RemoveEntity;
 
 		}
 
@@ -98,13 +106,13 @@ public class EntitySystem<C1, C2, C3>: BaseEntitySystem , IEntityCount
 		_active = false;
 		if (EntityManager.instance != null)
 		{
-			Group<C1>.instance.AddComponentCallback -= AddEntity;
-			Group<C2>.instance.AddComponentCallback -= AddEntity;
-			Group<C3>.instance.AddComponentCallback -= AddEntity;
+			Group<C1>.instance.EnabledComponentCallback -= AddEntity;
+			Group<C2>.instance.EnabledComponentCallback -= AddEntity;
+			Group<C3>.instance.EnabledComponentCallback -= AddEntity;
 
-			Group<C1>.instance.RemoveComponentCallback -= RemoveEntity;
-			Group<C2>.instance.RemoveComponentCallback -= RemoveEntity;
-			Group<C3>.instance.RemoveComponentCallback -= RemoveEntity;
+			Group<C1>.instance.DisabledComponentCallback -= RemoveEntity;
+			Group<C2>.instance.DisabledComponentCallback -= RemoveEntity;
+			Group<C3>.instance.DisabledComponentCallback -= RemoveEntity;
 
 		}
 

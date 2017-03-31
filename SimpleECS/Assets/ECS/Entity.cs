@@ -5,17 +5,22 @@ using System;
 using SimpleECS.Internal;
 
 [DisallowMultipleComponent]
-public class Entity : MonoBehaviour
+public sealed class Entity : MonoBehaviour
 {
+	/// <summary>
+	/// Unique Entity identifier, used when adding and removing Entities from Systems
+	/// </summary>
 	[ReadOnly, SerializeField]
 	int id;
 	public int ID
 	{
 		get {return id;}
 	}
-		
-	ComponentHolder[] componentLookup;
 
+	ComponentHolder[] componentLookup;	// As far as I'm aware Arrays use more memory than Dictionary but are ALOT faster
+										// this makes my Get<Component> calls faster than the Unity Implementation
+										// Index to specific Components are found in the Group<C>.instance.ID
+	// Entity Setup						// The reason for getting the ID's via Singleton is that it's very fast.
 	void Awake()
 	{
 		if (EntityManager.instance == null) return;
@@ -28,8 +33,8 @@ public class Entity : MonoBehaviour
 	{
 		EntityManager.instance.totalEntityCount --;
 	}
-
-	public ComponentHolder this[int key]
+		
+	public ComponentHolder this[int key]	// Access Components based on their ComponentID
 	{
 		get
 		{
@@ -40,22 +45,34 @@ public class Entity : MonoBehaviour
 			componentLookup[key] = value;
 		}
 	}
-
+		
+	/// <summary>
+	/// Returns true if entity contains component
+	/// </summary>
 	public bool Has<C>() where C : EntityComponent<C>
 	{
 		return componentLookup[Group<C>.instance.ID].has;
 	}
 
+	/// <summary>
+	/// Returns true if entity contains component and is enabled
+	/// </summary>
 	public bool HasEnabled<C>() where C : EntityComponent<C>
 	{
 		return componentLookup[Group<C>.instance.ID].enabled;
 	}
 
+	/// <summary>
+	/// Returns Component if in variable, returns false 
+	/// </summary>
 	public C Get<C>() where C : EntityComponent<C>
 	{
 		return (C)componentLookup[Group<C>.instance.ID].component;
 	}
 
+	/// <summary>
+	/// Returns Component or Adds and returns Component if None Found.
+	/// </summary>
 	public C GetOrAdd<C>() where C : EntityComponent<C>
 	{
 		var c = Get<C>();
@@ -64,6 +81,9 @@ public class Entity : MonoBehaviour
 		return c;
 	}
 
+	/// <summary>
+	/// Removes Component if found on Entity
+	/// </summary>
 	public void Remove<C>() where C : EntityComponent<C>
 	{
 		var c = Get<C>();
@@ -71,6 +91,9 @@ public class Entity : MonoBehaviour
 			Destroy(c);
 	}
 
+	/// <summary>
+	/// Destroys entity and its gameobject
+	/// </summary>
 	public void Destroy()
 	{
 		Destroy(gameObject);
@@ -82,12 +105,15 @@ public class Entity : MonoBehaviour
 			return ((Entity)other).ID == ID;
 		return false;
 	}
-
+		
 	public override int GetHashCode ()
 	{
-		return ID;
+		return ID; // since ID's are unique this is a no brainer
 	}
 
+	/// <summary>
+	/// Calls Events on Entity that Match Argument's Type.
+	/// </summary>
 	public void SendEvent<E>(Entity sender, E args)
 	{
 		EntityManager.instance.InvokeEvent(sender, this, args);
@@ -96,6 +122,9 @@ public class Entity : MonoBehaviour
 
 namespace SimpleECS.Internal
 {
+	/// <summary>
+	/// Small Stuct to make Component lookups fast
+	/// </summary>
 	public struct ComponentHolder
 	{
 		public bool has;

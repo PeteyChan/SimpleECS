@@ -64,15 +64,15 @@ public class EntitySystem<C1, C2, C3, C4>: BaseEntitySystem , IEntityCount
 		{
 			SetUP();
 
-			Group<C1>.instance.AddComponentCallback += AddEntity;
-			Group<C2>.instance.AddComponentCallback += AddEntity;
-			Group<C3>.instance.AddComponentCallback += AddEntity;
-			Group<C4>.instance.AddComponentCallback += AddEntity;
+			Group<C1>.instance.EnabledComponentCallback += AddEntity;
+			Group<C2>.instance.EnabledComponentCallback += AddEntity;
+			Group<C3>.instance.EnabledComponentCallback += AddEntity;
+			Group<C4>.instance.EnabledComponentCallback += AddEntity;
 
-			Group<C1>.instance.RemoveComponentCallback += RemoveEntity;
-			Group<C2>.instance.RemoveComponentCallback += RemoveEntity;
-			Group<C3>.instance.RemoveComponentCallback += RemoveEntity;
-			Group<C4>.instance.RemoveComponentCallback += RemoveEntity;
+			Group<C1>.instance.DisabledComponentCallback += RemoveEntity;
+			Group<C2>.instance.DisabledComponentCallback += RemoveEntity;
+			Group<C3>.instance.DisabledComponentCallback += RemoveEntity;
+			Group<C4>.instance.DisabledComponentCallback += RemoveEntity;
 		}
 		OnEnableCallback();
 	}
@@ -82,26 +82,26 @@ public class EntitySystem<C1, C2, C3, C4>: BaseEntitySystem , IEntityCount
 		_active = false;
 		if (EntityManager.instance != null)
 		{
-			Group<C1>.instance.AddComponentCallback -= AddEntity;
-			Group<C2>.instance.AddComponentCallback -= AddEntity;
-			Group<C3>.instance.AddComponentCallback -= AddEntity;
-			Group<C4>.instance.AddComponentCallback -= AddEntity;
+			Group<C1>.instance.EnabledComponentCallback -= AddEntity;
+			Group<C2>.instance.EnabledComponentCallback -= AddEntity;
+			Group<C3>.instance.EnabledComponentCallback -= AddEntity;
+			Group<C4>.instance.EnabledComponentCallback -= AddEntity;
 
-			Group<C1>.instance.RemoveComponentCallback -= RemoveEntity;
-			Group<C2>.instance.RemoveComponentCallback -= RemoveEntity;
-			Group<C3>.instance.RemoveComponentCallback -= RemoveEntity;
-			Group<C4>.instance.RemoveComponentCallback -= RemoveEntity;
+			Group<C1>.instance.DisabledComponentCallback -= RemoveEntity;
+			Group<C2>.instance.DisabledComponentCallback -= RemoveEntity;
+			Group<C3>.instance.DisabledComponentCallback -= RemoveEntity;
+			Group<C4>.instance.DisabledComponentCallback -= RemoveEntity;
 		}
 		OnDisableCallback();
 	}
 
-
-	public virtual void InitializeSystem()
-	{}
-
 	Action OnEnableCallback = delegate {};
 	Action OnDisableCallback = delegate {};
 
+	/// <summary>
+	/// Subscribes Callback to the Event Handler.
+	/// Events are automatically added and removed when System is enabled or disabled
+	/// </summary>
 	public void AddEvent<E>(EntityEvent<E> callback)
 	{
 		OnEnableCallback += () => EntityManager.instance.AddEvent(callback);
@@ -188,6 +188,14 @@ public class EntitySystem<C1, C2, C3, C4>: BaseEntitySystem , IEntityCount
 			}
 		}
 	}
+
+
+	/// <summary>
+	/// Method is Called Only Once during System Instantiation.
+	/// This is where you should add all AddEvent Code
+	/// </summary>
+	public virtual void InitializeSystem()
+	{}
 
 	public virtual void UpdateSystem(C1 c1, C2 c2, C3 c3, C4 c4)
 	{}

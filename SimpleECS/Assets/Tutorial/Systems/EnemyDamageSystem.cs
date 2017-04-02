@@ -3,10 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 
 [AddComponentMenu("EntitySystem/EnemyDamageSystem")]
-public class EnemyDamageSystem : EntitySystem, IUpdate
+public class EnemyDamageSystem : EntitySystem
 {
 	public override void InitializeSystem ()
 	{
+		isUpdateSystem = true;
 		AddEvent<BulletCollisionEvent>(OnBulletCollisionEvent);
 	}
 

@@ -23,7 +23,11 @@ public sealed class Entity : MonoBehaviour
 	// Entity Setup						// The reason for getting the ID's via Singleton is that it's very fast.
 	void Awake()
 	{
-		if (EntityManager.instance == null) return;
+		if (EntityManager.instance == null)	// Ensure no code is run if no EntityManager
+		{
+			Destroy(gameObject); 
+			return;
+		}
 		EntityManager.instance.totalEntityCount ++;
 		id = EntityManager.instance.GetID;
 		componentLookup = new ComponentHolder[EntityManager.instance.GetComponentCount()];
@@ -31,7 +35,8 @@ public sealed class Entity : MonoBehaviour
 
 	void OnDestroy()
 	{
-		EntityManager.instance.totalEntityCount --;
+		if (EntityManager.instance != null)
+			EntityManager.instance.totalEntityCount --;
 	}
 		
 	public ComponentHolder this[int key]	// Access Components based on their ComponentID
@@ -125,8 +130,14 @@ namespace SimpleECS.Internal
 	/// <summary>
 	/// Small Stuct to make Component lookups fast
 	/// </summary>
+	[System.Serializable]
 	public struct ComponentHolder
 	{
+		public ComponentHolder(bool has, bool enabled, EntityComponent component)
+		{
+			this.has = has; this.enabled = enabled; this.component = component;
+		}
+
 		public bool has;
 		public bool enabled;
 		public EntityComponent component;

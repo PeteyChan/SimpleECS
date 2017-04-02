@@ -1,14 +1,8 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj" RefactoringSettings.EnableRefactorings="True">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\ECS\EntitySystem.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\ECS\Entity.cs">
     <Files>
-      <File FileName="Assets\ECS\EntityManager.cs" Line="188" Column="2" />
-      <File FileName="Assets\ECS\Entity.cs" Line="111" Column="59" />
-      <File FileName="Assets\ECS\EntityComponent.cs" Line="16" Column="3" />
-      <File FileName="Assets\ECS\EntitySystem.cs" Line="139" Column="3" />
-      <File FileName="Assets\ECS\EntitySystemC2.cs" Line="92" Column="16" />
-      <File FileName="Assets\ECS\EntitySystemC3.cs" Line="62" Column="16" />
-      <File FileName="Assets\ECS\EntitySystemC4.cs" Line="190" Column="3" />
+      <File FileName="Assets\ECS\Entity.cs" Line="9" Column="2" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

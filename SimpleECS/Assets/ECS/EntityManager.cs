@@ -6,9 +6,6 @@ using System;
 using UnityEditor;
 #endif
 
-public interface IUpdate{};
-public interface IFixedUpdate{};
-
 namespace SimpleECS.Internal	// putting it in this name space to clean up Intellisense and hide unnecessary classes
 {
 	public delegate void EntityEvent<E>(Entity sender, Entity reciever, E args);
@@ -17,17 +14,17 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 	{
 		public static EntityManager instance; 	// yes it's singleton pattern
 
-		public bool dontDestroyOnLoad = true;
-
 		[HideInInspector]
 		public int totalEntityCount; 	// this and the systems list below are only used for the custom inspector nothing else
 		[HideInInspector]				// entity count is updated by the entity on awake
 		public List<BaseEntitySystem> Systems = new List<BaseEntitySystem>();	// systems is added to by the system on awake
 
 		int ComponentCount = -1; 	// Cache of how many components are in the Assembly
-		Dictionary<System.Type, int> componentIDLookup = new Dictionary<System.Type, int>();	// Lookup table for component ID's
-		Dictionary<Type, Group> groupLookup = new Dictionary<Type, Group>(); 					// Lookup table for Groups, stored here so they are cleaned up with this class on destroy
-		Dictionary<int , object> entityEventLookup = new Dictionary<int, object>();				// Lookup table for Events, same reason as above
+
+		public Dictionary<System.Type, int> componentIDLookup = new Dictionary<System.Type, int>();	// Lookup table for component ID's
+		public Dictionary<int , object> entityEventLookup = new Dictionary<int, object>();				// Lookup table for Events, same reason as above
+		public Stack<Group> groups = new Stack<Group>(); 		// Keeps track of all groups so I can clear them out when not needed
+
 
 		public Action UpdateCallback = delegate {};			// this is the actual update callback, Systems just register thier Update calls to this
 		public Action FixedUpdateCallback = delegate {};	// same as above except with fixed update
@@ -39,8 +36,7 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			{
 				reg = true;
 				instance = this;
-				if (dontDestroyOnLoad)		// besides this becomes less elegant with lazy load
-					DontDestroyOnLoad(this);
+				DontDestroyOnLoad(this);
 			}
 			else DestroyImmediate(this);
 		}
@@ -89,16 +85,57 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			return -1;
 		}
 
-		public Group<C> GetGroup<C>() where C : EntityComponent<C>	// Returns an instance of a group
-		{
-			Group g;
-			if (groupLookup.TryGetValue(typeof(C), out g))	// looking back at this I could just Instantiate them and dump them in a list since this function only gets called once
-				return (Group<C>)g;
+		#region GetGroups
 
-			Group<C> newG = new Group<C>(GetEntityComponentID<C>());
-			groupLookup.Add(typeof(C), newG);
-			return newG;
+		public Group<C> GetGroup<C>() where C : EntityComponent<C>	// Returns an instance of a group, gets called during Group Instantiation
+		{
+			Group<C> newGroup = new Group<C>(GetEntityComponentID<C>());
+			groups.Push(newGroup);
+			return newGroup;
 		}
+
+		public Group<C1, C2> GetGroup<C1, C2>() 
+			where C1 : EntityComponent<C1>
+			where C2 : EntityComponent<C2>
+		{
+			Group<C1, C2> newGroup = new Group<C1,C2>();
+			groups.Push(newGroup);
+			return newGroup;
+		}
+
+		public Group<C1, C2, C3> GetGroup<C1, C2, C3>() 
+			where C1 : EntityComponent<C1>
+			where C2 : EntityComponent<C2>
+			where C3 : EntityComponent<C3>
+		{
+			Group<C1, C2, C3> newGroup = new Group<C1,C2,C3>();
+			groups.Push(newGroup);
+			return newGroup;
+		}
+
+		public Group<C1, C2, C3, C4> GetGroup<C1, C2, C3, C4>() 
+			where C1 : EntityComponent<C1>
+			where C2 : EntityComponent<C2>
+			where C3 : EntityComponent<C3>
+			where C4 : EntityComponent<C4>
+		{
+			Group<C1, C2, C3, C4> newGroup = new Group<C1,C2,C3,C4>();
+			groups.Push(newGroup);
+			return newGroup;
+		}
+
+		public Group<C1, C2, C3, C4, C5> GetGroup<C1, C2, C3, C4, C5>() 
+			where C1 : EntityComponent<C1>
+			where C2 : EntityComponent<C2>
+			where C3 : EntityComponent<C3>
+			where C4 : EntityComponent<C4>
+			where C5 : EntityComponent<C5>
+		{
+			Group<C1, C2, C3, C4, C5> newGroup = new Group<C1,C2,C3,C4,C5>();
+			groups.Push(newGroup);
+			return newGroup;
+		}
+		#endregion
 
 		void OnDestroy()	// clean up all entity components to avoid mass null exceptions clogging up the inspector
 		{
@@ -108,13 +145,14 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			FixedUpdateCallback = null;
 
 			var Entities = FindObjectsOfType<Entity>();
-			var EntitySystems = FindObjectsOfType<EntitySystem>();
+			var Systems = FindObjectsOfType<EntitySystem>();
 
 			foreach (var entity in Entities)
 			{
 				DestroyImmediate(entity);
 			}
-			foreach (var system in EntitySystems)
+
+			foreach (var system in Systems)
 			{
 				DestroyImmediate(system);
 			}
@@ -183,51 +221,12 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 	}
 
 
-
-
-
-	public class Group{}
-	public class Group<C>: Group where C : EntityComponent<C>
-	{
-		public Group(int ID)
-		{
-			this.ID = ID;
-		}
-
-		static Group<C> _i;
-		public static Group<C> instance	// Yes this is singleton pattern. Fastest way I could find to get Component IDs
-		{
-			get 
-			{
-				if (_i == null)
-				{
-					_i = EntityManager.instance.GetGroup<C>();	// Instances are actually created by Entity Manager and dies with it
-				}
-				return _i;
-			}
-		}
-
-		public List<C> componentList = new List<C>();	// current list of all enabled components of type
-
-		public System.Action<Entity> EnabledComponentCallback = delegate {};	// gets called when a component is enabled
-		public System.Action<Entity> DisabledComponentCallback = delegate {};	// gets called when a component is disabled
-
-		public void EnableComponet(C c)	// Called by the component when enabled
-		{
-			componentList.Add(c);
-			EnabledComponentCallback(c.entity);		// using entity instead of components otherwise I'd have to write methods for each component in the System instead of just one for the entity
-		}											// using Components saves me only 1 has and get operation so it's not worth it
-
-		public void RemoveComponent(C c)
-		{
-			componentList.Remove(c);	// as far as I'm aware removing from a list is a O(n) operation but using a Hashset means slow iteration loops. Maybe I'll use arrays in the future
-			DisabledComponentCallback(c.entity);
-		}
-
-		public int ID;	// this makes it trivial to find the Component ID's
-	}
-
-
+	 
+	/// 
+	/// 
+	///		ENTITY MANAGER INSPECTOR
+	///
+	///
 
 
 
@@ -249,6 +248,9 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 				EditorGUILayout.TextArea("", GUI.skin.horizontalSlider);
 
 				EditorGUILayout.LabelField(string.Format("Total Entities : {0}", manager.totalEntityCount));
+				EditorGUILayout.LabelField(string.Format("Total Systems : {0}", manager.Systems.Count));
+				EditorGUILayout.LabelField(string.Format("Groups : {0}", manager.groups.Count));
+				EditorGUILayout.LabelField(string.Format("Component Types : {0}", manager.componentIDLookup.Count));
 
 				EditorGUILayout.TextArea("", GUI.skin.horizontalSlider);
 				int count = 1;
@@ -293,7 +295,7 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			}
 			else
 			{
-				DrawDefaultInspector();
+				EditorGUILayout.HelpBox("SimpleECS Manager class, needs to be in scene for SimpleECS to work. Automatically sets itself to 'Don't Destroy on Load' and when Destroyed destroys all Entities and Entity Systems in the scene. When transitioning to a new scene will automatically destroy any duplicate Entity Managers.", MessageType.Info); 
 			}
 		}
 

@@ -11,20 +11,26 @@ public abstract class EntityComponent<C> : EntityComponent where C : EntityCompo
 {
 	ComponentHolder holder = new ComponentHolder(); // A copy the Component Holder on the Entity
 	int _componentID;  	 	// the array index to this component in the entity component lookup
-	bool _reg; 				// registration flag, ensures that the component does nothing if  
+	bool _isRegistered; 	// registration flag, ensures that the component does nothing if not registered  
 	void Awake()
 	{
+		if (EntityManager.instance == null)
+		{
+			Destroy(this);
+			return;
+		}
+
 		_componentID = Group<C>.instance.ID;
 		entity = GetComponentInParent<Entity>();   		// traverse the heirarchy for Entity
 		if (entity == null)
 			entity = gameObject.AddComponent<Entity>();	// If none found create a new one
 
-		if (!entity[_componentID].has)							// If entity currently doesn't have this component
+		if (!entity[_componentID].has)					// If entity currently doesn't have this component
 		{
-			holder.component = this;					// Add this component to Entity
 			holder.has = true;
-			entity[_componentID] = holder;
-			_reg = true;								// And register that the Entity has been added
+			holder.component =  this;
+			entity[_componentID] = holder;				// set entity component to this
+			_isRegistered = true;						// set that the component has been registered with Entity
 		}
 		else
 		{
@@ -35,30 +41,30 @@ public abstract class EntityComponent<C> : EntityComponent where C : EntityCompo
 
 	void OnEnable()
 	{
-		if (_reg)										// Only Run code if this component has been registered to Entity
+		if (_isRegistered)								// Only Run code if this component has been registered to Entity
 		{
 			holder.enabled = true;
-			entity[_componentID] = holder;						// Holder needs to be reassigned since it's a struct
-			Group<C>.instance.EnableComponet((C)this);	// This Callback Keeps the Systems Up-To-Date
+			entity[_componentID] = holder;				// Holder needs to be reassigned since it's a struct
+			Group<C>.instance.EnableComponent((C)this);	// This Callback Keeps the Systems Up-To-Date
 		}
 	}
 
 	void OnDisable()
 	{
-		if (_reg)
+		if (_isRegistered)
 		{
 			holder.enabled = false;
 			entity[_componentID] = holder;
-			Group<C>.instance.RemoveComponent((C)this);
+			Group<C>.instance.DisableComponent((C)this);
 		}
 	}
 
 	void OnDestroy()
 	{
-		if (_reg)
+		if (_isRegistered)
 		{
-			holder.component = null;
 			holder.has = false;
+			holder.component = null;
 			entity[_componentID] = holder;
 		}
 	}

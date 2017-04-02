@@ -5,26 +5,27 @@ using System.Collections;
 using System.Collections.Generic;
 using SimpleECS.Internal;
 
-public class EntitySystem<C1, C2, C3>: BaseEntitySystem , IEntityCount	// EntitySystemC3 and above are the same as this class, just with more Generics
+public class EntitySystem<C1, C2, C3, C4, C5>: BaseEntitySystem , IEntityCount	// EntitySystemC3 and above are the same as this class, just with more Generics
 	where C1 : EntityComponent<C1> 
 	where C2 : EntityComponent<C2>
 	where C3 : EntityComponent<C3>
+	where C4 : EntityComponent<C4>
+	where C5 : EntityComponent<C5>
 {
 
 	/// 				///
 	///   Properties	///
 	/// 				///
 
-	Processor<C1, C2, C3>[] processors
+	Processor<C1, C2, C3, C4, C5>[] processors
 	{
-		get {return Group<C1,C2,C3>.instance.processors;}
+		get {return Group<C1,C2,C3,C4,C5>.instance.processors;}
 	}
 
 	int processorCount
 	{
-		get {return Group<C1,C2,C3>.instance.processorCount;}
+		get {return Group<C1,C2,C3,C4,C5>.instance.processorCount;}
 	}
-
 
 	bool _isActive;	// flags if system is active
 	Action OnEnableCallback = delegate {};
@@ -78,7 +79,7 @@ public class EntitySystem<C1, C2, C3>: BaseEntitySystem , IEntityCount	// Entity
 			for (int i = 0; i < processorCount; ++i)
 			{
 				var process = processors[i];
-				UpdateSystem(process.c1, process.c2, process.c3);
+				UpdateSystem(process.c1, process.c2, process.c3, process.c4, process.c5);
 			}
 		}
 	}
@@ -90,7 +91,7 @@ public class EntitySystem<C1, C2, C3>: BaseEntitySystem , IEntityCount	// Entity
 			for (int i = 0; i < processorCount; ++i)
 			{
 				var process = processors[i];
-				FixedUpdateSystem(process.c1, process.c2, process.c3);
+				FixedUpdateSystem(process.c1, process.c2, process.c3, process.c4, process.c5);
 			}
 		}
 	}
@@ -109,25 +110,25 @@ public class EntitySystem<C1, C2, C3>: BaseEntitySystem , IEntityCount	// Entity
 	/// <summary>
 	/// Does an update on all Entities that have all components enabled.
 	/// </summary>
-	public virtual void UpdateSystem(C1 c1, C2 c2, C3 c3)
+	public virtual void UpdateSystem(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5)
 	{}
 
 	/// <summary>
 	/// Does a fixed update on all Entities that have all components enabled.
 	/// </summary>
-	public virtual void FixedUpdateSystem(C1 c1, C2 c2, C3 c3)
+	public virtual void FixedUpdateSystem(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5)
 	{}
 
 	/// <summary>
 	/// Does a manual update on all Entities that have all components enabled.
 	/// Callback must match the UpdateSystem signature
 	/// </summary>
-	public void ProcessComponents(Action<C1, C2, C3> callback)
+	public void ProcessComponents(Callback<C1, C2, C3, C4, C5> callback)
 	{
 		for (int i = 0; i < processorCount; ++i)
 		{
 			var process = processors[i];
-			callback(process.c1, process.c2, process.c3);
+			callback(process.c1, process.c2, process.c3, process.c4, process.c5);
 		}
 	}
 
@@ -154,48 +155,58 @@ public class EntitySystem<C1, C2, C3>: BaseEntitySystem , IEntityCount	// Entity
 
 namespace SimpleECS.Internal
 {
-	public class Group<C1, C2, C3>: Group 
+	public delegate void Callback<C1,C2,C3,C4,C5>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5);
+
+	public class Group<C1, C2, C3, C4, C5>: Group 
 		where C1 : EntityComponent<C1>
 		where C2 : EntityComponent<C2>
 		where C3 : EntityComponent<C3>
+		where C4 : EntityComponent<C4>
+		where C5 : EntityComponent<C5>
 	{
-		static Group<C1,C2, C3> _i;
-		public static Group<C1,C2, C3> instance	// Yes this is singleton pattern. Fastest way I could find to get Component IDs
+		static Group<C1,C2, C3, C4, C5> _i;
+		public static Group<C1,C2,C3,C4, C5> instance	// Yes this is singleton pattern. Fastest way I could find to get Component IDs
 		{
 			get 
 			{
 				if (_i == null && EntityManager.instance != null)							// if null and there is an Entity Manager, get set the instance value
 				{
-					_i = EntityManager.instance.GetGroup<C1,C2,C3>();							// Instances are actually created by Entity Manager and hopefully dies with it
+					_i = EntityManager.instance.GetGroup<C1,C2,C3,C4,C5>();					// Instances are actually created by Entity Manager and hopefully dies with it
 
 					_i.AddEntities(Group<C1>.instance.GetEntities());						// On Instantiate Initialize processor list
 					_i.AddEntities(Group<C2>.instance.GetEntities());
 					_i.AddEntities(Group<C3>.instance.GetEntities());
+					_i.AddEntities(Group<C4>.instance.GetEntities());
+					_i.AddEntities(Group<C5>.instance.GetEntities());
 
 					Group<C1>.instance.EnabledComponentCallback += _i.OnEnableComponent;	// Subscribe to enable and disable callbacks to keep group up-to-date
 					Group<C2>.instance.EnabledComponentCallback += _i.OnEnableComponent;
 					Group<C3>.instance.EnabledComponentCallback += _i.OnEnableComponent;
+					Group<C4>.instance.EnabledComponentCallback += _i.OnEnableComponent;
+					Group<C5>.instance.EnabledComponentCallback += _i.OnEnableComponent;
 
 					Group<C1>.instance.DisabledComponentCallback += _i.OnDisableComponent;
 					Group<C2>.instance.DisabledComponentCallback += _i.OnDisableComponent;
 					Group<C3>.instance.DisabledComponentCallback += _i.OnDisableComponent;
+					Group<C4>.instance.DisabledComponentCallback += _i.OnDisableComponent;
+					Group<C5>.instance.DisabledComponentCallback += _i.OnDisableComponent;
 				}
 				return _i;
 			}
 		}
 
 		Dictionary<int, int> entityLookup = new Dictionary<int, int>(); 	// lookups for entity array positions
-		public Processor<C1,C2, C3>[] processors = new Processor<C1, C2, C3>[8];	// current list of all enabled components of type
+		public Processor<C1,C2,C3,C4,C5>[] processors = new Processor<C1,C2,C3,C4,C5>[8];	// current list of all enabled components of type
 		public int processorCount = 0;
 
-		Processor<C1,C2,C3> newProcessor;
+		Processor<C1,C2,C3,C4,C5> newProcessor;
 
 		public void OnEnableComponent(Entity e)	// Called by the component when enabled
 		{
 			if (entityLookup.ContainsKey(e.ID)) 				// early out if component is already added
 				return;
 
-			if (!(e.HasEnabled<C1>() && e.HasEnabled<C2>() && e.HasEnabled<C3>())) 	// early out if not all components are enabled
+			if (!(e.HasEnabled<C1>() && e.HasEnabled<C2>() && e.HasEnabled<C3>() && e.HasEnabled<C4>() && e.HasEnabled<C5>())) 	// early out if not all components are enabled
 				return;
 
 			if (processorCount == processors.Length)			// resize the array if full
@@ -207,6 +218,8 @@ namespace SimpleECS.Internal
 			newProcessor.c1 = e.Get<C1>();
 			newProcessor.c2 = e.Get<C2>();
 			newProcessor.c3 = e.Get<C3>();
+			newProcessor.c4 = e.Get<C4>();
+			newProcessor.c5 = e.Get<C5>();
 
 			processors[processorCount] = newProcessor; 			// add component to the end of array
 			entityLookup.Add(e.ID, processorCount); 			// add component position to dictionary lookups
@@ -217,13 +230,10 @@ namespace SimpleECS.Internal
 		{
 			if (!entityLookup.ContainsKey(e.ID)) 					// early out if key is already removed
 				return;
-
 			int arrayPos = entityLookup[e.ID];						// get array position from lookup
-
 			var lastProcessor = processors[processorCount -1];		// get last processor
 			processors[arrayPos] = lastProcessor;					// move the last processor to removed processor's position, keeps array contiguous
-
-			entityLookup[lastProcessor.id] = arrayPos;		// update position of swapped processor
+			entityLookup[lastProcessor.id] = arrayPos;				// update position of swapped processor
 			-- processorCount;										// reduce the amount of processors in list
 			entityLookup.Remove(e.ID);								// remove entity from lookup
 		}
@@ -242,12 +252,14 @@ namespace SimpleECS.Internal
 		}
 	}
 		
-	public struct Processor<C1, C2, C3>	// struct to keep track of processor components
+	public struct Processor<C1, C2, C3, C4, C5>	// struct to keep track of processor components
 	{
 		public int id;
 		public C1 c1;
 		public C2 c2;
 		public C3 c3;
+		public C4 c4;
+		public C5 c5;
 	}
 }
 	

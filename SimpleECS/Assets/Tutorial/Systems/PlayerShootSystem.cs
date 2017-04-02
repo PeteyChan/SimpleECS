@@ -3,9 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 
 [AddComponentMenu("EntitySystem/PlayerShootSystem")]
-public class PlayerShootSystem : EntitySystem<PlayerComponent, InputComponent>, IUpdate
+public class PlayerShootSystem : EntitySystem<PlayerComponent, InputComponent>
 {
 	public GameObject Bullet;
+
+	public override void InitializeSystem ()
+	{
+		isUpdateSystem = true;
+	}
 
 	public override void UpdateSystem (PlayerComponent player, InputComponent input)
 	{

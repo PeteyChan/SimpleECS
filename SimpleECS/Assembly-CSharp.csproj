@@ -51,9 +51,11 @@
      <Compile Include="Assets\ECS\EntityComponent.cs" />
      <Compile Include="Assets\ECS\EntityManager.cs" />
      <Compile Include="Assets\ECS\EntitySystem.cs" />
+     <Compile Include="Assets\ECS\EntitySystemC1.cs" />
      <Compile Include="Assets\ECS\EntitySystemC2.cs" />
      <Compile Include="Assets\ECS\EntitySystemC3.cs" />
      <Compile Include="Assets\ECS\EntitySystemC4.cs" />
+     <Compile Include="Assets\ECS\EntitySystemC5.cs" />
      <Compile Include="Assets\Tutorial\Components\BulletComponent.cs" />
      <Compile Include="Assets\Tutorial\Components\EnemyComponent.cs" />
      <Compile Include="Assets\Tutorial\Components\InputComponent.cs" />
@@ -68,6 +70,9 @@
      <Compile Include="Assets\Tutorial\Systems\SpinSystem.cs" />
      <None Include="Assets\ECS\ScriptTemplates\52-EntitySystem-NewEntitySystem.cs.txt" />
      <None Include="Assets\ECS\ScriptTemplates\51-EntityComponent-NewEntityComponent.cs.txt" />
+ <Reference Include="UnityEngine.Advertisements">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Advertisements/UnityEngine.Advertisements.dll</HintPath>
+ </Reference>
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
@@ -82,6 +87,9 @@
  </Reference>
  <Reference Include="UnityEngine.HoloLens">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnityHoloLens/RuntimeEditor/UnityEngine.HoloLens.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEngine.Purchasing">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnityPurchasing/UnityEngine.Purchasing.dll</HintPath>
  </Reference>
  <Reference Include="UnityEngine.VR">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnityVR/RuntimeEditor/UnityEngine.VR.dll</HintPath>

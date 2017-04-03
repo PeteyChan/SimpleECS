@@ -32,27 +32,27 @@ public abstract class EntitySystem<C1> : BaseEntitySystem, IEntityCount
 
 	void Awake()
 	{
-		if (EntityManager.instance == null)		// if no instance of Entity Manager Destroy this object
+		if (!EntityManager.loaded)
 		{
-			Destroy(this);
+			Debug.Log("Must Add Entity Manager to the Scene to use EntitySystems");
 			return;
 		}
 
 		EntityManager.instance.Systems.Add(this);	// Add this system to Entity Manager, this is used to display System Information on Entity Manager Inspector
 		InitializeSystem();							// Initialize System Callback
-		if (isUpdateSystem) EntityManager.instance.UpdateCallback += _ProcessUpdate;					// Add Update functions to Entity Manager Callbacks
-		if (isFixedUpdateSystem) EntityManager.instance.FixedUpdateCallback += _ProcessFixedUpdate;
+		if (this is UpdateSystem) EntityManager.instance.UpdateCallback += _ProcessUpdate;					// Add Update functions to Entity Manager Callbacks
+		if (this is FixedUpdateSystem) EntityManager.instance.FixedUpdateCallback += _ProcessFixedUpdate;
 	}
 
 	void OnDestroy()
 	{
-		if (EntityManager.instance == null) return;
+		if (!EntityManager.loaded) return; 			// early out if no Entity Manager
 
 		EntityManager.instance.Systems.Remove(this);	// remove system from entity manager
 		OnEnableCallback = null;						// clear out callbacks, prevent class from staying alive due to weak references
 		OnDisableCallback = null;
-		if (isUpdateSystem) EntityManager.instance.UpdateCallback -= _ProcessUpdate;
-		if (isFixedUpdateSystem) EntityManager.instance.FixedUpdateCallback -= _ProcessFixedUpdate;
+		if (this is UpdateSystem) EntityManager.instance.UpdateCallback -= _ProcessUpdate;
+		if (this is FixedUpdateSystem) EntityManager.instance.FixedUpdateCallback -= _ProcessFixedUpdate;
 	}
 
 	void OnEnable()
@@ -162,7 +162,7 @@ namespace SimpleECS.Internal
 		{
 			get 
 			{
-				if (_i == null && EntityManager.instance != null)				// Make sure that there is an Entity Manager
+				if (_i == null && EntityManager.loaded)							// Make sure that there is an Entity Manager
 				{
 					_i = EntityManager.instance.GetGroup<C>();					// Instances are actually created by Entity Manager
 				}
@@ -193,7 +193,6 @@ namespace SimpleECS.Internal
 		public void DisableComponent(C c)
 		{
 			int arrayPos = entityLookup[c.entity.ID];							// get array position
-
 			var lastComponent = components[ComponentCount -1];					// get last component
 			components[arrayPos] = lastComponent;								// move last component to the removed component
 			entityLookup[lastComponent.entity.ID] = arrayPos;					// update last component position
@@ -220,7 +219,7 @@ namespace SimpleECS.Internal
 			this.ID = ID;
 		}
 
-		public override void Destroy ()												// on Destroy clear out all callbacks and remove the instance reference
+		public override void Destroy ()											// on Destroy clear out all callbacks and remove the instance reference
 		{
 			EnabledComponentCallback = null;
 			DisabledComponentCallback = null;

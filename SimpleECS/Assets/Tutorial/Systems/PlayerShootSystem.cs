@@ -3,14 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 
 [AddComponentMenu("EntitySystem/PlayerShootSystem")]
-public class PlayerShootSystem : EntitySystem<PlayerComponent, InputComponent>
+public class PlayerShootSystem : EntitySystem<PlayerComponent, InputComponent>, UpdateSystem
 {
 	public GameObject Bullet;
-
-	public override void InitializeSystem ()
-	{
-		isUpdateSystem = true;
-	}
 
 	public override void UpdateSystem (PlayerComponent player, InputComponent input)
 	{
@@ -22,4 +17,6 @@ public class PlayerShootSystem : EntitySystem<PlayerComponent, InputComponent>
 			player.lastShotTime = Time.time;
 		}
 	}
+
+
 }

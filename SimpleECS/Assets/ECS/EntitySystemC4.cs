@@ -37,26 +37,26 @@ public class EntitySystem<C1, C2, C3, C4>: BaseEntitySystem , IEntityCount	// En
 
 	void Awake()
 	{
-		if (EntityManager.instance == null)		// early out if no entitymanager
+		if (!EntityManager.loaded)
 		{
-			Destroy(this);
+			Debug.Log("Must Add Entity Manager to the Scene to use EntitySystems");
 			return;
 		}
 
 		EntityManager.instance.Systems.Add(this); 	// this is so that the Entity Manager can show system information in the inspector
 		InitializeSystem();
-		if (isUpdateSystem) EntityManager.instance.UpdateCallback += _ProcessUpdate;
-		if (isFixedUpdateSystem) EntityManager.instance.FixedUpdateCallback += _ProcessFixedUpdate;
+		if (this is UpdateSystem) EntityManager.instance.UpdateCallback += _ProcessUpdate;
+		if (this is FixedUpdateSystem) EntityManager.instance.FixedUpdateCallback += _ProcessFixedUpdate;
 	}
 
 	void OnDestroy()
 	{
-		if (EntityManager.instance == null) return;
+		if (!EntityManager.loaded) return; 			// early out if no Entity Manager
 		EntityManager.instance.Systems.Remove(this);
 		OnEnableCallback = null;
 		OnDisableCallback = null;
-		if (isUpdateSystem) EntityManager.instance.UpdateCallback -= _ProcessUpdate;
-		if (isFixedUpdateSystem) EntityManager.instance.FixedUpdateCallback -= _ProcessFixedUpdate;
+		if (this is UpdateSystem) EntityManager.instance.UpdateCallback -= _ProcessUpdate;
+		if (this is FixedUpdateSystem) EntityManager.instance.FixedUpdateCallback -= _ProcessFixedUpdate;
 	}
 
 	void OnEnable()
@@ -199,7 +199,10 @@ namespace SimpleECS.Internal
 			if (entityLookup.ContainsKey(e.ID)) 				// early out if component is already added
 				return;
 
-			if (!(e.HasEnabled<C1>() && e.HasEnabled<C2>() && e.HasEnabled<C3>() && e.HasEnabled<C4>())) 	// early out if not all components are enabled
+			if (! (e.TryGetEnabled<C1>(out newProcessor.c1)
+				&& e.TryGetEnabled<C2>(out newProcessor.c2) 
+				&& e.TryGetEnabled<C3>(out newProcessor.c3) 
+				&& e.TryGetEnabled<C4>(out newProcessor.c4))) 	// early out if not all components are enabled
 				return;
 
 			if (processorCount == processors.Length)			// resize the array if full
@@ -208,10 +211,6 @@ namespace SimpleECS.Internal
 			}
 
 			newProcessor.id = e.ID;
-			newProcessor.c1 = e.Get<C1>();
-			newProcessor.c2 = e.Get<C2>();
-			newProcessor.c3 = e.Get<C3>();
-			newProcessor.c4 = e.Get<C4>();
 
 			processors[processorCount] = newProcessor; 			// add component to the end of array
 			entityLookup.Add(e.ID, processorCount); 			// add component position to dictionary lookups
@@ -220,9 +219,9 @@ namespace SimpleECS.Internal
 
 		public void OnDisableComponent(Entity e)
 		{
-			if (!entityLookup.ContainsKey(e.ID)) 					// early out if key is already removed
+			int arrayPos;
+			if (!entityLookup.TryGetValue(e.ID, out arrayPos)) 		// try get array position, early out if none
 				return;
-			int arrayPos = entityLookup[e.ID];						// get array position from lookup
 			var lastProcessor = processors[processorCount -1];		// get last processor
 			processors[arrayPos] = lastProcessor;					// move the last processor to removed processor's position, keeps array contiguous
 			entityLookup[lastProcessor.id] = arrayPos;				// update position of swapped processor

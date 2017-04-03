@@ -14,9 +14,8 @@ public abstract class EntityComponent<C> : EntityComponent where C : EntityCompo
 	bool _isRegistered; 	// registration flag, ensures that the component does nothing if not registered  
 	void Awake()
 	{
-		if (EntityManager.instance == null)
+		if (!EntityManager.loaded)
 		{
-			Destroy(this);
 			return;
 		}
 

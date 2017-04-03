@@ -3,15 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 
 [AddComponentMenu("EntitySystem/MoveBulletSystem")]
-public class MoveBulletSystem : EntitySystem<BulletComponent, RigidbodyComponent>
+public class MoveBulletSystem : EntitySystem<BulletComponent, RigidbodyComponent>, UpdateSystem
 {
 	public float bulletSpeed = 20f; 
 	public float bulletLife = 1f;
-
-	public override void InitializeSystem ()
-	{
-		isUpdateSystem = true;
-	}
 
 	public override void UpdateSystem (BulletComponent bullet, RigidbodyComponent rigidbody)
 	{

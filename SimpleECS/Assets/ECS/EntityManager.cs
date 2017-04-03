@@ -10,8 +10,11 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 {
 	public delegate void EntityEvent<E>(Entity sender, Entity reciever, E args);
 
+	[DisallowMultipleComponent]
 	public sealed class EntityManager : MonoBehaviour
 	{
+		public static bool loaded; // static so I can query this value without the singleton being loaded
+
 		public static EntityManager instance; 	// yes it's singleton pattern
 
 		[HideInInspector]
@@ -20,25 +23,45 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 		public List<BaseEntitySystem> Systems = new List<BaseEntitySystem>();	// systems is added to by the system on awake
 
 		int ComponentCount = -1; 	// Cache of how many components are in the Assembly
-
 		public Dictionary<System.Type, int> componentIDLookup = new Dictionary<System.Type, int>();	// Lookup table for component ID's
 		public Dictionary<int , object> entityEventLookup = new Dictionary<int, object>();				// Lookup table for Events, same reason as above
 		public Stack<Group> groups = new Stack<Group>(); 		// Keeps track of all groups so I can clear them out when not needed
 
-
 		public Action UpdateCallback = delegate {};			// this is the actual update callback, Systems just register thier Update calls to this
 		public Action FixedUpdateCallback = delegate {};	// same as above except with fixed update
 
-		bool reg;		// flag to notify that this is the Entity Manager being used, stops the Destroy function being called if that's not the case
 		void Awake()
 		{
-			if (instance == null)	// singleton pattern, thought about using lazy load, but had to write too much boiler plate and decided this was simpler
+			if (loaded) // loaded means another instance exists so destroy this instance
 			{
-				reg = true;
-				instance = this;
-				DontDestroyOnLoad(this);
+				Destroy(this);
+				return;
 			}
-			else DestroyImmediate(this);
+			instance = this;
+			loaded = true;
+			DontDestroyOnLoad(gameObject);
+
+			var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();	// populates component IDs
+			foreach (var assembly in assemblies)
+			{
+				foreach(var type in assembly.GetTypes())
+				{
+					if (type.IsSubclassOf(typeof(EntityComponent)) && !type.IsAbstract)
+					{
+						componentIDLookup.Add(type, componentIDLookup.Count);
+					}
+				}
+			}
+			ComponentCount = componentIDLookup.Count;
+		}
+
+
+		void OnDestroy()
+		{
+			if (instance != this) return;
+			UpdateCallback = null;			// clear out delegates to avoid possible weak references
+			FixedUpdateCallback = null;
+			loaded = false;
 		}
 
 		void Update()
@@ -51,33 +74,18 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			FixedUpdateCallback();
 		}
 
-		int id; // this value is only used here
-		public int GetID	// small simple function to doll out Entity ID's
+		int newEntityId;				
+		public int GetEntityID	// small simple function to doll out unique Entity ID's
 		{
-			get {return ++id;}
+			get {return ++newEntityId;}
 		}
 
-		public int GetComponentCount()	// Returns Total amount of Entity Components in Assembly
+		public int GetComponentCount()	// Returns Total amount of Entity Components
 		{
-			if (ComponentCount == -1)	
-			{
-				var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();	// populates component IDs while it's at it, this probably should go in it's own method but I'll leave if for now
-				foreach (var assembly in assemblies)
-				{
-					foreach(var type in assembly.GetTypes())
-					{
-						if (type.IsSubclassOf(typeof(EntityComponent)) && !type.IsAbstract)
-						{
-							componentIDLookup.Add(type, componentIDLookup.Count);
-						}
-					}
-				}
-				ComponentCount = componentIDLookup.Count;
-			}
 			return ComponentCount;
 		}
 
-		public int GetEntityComponentID<C>() // Retrieve Component ID's from lookup	
+		int GetEntityComponentID<C>() // Retrieve Component ID's, the ID is the array position of the component inside the entity's component array
 		{
 			int id;
 			if (componentIDLookup.TryGetValue(typeof(C), out id))
@@ -137,32 +145,11 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 		}
 		#endregion
 
-		void OnDestroy()	// clean up all entity components to avoid mass null exceptions clogging up the inspector
-		{
-			if (!reg) return;	// only if it's been registered
-
-			UpdateCallback = null;	// clear out delegates to avoid keeping references alive
-			FixedUpdateCallback = null;
-
-			var Entities = FindObjectsOfType<Entity>();
-			var Systems = FindObjectsOfType<EntitySystem>();
-
-			foreach (var entity in Entities)
-			{
-				DestroyImmediate(entity);
-			}
-
-			foreach (var system in Systems)
-			{
-				DestroyImmediate(system);
-			}
-		}
-
 		/// <summary>
 		/// Entity Events
 		/// </summary>
 
-		public class EventHolder<E>	// helper class to store Event delegates
+		public class EventHolder<E>	// helper class to store Event delegate
 		{
 			public EntityEvent<E> entityEvent = delegate{};
 		}
@@ -219,16 +206,12 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 				((EventHolder<E>)e).entityEvent(sender, reciever, args);
 		}
 	}
-
-
-	 
+		 
 	/// 
 	/// 
 	///		ENTITY MANAGER INSPECTOR
 	///
 	///
-
-
 
 	#if UNITY_EDITOR
 	[CustomEditor(typeof(EntityManager))]
@@ -295,7 +278,7 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			}
 			else
 			{
-				EditorGUILayout.HelpBox("SimpleECS Manager class, needs to be in scene for SimpleECS to work. Automatically sets itself to 'Don't Destroy on Load' and when Destroyed destroys all Entities and Entity Systems in the scene. When transitioning to a new scene will automatically destroy any duplicate Entity Managers.", MessageType.Info); 
+				EditorGUILayout.HelpBox("SimpleECS Manager class, needs to be in scene for SimpleECS to work. Automatically sets itself to 'Don't Destroy on Load'. When transitioning to a new scene will automatically destroy any duplicate Entity Managers.", MessageType.Info); 
 			}
 		}
 

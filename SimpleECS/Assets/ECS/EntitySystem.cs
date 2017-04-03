@@ -4,6 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using SimpleECS.Internal;
 
+// not prefacing with "I" because I'm using these as tags not interfaces
+interface UpdateSystem{}
+interface FixedUpdateSystem{}
+
 namespace SimpleECS.Internal
 {
 	public interface IEntityCount	// just a way to mark the systems with this property, only used in EntityManagerInspector
@@ -13,40 +17,9 @@ namespace SimpleECS.Internal
 
 	public abstract class BaseEntitySystem : MonoBehaviour // All systems inherit this so I can group them and add functionality to all of them later if I need to
 	{
-		bool _update,_fixedUpdate,_updateSet,_fixedUpdateSet;
-		protected bool isUpdateSystem
-		{
-			get 
-			{
-				return _update;
-			} 
-			set
-			{
-				if (!_updateSet)
-				{
-					_update = value;
-					_updateSet = true;
-				}
-			}
-		}
-
-		protected bool isFixedUpdateSystem
-		{
-			get
-			{
-				return _fixedUpdate;
-			}
-
-			set
-			{
-				if (!_fixedUpdateSet)
-				{
-					_fixedUpdate = value;
-					_fixedUpdateSet = true;
-				}
-			}
-		}
+		
 	}
+
 }
 
 
@@ -59,7 +32,7 @@ public abstract class EntitySystem : BaseEntitySystem
 	///   Properties	///
 	/// 				///
 
-	bool _isActive;	// the built in enable flag is a bit unreliable so using my own bool
+	bool _isActive;							// the built in enable flag is a bit unreliable so rolling my own bool
 	Action OnEnableCallback = delegate {};	// I use these callbacks to automatically assign and remove entity events
 	Action OnDisableCallback = delegate {};
 
@@ -69,33 +42,28 @@ public abstract class EntitySystem : BaseEntitySystem
 
 	void Awake()
 	{
-		if (EntityManager.instance == null) // if no EntityManager Destroy System
+		if (!EntityManager.loaded)
 		{
-			Destroy(this);
+			Debug.Log("Must Add Entity Manager to the Scene to use EntitySystems");
 			return;
 		}
 
 		EntityManager.instance.Systems.Add(this);	// This is only for Inspector purposes
 		InitializeSystem();
 
-		// set the systems to make sure that they can't change
-		isUpdateSystem = isUpdateSystem;
-		isFixedUpdateSystem = isFixedUpdateSystem;
-
 		// add updates to entity manager callbacks
-		if (isUpdateSystem) EntityManager.instance.UpdateCallback += _ProcessUpdate;				// Add to Update if tagged as Update
-		if (isFixedUpdateSystem) EntityManager.instance.FixedUpdateCallback += _ProcessFixedUpdate;	// Add to fixed Update if tagged as fixed update
+		if (this is UpdateSystem) EntityManager.instance.UpdateCallback += _ProcessUpdate;				// Add to Update if tagged as Update
+		if (this is FixedUpdateSystem) EntityManager.instance.FixedUpdateCallback += _ProcessFixedUpdate;	// Add to fixed Update if tagged as fixed update
 	}
 
 	void OnDestroy()
 	{
-		if (EntityManager.instance == null) return; 			// early out if no Entity Manager
-
+		if (!EntityManager.loaded) return; 			// early out if no Entity Manager
 		EntityManager.instance.Systems.Remove(this);
 		OnEnableCallback = null;								// clear out the delegates on Destroy, makes sure there are no references keeping this alive
 		OnDisableCallback = null;
-		if (isUpdateSystem) EntityManager.instance.UpdateCallback -= _ProcessUpdate;
-		if (isFixedUpdateSystem) EntityManager.instance.FixedUpdateCallback -= _ProcessFixedUpdate;
+		if (this is UpdateSystem) EntityManager.instance.UpdateCallback -= _ProcessUpdate;
+		if (this is FixedUpdateSystem) EntityManager.instance.FixedUpdateCallback -= _ProcessFixedUpdate;
 	}
 		
 	void OnEnable()

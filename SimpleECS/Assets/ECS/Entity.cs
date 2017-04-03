@@ -23,19 +23,19 @@ public sealed class Entity : MonoBehaviour
 	// Entity Setup						// The reason for getting the ID's via Singleton is that it's very fast.
 	void Awake()
 	{
-		if (EntityManager.instance == null)	// Ensure no code is run if no EntityManager
+		if (!EntityManager.loaded)	// Ensure no code is run if no EntityManager
 		{
-			Destroy(gameObject); 
+			Debug.Log("Must Add Entity Manager to Use Entities");
 			return;
 		}
 		EntityManager.instance.totalEntityCount ++;
-		id = EntityManager.instance.GetID;
+		id = EntityManager.instance.GetEntityID;
 		componentLookup = new ComponentHolder[EntityManager.instance.GetComponentCount()];
 	}
 
 	void OnDestroy()
 	{
-		if (EntityManager.instance != null)
+		if (EntityManager.loaded)
 			EntityManager.instance.totalEntityCount --;
 	}
 		
@@ -68,6 +68,26 @@ public sealed class Entity : MonoBehaviour
 	}
 
 	/// <summary>
+	/// Returns true if has component. Outputs component
+	/// </summary>
+	public bool TryGet<C>(out C component) where C: EntityComponent<C>
+	{
+		ComponentHolder h = componentLookup[Group<C>.instance.ID];
+		component = (C)h.component;
+		return h.has;
+	}
+
+	/// <summary>
+	/// Returns true if has component and enabled. Outputs component;
+	/// </summary>
+	public bool TryGetEnabled<C>(out C component) where C : EntityComponent<C>	// used to speed up systems a little bit
+	{
+		ComponentHolder h = componentLookup[Group<C>.instance.ID];
+		component = (C)h.component;
+		return h.enabled;
+	}
+
+	/// <summary>
 	/// Returns Component if in variable, returns false 
 	/// </summary>
 	public C Get<C>() where C : EntityComponent<C>
@@ -87,7 +107,7 @@ public sealed class Entity : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Removes Component if found on Entity
+	/// Removes Component
 	/// </summary>
 	public void Remove<C>() where C : EntityComponent<C>
 	{
@@ -97,7 +117,7 @@ public sealed class Entity : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Destroys entity and its gameobject
+	/// Destroys this entity gameobject
 	/// </summary>
 	public void Destroy()
 	{

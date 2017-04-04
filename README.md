@@ -12,5 +12,4 @@ Ever since I first came across Entity Component Systems I thought it was a great
 - Simple type-safe entity driven event system
 
 ## Wiki
-Check out the wiki for more information.
-https://github.com/PeteyChan/SimpleECS/wiki
+Check out the [wiki](https://github.com/PeteyChan/SimpleECS/wiki) for more information.

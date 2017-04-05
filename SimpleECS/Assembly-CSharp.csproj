@@ -56,6 +56,17 @@
      <Compile Include="Assets\ECS\EntitySystemC3.cs" />
      <Compile Include="Assets\ECS\EntitySystemC4.cs" />
      <Compile Include="Assets\ECS\EntitySystemC5.cs" />
+     <Compile Include="Assets\Testing\SystemA.cs" />
+     <Compile Include="Assets\Testing\SystemB.cs" />
+     <Compile Include="Assets\Testing\SystemC.cs" />
+     <Compile Include="Assets\Testing\SystemD.cs" />
+     <Compile Include="Assets\Testing\SystemE.cs" />
+     <Compile Include="Assets\Testing\SystemNull.cs" />
+     <Compile Include="Assets\Testing\TestA.cs" />
+     <Compile Include="Assets\Testing\TestB.cs" />
+     <Compile Include="Assets\Testing\TestC.cs" />
+     <Compile Include="Assets\Testing\TestD.cs" />
+     <Compile Include="Assets\Testing\TestE.cs" />
      <Compile Include="Assets\Tutorial\Components\BulletComponent.cs" />
      <Compile Include="Assets\Tutorial\Components\EnemyComponent.cs" />
      <Compile Include="Assets\Tutorial\Components\InputComponent.cs" />

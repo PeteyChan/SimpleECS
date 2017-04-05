@@ -22,6 +22,10 @@ public abstract class EntitySystem<C1> : BaseEntitySystem, IEntityCount
 	Action OnEnableCallback = delegate {};		// callbacks used to manage events during system enable and disable
 	Action OnDisableCallback = delegate {};
 
+	#if UNITY_EDITOR
+	SimpleECS.Internal.SystemInfo info = new SimpleECS.Internal.SystemInfo();
+	#endif
+
 	void Awake()
 	{
 		if (!EntityManager.loaded)
@@ -30,7 +34,12 @@ public abstract class EntitySystem<C1> : BaseEntitySystem, IEntityCount
 			return;
 		}
 
-		EntityManager.instance.Systems.Add(this);	// Add this system to Entity Manager, this is used to display System Information on Entity Manager Inspector
+		#if UNITY_EDITOR	// used for displaying Simple ECS data in Entity Manager
+		info.System = this;
+		info.ComponentPoolTypes.Add(typeof(C1));
+		EntityManager.instance.SystemsInfo.Add(info);
+		#endif
+
 		InitializeSystem();							// Initialize System Callback
 		if (this is UpdateSystem) EntityManager.instance.UpdateCallback += _ProcessUpdate;					// Add Update functions to Entity Manager Callbacks
 		if (this is FixedUpdateSystem) EntityManager.instance.FixedUpdateCallback += _ProcessFixedUpdate;
@@ -40,7 +49,10 @@ public abstract class EntitySystem<C1> : BaseEntitySystem, IEntityCount
 	{
 		if (!EntityManager.loaded) return; 			// early out if no Entity Manager
 
-		EntityManager.instance.Systems.Remove(this);	// remove system from entity manager
+		#if UNITY_EDITOR
+		EntityManager.instance.SystemsInfo.Remove(info);	// remove system from entity manager
+		#endif
+
 		OnEnableCallback = null;						// clear out callbacks, prevent class from staying alive due to weak references
 		OnDisableCallback = null;
 		if (this is UpdateSystem) EntityManager.instance.UpdateCallback -= _ProcessUpdate;
@@ -61,6 +73,11 @@ public abstract class EntitySystem<C1> : BaseEntitySystem, IEntityCount
 
 	void _ProcessUpdate()
 	{
+		#if UNITY_EDITOR
+		if (info.ShowInfo)
+			info.StartUpdateTimer();
+		#endif
+
 		if (_isActive)
 		{
 			for (int i = 0; i < componentCount; ++i)
@@ -68,10 +85,20 @@ public abstract class EntitySystem<C1> : BaseEntitySystem, IEntityCount
 				UpdateSystem(components[i]);
 			}
 		}
+
+		#if UNITY_EDITOR
+		if (info.ShowInfo)
+			info.StopUpdateTimer();
+		#endif
 	}
 
 	void _ProcessFixedUpdate()
 	{
+		#if UNITY_EDITOR
+		if(info.ShowInfo)
+			info.StartFixedUpdateTimer();
+		#endif
+
 		if (_isActive)
 		{
 			for (int i = 0; i < componentCount; ++i)
@@ -79,6 +106,11 @@ public abstract class EntitySystem<C1> : BaseEntitySystem, IEntityCount
 				FixedUpdateSystem(components[i]);
 			}
 		}
+
+		#if UNITY_EDITOR
+		if (info.ShowInfo)
+			info.StopFixedUpdateTimer();
+		#endif
 	}
 		
 	#region Public Functions
@@ -136,6 +168,10 @@ public abstract class EntitySystem<C1> : BaseEntitySystem, IEntityCount
 	{
 		OnEnableCallback += () => EntityManager.instance.AddEntityEvent(callback);
 		OnDisableCallback += () => EntityManager.instance.RemoveEntityEvent(callback);
+
+		#if UNITY_EDITOR
+		info.EntityEvents.Add(typeof(E));
+		#endif
 	}
 
 	/// <summary>
@@ -147,6 +183,10 @@ public abstract class EntitySystem<C1> : BaseEntitySystem, IEntityCount
 	{
 		OnEnableCallback += () => Group<C>.instance.EnableComponentCallback += callback;
 		OnDisableCallback += () => Group<C>.instance.EnableComponentCallback -= callback;
+	
+		#if UNITY_EDITOR
+		info.EnableComponentEvent.Add(typeof(C));
+		#endif
 	}
 
 	/// <summary>
@@ -158,6 +198,10 @@ public abstract class EntitySystem<C1> : BaseEntitySystem, IEntityCount
 	{
 		OnEnableCallback += () => Group<C>.instance.DisableComponentCallback += callback;
 		OnDisableCallback += () => Group<C>.instance.DisableComponentCallback -= callback;
+
+		#if UNITY_EDITOR
+		info.DisableComponentEvent.Add(typeof(C));
+		#endif
 	}
 
 	/// <summary>
@@ -169,6 +213,10 @@ public abstract class EntitySystem<C1> : BaseEntitySystem, IEntityCount
 	{
 		OnEnableCallback += () => EntityManager.instance.AddSystemEvent(callback);
 		OnDisableCallback += () => EntityManager.instance.RemoveSystemEvent(callback);
+
+		#if UNITY_EDITOR
+		info.SystemEvents.Add(typeof(E));
+		#endif
 	}
 
 	/// <summary>

@@ -1,9 +1,21 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj" RefactoringSettings.EnableRefactorings="True">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Tutorial\Systems\PlayerShootSystem.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Testing\SystemC.cs">
     <Files>
-      <File FileName="Assets\Tutorial\Systems\SpinSystem.cs" Line="1" Column="1" />
-      <File FileName="Assets\Tutorial\Systems\PlayerShootSystem.cs" Line="8" Column="27" />
+      <File FileName="Assets\ECS\EntityManager.cs" Line="360" Column="86" />
+      <File FileName="Assets\ECS\EntitySystem.cs" Line="94" Column="11" />
+      <File FileName="Assets\ECS\EntitySystemC1.cs" Line="113" Column="7" />
+      <File FileName="Assets\ECS\EntitySystemC2.cs" Line="117" Column="29" />
+      <File FileName="Assets\ECS\EntitySystemC3.cs" Line="105" Column="30" />
+      <File FileName="Assets\ECS\EntitySystemC4.cs" Line="98" Column="24" />
+      <File FileName="Assets\ECS\EntitySystemC5.cs" Line="122" Column="29" />
+      <File FileName="Assets\Testing\SystemNull.cs" Line="24" Column="3" />
+      <File FileName="Assets\Testing\SystemA.cs" Line="59" Column="2" />
+      <File FileName="Assets\Testing\SystemB.cs" Line="32" Column="4" />
+      <File FileName="Assets\Testing\SystemC.cs" Line="31" Column="31" />
+      <File FileName="Assets\Testing\SystemD.cs" Line="32" Column="4" />
+      <File FileName="Assets\Testing\SystemE.cs" Line="17" Column="3" />
+      <File FileName="Assets\ECS\Entity.cs" Line="176" Column="23" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

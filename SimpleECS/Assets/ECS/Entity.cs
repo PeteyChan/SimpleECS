@@ -3,6 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 using SimpleECS.Internal;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 
 [DisallowMultipleComponent]
 public sealed class Entity : MonoBehaviour
@@ -139,9 +143,28 @@ public sealed class Entity : MonoBehaviour
 	/// <summary>
 	/// Calls Events on Entity that Match Argument's Type.
 	/// </summary>
-	public void SendEvent<E>(Entity sender, E args)
+	public void SendEvent<E>(E args)
 	{
-		EntityManager.instance.CallEntityEvent(sender, this, args);
+		EntityManager.instance.CallEntityEvent(this, args);
+	}
+}
+
+public static class EntityExtensions
+{
+	/// <summary>
+	/// Returns owner Entity if one exists
+	/// </summary>
+	public static Entity GetEntity(this Collider col)
+	{
+		return col.gameObject.GetComponentInParent<Entity>();
+	}
+
+	/// <summary>
+	/// Returns owner Entity if one exists
+	/// </summary>
+	public static Entity GetEntity(this GameObject go)
+	{
+		return go.GetComponentInParent<Entity>();
 	}
 }
 
@@ -157,4 +180,45 @@ namespace SimpleECS.Internal
 		public bool enabled;
 		public EntityComponent component;
 	}
+
+	#if UNITY_EDITOR
+
+	[CustomEditor(typeof(Entity))]
+	public class EntityInspector: Editor
+	{
+		void OnEnable()
+		{
+			e = (Entity)target;
+		}
+
+		bool ShowComponents;
+		Entity e;
+
+
+		public override void OnInspectorGUI ()
+		{
+			DrawDefaultInspector();
+
+			if (Application.isPlaying && EntityManager.loaded)
+			{
+				ShowComponents = EditorGUILayout.Foldout(ShowComponents, "Show Components");
+				EditorGUI.indentLevel ++;
+				if (ShowComponents)
+				{
+					for (int i = 0; i < EntityManager.instance.GetComponentCount(); ++i)
+					{
+						if (e[i].has)
+							EditorGUILayout.LabelField((e[i].component.GetType()).ToString());
+					}
+				}
+				EditorGUI.indentLevel --;
+
+				EditorUtility.SetDirty(target);
+			}
+		}
+	}
+
+
+
+	#endif
 }

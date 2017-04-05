@@ -8,7 +8,7 @@ using UnityEditor;
 
 namespace SimpleECS.Internal	// putting it in this name space to clean up Intellisense and hide unnecessary classes
 {
-	public delegate void EntityEvent<E>(Entity sender, Entity reciever, E args);
+	public delegate void EntityEvent<E>(Entity entity, E args);
 
 	[DisallowMultipleComponent]
 	public sealed class EntityManager : MonoBehaviour
@@ -19,8 +19,12 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 
 		[HideInInspector]
 		public int totalEntityCount; 	// this and the systems list below are only used for the custom inspector nothing else
-		[HideInInspector]				// entity count is updated by the entity on awake
-		public List<BaseEntitySystem> Systems = new List<BaseEntitySystem>();	// systems is added to by the system on awake
+
+
+		#if UNITY_EDITOR
+		public List<SystemInfo> SystemsInfo = new List<SystemInfo>();	// systems is added to by the system on awake
+		public int SystemInfoIndex;
+		#endif
 
 		int ComponentCount = -1; 	// Cache of how many components are in the Assembly
 		public Dictionary<System.Type, int> componentIDLookup = new Dictionary<System.Type, int>();	// Lookup table for component ID's
@@ -209,11 +213,11 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			}
 		}
 
-		public void CallEntityEvent<E>(Entity sender, Entity reciever, E args)	// Calls Event with Arguments
+		public void CallEntityEvent<E>(Entity entity, E args)	// Calls Event with Arguments
 		{
 			object e;
 			if (entityEventLookup.TryGetValue(EventID<E>.ID, out e))
-				((EntityEventHolder<E>)e).entityEvent(sender, reciever, args);
+				((EntityEventHolder<E>)e).entityEvent(entity, args);
 		}
 
 		public void AddSystemEvent<E>(Action<E> callback) // Adds an Event Listener
@@ -257,6 +261,56 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 	///
 
 	#if UNITY_EDITOR
+
+	public class SystemInfo
+	{
+		public BaseEntitySystem System;
+		public bool ShowInfo;
+		public List<Type> ComponentPoolTypes = new List<Type>();
+
+		public List<Type> EntityEvents = new List<Type>();
+		public bool showEntityEvents;
+
+		public List<Type> EnableComponentEvent = new List<Type>();
+		public bool showEnableComponentEvent;
+
+		public List<Type> DisableComponentEvent = new List<Type>();
+		public bool showDisableComponentEvent;
+
+		public List<Type> SystemEvents = new List<Type>();
+		public bool showSystemEvents;
+
+		public double UpdateTime;
+		public double FixedUpdateTime;
+
+		System.Diagnostics.Stopwatch timer = new global::System.Diagnostics.Stopwatch();
+		System.Diagnostics.Stopwatch fixedTimer = new global::System.Diagnostics.Stopwatch();
+
+		public void StartUpdateTimer()
+		{
+			timer.Start();
+		}
+
+		public void StopUpdateTimer()
+		{
+			timer.Stop();
+			UpdateTime = timer.Elapsed.TotalMilliseconds;
+			timer.Reset();
+		}
+
+		public void StartFixedUpdateTimer()
+		{
+			fixedTimer.Start();
+		}
+
+		public void StopFixedUpdateTimer()
+		{
+			fixedTimer.Stop();
+			FixedUpdateTime = fixedTimer.Elapsed.TotalMilliseconds;
+			fixedTimer.Reset();
+		}
+	}
+
 	[CustomEditor(typeof(EntityManager))]
 	public class EntityManagerInspector : Editor
 	{
@@ -271,52 +325,141 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 		{
 			if (Application.isPlaying)
 			{
-				EditorGUILayout.TextArea("", GUI.skin.horizontalSlider);
+				EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 
-				EditorGUILayout.LabelField(string.Format("Total Entities : {0}", manager.totalEntityCount));
-				EditorGUILayout.LabelField(string.Format("Total Systems : {0}", manager.Systems.Count));
+				EditorGUILayout.BeginHorizontal();
+				EditorGUILayout.LabelField(string.Format("Entities : {0}", manager.totalEntityCount), GUILayout.MaxWidth(128f));
 				EditorGUILayout.LabelField(string.Format("Groups : {0}", manager.groups.Count));
+				EditorGUILayout.EndHorizontal();
+				EditorGUILayout.BeginHorizontal();
+				EditorGUILayout.LabelField(string.Format("Systems : {0}", manager.SystemsInfo.Count), GUILayout.MaxWidth(128f));
 				EditorGUILayout.LabelField(string.Format("Component Types : {0}", manager.componentIDLookup.Count));
+				EditorGUILayout.EndHorizontal();
+				EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 
-				EditorGUILayout.TextArea("", GUI.skin.horizontalSlider);
-				int count = 1;
-				foreach(var system in manager.Systems)
+				EditorGUILayout.BeginHorizontal();
+				if (manager.SystemsInfo.Count >= 25)
 				{
-					if (system is IEntityCount)
+					if (manager.SystemInfoIndex >= 25)
 					{
-						if (system.enabled && system.gameObject.activeInHierarchy)
+						if (GUILayout.Button("<- Previous 25", GUILayout.MaxWidth(Screen.width/2f - 24f)))
+							manager.SystemInfoIndex -= 25;
+
+						if (manager.SystemInfoIndex + 25 > manager.SystemsInfo.Count)
 						{
-							EditorGUILayout.BeginHorizontal();
-								int eCount = (system as IEntityCount).GetEntityCount();
-								EditorGUILayout.LabelField(string.Format("{0} : {1}", count, system.GetType()));
-								EditorGUILayout.LabelField(string.Format("| {0} Entities", eCount), GUILayout.MaxWidth(128f));
-							EditorGUILayout.EndHorizontal();
+							GUI.enabled = false;
+							GUILayout.Button("Next 25 ->", GUILayout.MaxWidth(Screen.width/2f - 24f));
+							GUI.enabled = true;
 						}
+					}
+					if (manager.SystemInfoIndex + 25 < manager.SystemsInfo.Count)
+					{
+						if (manager.SystemInfoIndex < 25)
+						{
+							GUI.enabled = false;
+							GUILayout.Button("<- Previous 25", GUILayout.MaxWidth(Screen.width/2f - 24f));
+							GUI.enabled = true;
+						}
+
+						if (GUILayout.Button("Next 25 ->", GUILayout.MaxWidth(Screen.width/2f - 24f)))
+							manager.SystemInfoIndex += 25;
+					}
+				}
+				EditorGUILayout.EndHorizontal();
+
+				for (int i = manager.SystemInfoIndex ; i < Mathf.Min(manager.SystemsInfo.Count, manager.SystemInfoIndex + 25); ++i)
+				{
+					var info = manager.SystemsInfo[i];
+
+					EditorGUILayout.BeginHorizontal();
+					info.ShowInfo = EditorGUI.Foldout(GUILayoutUtility.GetRect(8f , 16f), info.ShowInfo, "");
+
+					EditorGUI.LabelField(GUILayoutUtility.GetRect(Screen.width - 129f - 32f, 16f), string.Format("{0} : {1}", i, info.System.GetType()));
+
+					if (info.System.isActiveAndEnabled)
+					{
+						if (info.System is IEntityCount)
+							EditorGUILayout.LabelField(string.Format("| {0} Entities", (info.System as IEntityCount).GetEntityCount()), GUILayout.MaxWidth(128f));
 						else
-						{
-							EditorGUILayout.BeginHorizontal();
-								EditorGUILayout.LabelField(string.Format("{0} : {1}", count, system.GetType()));
-								EditorGUILayout.LabelField("| Disabled" , GUILayout.MaxWidth(128f));
-							EditorGUILayout.EndHorizontal();
-						}
+							EditorGUILayout.LabelField("", GUILayout.MaxWidth(128f));
 					}
 					else
 					{
-						if (system.enabled && system.gameObject.activeInHierarchy)
-						{
-							EditorGUILayout.LabelField(string.Format("{0} : {1}", count, system.GetType()));	
-						}
-						else
-						{
-							EditorGUILayout.BeginHorizontal();
-							EditorGUILayout.LabelField(string.Format("{0} : {1}", count, system.GetType()));
-							EditorGUILayout.LabelField("| Disabled" , GUILayout.MaxWidth(128f));
-							EditorGUILayout.EndHorizontal();	
-						}
+						EditorGUILayout.LabelField("| Disabled" , GUILayout.MaxWidth(128f));
 					}
-					count ++;
+					EditorGUILayout.EndHorizontal();
+
+					if (info.ShowInfo)
+					{
+						EditorGUI.indentLevel += 2;
+						if (info.ComponentPoolTypes.Count > 0)
+						{
+							string pool = ":";
+							foreach(var types in info.ComponentPoolTypes)
+							{
+								pool += string.Format(" {0} :", types.ToString());
+							}
+							EditorGUILayout.LabelField(pool);
+						}
+
+						if (info.System is UpdateSystem)
+						{
+							EditorGUILayout.LabelField (string.Format("Update System : {0:F2} ms", info.UpdateTime));
+						}
+
+						if (info.System is FixedUpdateSystem)
+						{
+							EditorGUILayout.LabelField (string.Format("Fixed Update System : {0:F2} ms", info.FixedUpdateTime));
+						}
+
+						if (info.SystemEvents.Count > 0)
+						{
+							EditorGUI.indentLevel ++;
+							info.showSystemEvents = EditorGUILayout.Foldout(info.showSystemEvents, string.Format("System Events : {0}", info.SystemEvents.Count));
+							if (info.showSystemEvents)
+							{
+								ListTypes(info.SystemEvents);
+							}
+							EditorGUI.indentLevel --;
+						}
+
+						if (info.EntityEvents.Count > 0)
+						{
+							EditorGUI.indentLevel ++;
+							info.showEntityEvents = EditorGUILayout.Foldout(info.showEntityEvents, String.Format("EntityEvents : {0}", info.EntityEvents.Count));
+							if (info.showEntityEvents)
+							{
+								ListTypes(info.EntityEvents);
+							}
+							EditorGUI.indentLevel --;
+						}
+
+						if (info.EnableComponentEvent.Count > 0)
+						{
+							EditorGUI.indentLevel ++;
+							info.showEnableComponentEvent = EditorGUILayout.Foldout(info.showEnableComponentEvent, string.Format("Enable Component Events : {0}", info.EnableComponentEvent.Count));
+							if (info.showEnableComponentEvent)
+							{
+								ListTypes(info.EnableComponentEvent);
+							}
+							EditorGUI.indentLevel --;
+						}
+
+						if (info.DisableComponentEvent.Count > 0)
+						{
+							EditorGUI.indentLevel ++;
+							info.showDisableComponentEvent = EditorGUILayout.Foldout(info.showDisableComponentEvent, string.Format("Disable Component Events : {0}", info.DisableComponentEvent.Count));
+							if (info.showDisableComponentEvent)
+							{
+								ListTypes(info.DisableComponentEvent);
+							}
+							EditorGUI.indentLevel --;
+						}
+
+						EditorGUI.indentLevel -= 2;
+					}
 				}
-				EditorGUILayout.TextArea("", GUI.skin.horizontalSlider);
+				EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 				EditorUtility.SetDirty(target);
 			}
 			else
@@ -325,15 +468,15 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			}
 		}
 
-		string GetEnabled(BaseEntitySystem system)
+		void ListTypes(List<Type> types)
 		{
-			if (system.enabled && system.gameObject.activeInHierarchy)
+			//EditorGUI.indentLevel ++;
+			foreach(var type in types)
 			{
-				return "Enabled";	
+				EditorGUILayout.LabelField(string.Format("| {0}", type.ToString()));	
 			}
-			return "Disabled";
+			//EditorGUI.indentLevel --;
 		}
-
 }
 #endif
 

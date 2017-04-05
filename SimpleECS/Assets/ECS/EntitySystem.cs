@@ -31,6 +31,10 @@ public abstract class EntitySystem : BaseEntitySystem
 	Action OnEnableCallback = delegate {};	// I use these callbacks to automatically assign and remove entity events
 	Action OnDisableCallback = delegate {};
 
+	#if UNITY_EDITOR
+		SimpleECS.Internal.SystemInfo info = new SimpleECS.Internal.SystemInfo();
+	#endif
+
 	void Awake()
 	{
 		if (!EntityManager.loaded)
@@ -39,7 +43,11 @@ public abstract class EntitySystem : BaseEntitySystem
 			return;
 		}
 
-		EntityManager.instance.Systems.Add(this);	// This is only for Inspector purposes
+		#if UNITY_EDITOR	// used for displaying Simple ECS data in Entity Manager
+		info.System = this;
+		EntityManager.instance.SystemsInfo.Add(info);
+		#endif
+
 		InitializeSystem();
 
 		// add updates to entity manager callbacks
@@ -50,7 +58,11 @@ public abstract class EntitySystem : BaseEntitySystem
 	void OnDestroy()
 	{
 		if (!EntityManager.loaded) return; 			// early out if no Entity Manager
-		EntityManager.instance.Systems.Remove(this);
+
+		#if UNITY_EDITOR
+		EntityManager.instance.SystemsInfo.Remove(info);	// remove system from entity manager
+		#endif
+
 		OnEnableCallback = null;								// clear out the delegates on Destroy, makes sure there are no references keeping this alive
 		OnDisableCallback = null;
 		if (this is UpdateSystem) EntityManager.instance.UpdateCallback -= _ProcessUpdate;
@@ -71,12 +83,32 @@ public abstract class EntitySystem : BaseEntitySystem
 
 	void _ProcessUpdate()
 	{
+		#if UNITY_EDITOR
+		if (info.ShowInfo)
+			info.StartUpdateTimer();
+		#endif
+
 		if (_isActive) UpdateSystem();
+
+		#if UNITY_EDITOR
+		if (info.ShowInfo)
+			info.StopUpdateTimer();
+		#endif
 	}
 
 	void _ProcessFixedUpdate()
 	{
+		#if UNITY_EDITOR
+		if (info.ShowInfo)
+			info.StartFixedUpdateTimer();
+		#endif
+
 		if (_isActive) FixedUpdateSystem();
+
+		#if UNITY_EDITOR
+		if (info.ShowInfo)
+			info.StopFixedUpdateTimer();
+		#endif
 	}
 
 	#region Public Functions
@@ -114,6 +146,10 @@ public abstract class EntitySystem : BaseEntitySystem
 	{
 		OnEnableCallback += () => EntityManager.instance.AddEntityEvent(callback);
 		OnDisableCallback += () => EntityManager.instance.RemoveEntityEvent(callback);
+
+		#if UNITY_EDITOR
+		info.EntityEvents.Add(typeof(E));
+		#endif
 	}
 
 	/// <summary>
@@ -125,6 +161,10 @@ public abstract class EntitySystem : BaseEntitySystem
 	{
 		OnEnableCallback += () => Group<C>.instance.EnableComponentCallback += callback;
 		OnDisableCallback += () => Group<C>.instance.EnableComponentCallback -= callback;
+
+		#if UNITY_EDITOR
+		info.EnableComponentEvent.Add(typeof(C));
+		#endif
 	}
 
 	/// <summary>
@@ -136,8 +176,12 @@ public abstract class EntitySystem : BaseEntitySystem
 	{
 		OnEnableCallback += () => Group<C>.instance.DisableComponentCallback += callback;
 		OnDisableCallback += () => Group<C>.instance.DisableComponentCallback -= callback;
+
+		#if UNITY_EDITOR
+		info.DisableComponentEvent.Add(typeof(C));
+		#endif
 	}
-		
+
 	/// <summary>
 	/// Subscribes callback to the Event Handler.
 	/// Callback will fire on when a System Sends the Event.
@@ -147,6 +191,10 @@ public abstract class EntitySystem : BaseEntitySystem
 	{
 		OnEnableCallback += () => EntityManager.instance.AddSystemEvent(callback);
 		OnDisableCallback += () => EntityManager.instance.RemoveSystemEvent(callback);
+
+		#if UNITY_EDITOR
+		info.SystemEvents.Add(typeof(E));
+		#endif
 	}
 
 	/// <summary>

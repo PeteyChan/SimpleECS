@@ -52,9 +52,9 @@ public abstract class EntityComponent<C> : EntityComponent where C : EntityCompo
 	{
 		if (_isRegistered)
 		{
+			Group<C>.instance.DisableComponent((C)this); // Event needs to be called before removing instance from entity
 			holder.enabled = false;
 			entity[_componentID] = holder;
-			Group<C>.instance.DisableComponent((C)this);
 		}
 	}
 
@@ -88,8 +88,8 @@ public abstract class EntityComponent : MonoBehaviour
 	[ReadOnly]
 	public Entity entity;
 
-	public void SendEvent<E>(Entity sender, E args)
+	public void SendEvent<E>(E args)
 	{
-		entity.SendEvent(sender, args);
+		entity.SendEvent(args);
 	}
 }

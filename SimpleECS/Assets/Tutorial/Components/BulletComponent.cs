@@ -11,6 +11,6 @@ public class BulletComponent : EntityComponent<BulletComponent>
 	{
 		var e = col.gameObject.GetComponentInParent<Entity>();
 
-		e.SendEvent<BulletCollisionEvent>(entity, new BulletCollisionEvent());
+		e.SendEvent<BulletCollisionEvent>(new BulletCollisionEvent());
 	}
 }

@@ -24,6 +24,10 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 	Action OnEnableCallback = delegate {};
 	Action OnDisableCallback = delegate {};
 
+	#if UNITY_EDITOR
+	SimpleECS.Internal.SystemInfo info = new SimpleECS.Internal.SystemInfo();
+	#endif
+
 	void Awake()
 	{
 		if (!EntityManager.loaded)
@@ -32,7 +36,13 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 			return;
 		}
 
-		EntityManager.instance.Systems.Add(this); 	// this is so that the Entity Manager can show system information in the inspector
+		#if UNITY_EDITOR	// used for displaying Simple ECS data in Entity Manager
+		info.System = this;
+		info.ComponentPoolTypes.Add(typeof(C1));
+		info.ComponentPoolTypes.Add(typeof(C2));
+		EntityManager.instance.SystemsInfo.Add(info);
+		#endif
+
 		InitializeSystem();
 		if (this is UpdateSystem) EntityManager.instance.UpdateCallback += _ProcessUpdate;
 		if (this is FixedUpdateSystem) EntityManager.instance.FixedUpdateCallback += _ProcessFixedUpdate;
@@ -42,7 +52,10 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 	{
 		if (!EntityManager.loaded) return; 			// early out if no Entity Manager
 
-		EntityManager.instance.Systems.Remove(this);
+		#if UNITY_EDITOR
+		EntityManager.instance.SystemsInfo.Remove(info);	// remove system from entity manager
+		#endif
+
 		OnEnableCallback = null;
 		OnDisableCallback = null;
 		if (this is UpdateSystem) EntityManager.instance.UpdateCallback -= _ProcessUpdate;
@@ -63,6 +76,11 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 
 	void _ProcessUpdate()
 	{
+		#if UNITY_EDITOR
+		if (info.ShowInfo)
+			info.StartUpdateTimer();
+		#endif
+
 		if (_isActive)
 		{
 			for (int i = 0; i < processorCount; ++i)
@@ -71,10 +89,20 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 				UpdateSystem(process.c1, process.c2);
 			}
 		}
+
+		#if UNITY_EDITOR
+		if (info.ShowInfo)
+			info.StopUpdateTimer();
+		#endif
 	}
 
 	void _ProcessFixedUpdate()
 	{
+		#if UNITY_EDITOR
+		if (info.ShowInfo)
+			info.StartFixedUpdateTimer();
+		#endif
+
 		if (_isActive)
 		{
 			for (int i = 0; i < processorCount; ++i)
@@ -83,6 +111,11 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 				FixedUpdateSystem(process.c1, process.c2);
 			}
 		}
+
+		#if UNITY_EDITOR
+		if (info.ShowInfo)
+			info.StopFixedUpdateTimer();
+		#endif
 	}
 
 	#region Public Functions
@@ -141,6 +174,10 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 	{
 		OnEnableCallback += () => EntityManager.instance.AddEntityEvent(callback);
 		OnDisableCallback += () => EntityManager.instance.RemoveEntityEvent(callback);
+
+		#if UNITY_EDITOR
+		info.EntityEvents.Add(typeof(E));
+		#endif
 	}
 
 	/// <summary>
@@ -152,6 +189,10 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 	{
 		OnEnableCallback += () => Group<C>.instance.EnableComponentCallback += callback;
 		OnDisableCallback += () => Group<C>.instance.EnableComponentCallback -= callback;
+
+		#if UNITY_EDITOR
+		info.EnableComponentEvent.Add(typeof(C));
+		#endif
 	}
 
 	/// <summary>
@@ -163,6 +204,10 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 	{
 		OnEnableCallback += () => Group<C>.instance.DisableComponentCallback += callback;
 		OnDisableCallback += () => Group<C>.instance.DisableComponentCallback -= callback;
+
+		#if UNITY_EDITOR
+		info.DisableComponentEvent.Add(typeof(C));
+		#endif
 	}
 
 	/// <summary>
@@ -174,6 +219,10 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 	{
 		OnEnableCallback += () => EntityManager.instance.AddSystemEvent(callback);
 		OnDisableCallback += () => EntityManager.instance.RemoveSystemEvent(callback);
+
+		#if UNITY_EDITOR
+		info.SystemEvents.Add(typeof(E));
+		#endif
 	}
 
 	/// <summary>

@@ -10,11 +10,11 @@ public class EnemyDamageSystem : EntitySystem, UpdateSystem
 		AddEntityEvent<BulletCollisionEvent>(OnBulletCollisionEvent);
 	}
 
-	void OnBulletCollisionEvent(Entity sender, Entity reciever, BulletCollisionEvent args)
+	void OnBulletCollisionEvent(Entity entity, BulletCollisionEvent args)
 	{
-		if (reciever.Has<EnemyComponent>())
+		if (entity.Has<EnemyComponent>())
 		{
-			var spin = reciever.GetOrAdd<SpinComponent>();
+			var spin = entity.GetOrAdd<SpinComponent>();
 			spin.timeSpinning = 0;
 			spin.enabled = true;
 		}

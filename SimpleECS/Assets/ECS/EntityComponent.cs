@@ -43,7 +43,7 @@ public abstract class EntityComponent<C> : EntityComponent where C : EntityCompo
 		if (_isRegistered)								// Only Run code if this component has been registered to Entity
 		{
 			holder.enabled = true;
-			entity[_componentID] = holder;				// Holder needs to be reassigned since it's a struct
+			entity[_componentID] = holder;			// Holder needs to be reassigned since it's a struct
 			Group<C>.instance.EnableComponent((C)this);	// This Callback Keeps the Systems Up-To-Date
 		}
 	}
@@ -52,9 +52,9 @@ public abstract class EntityComponent<C> : EntityComponent where C : EntityCompo
 	{
 		if (_isRegistered)
 		{
+			Group<C>.instance.DisableComponent((C)this);
 			holder.enabled = false;
 			entity[_componentID] = holder;
-			Group<C>.instance.DisableComponent((C)this);
 		}
 	}
 

@@ -17,6 +17,4 @@ public class PlayerShootSystem : EntitySystem<PlayerComponent, InputComponent>, 
 			player.lastShotTime = Time.time;
 		}
 	}
-
-
 }

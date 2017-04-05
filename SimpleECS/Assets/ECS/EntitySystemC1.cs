@@ -8,10 +8,6 @@ using SimpleECS.Internal;
 public abstract class EntitySystem<C1> : BaseEntitySystem, IEntityCount
 	where C1 : EntityComponent<C1>
 {
-	/// 				///
-	///   Properties	///
-	/// 				///
-
 	C1[] components		// reference to component group
 	{
 		get {return Group<C1>.instance.components;}
@@ -25,10 +21,6 @@ public abstract class EntitySystem<C1> : BaseEntitySystem, IEntityCount
 	bool _isActive;								// flags if system is active, needed since .enabled wasn't reliable
 	Action OnEnableCallback = delegate {};		// callbacks used to manage events during system enable and disable
 	Action OnDisableCallback = delegate {};
-
-	/// 				///
-	///   Unity Events	///
-	/// 				///
 
 	void Awake()
 	{
@@ -89,10 +81,7 @@ public abstract class EntitySystem<C1> : BaseEntitySystem, IEntityCount
 		}
 	}
 		
-	/// 					///
-	///   Public Functions	///
-	/// 					///
-
+	#region Public Functions
 
 	/// <summary>
 	/// Method is Called Only Once during System Instantiation.
@@ -126,24 +115,72 @@ public abstract class EntitySystem<C1> : BaseEntitySystem, IEntityCount
 	}
 
 	/// <summary>
-	/// Subscribes Callback to the Event Handler.
-	/// Callback will fire on Entity the Event is sent to.
-	/// Events should only be added during the Initialize System override. 
-	/// Events are automatically added and removed during System enabled or disabled.
-	/// </summary>
-	public void AddEvent<E>(EntityEvent<E> callback)
-	{
-		OnEnableCallback += () => EntityManager.instance.AddEvent(callback);
-		OnDisableCallback += () => EntityManager.instance.RemoveEvent(callback);
-	}
-
-	/// <summary>
 	/// Returns how many Entities are currently using this System
 	/// </summary>
 	public int GetEntityCount ()
 	{
 		return componentCount;
 	}
+
+	#endregion
+
+	#region SystemEvents
+
+	/// <summary>
+	/// Subscribes callback to the Event Handler.
+	/// Callback will be invoked when the event is sent to an entity.
+	/// Events should only be added during Initialize System. 
+	/// Events are automatically added and removed when System is enabled or disabled.
+	/// </summary>
+	public void AddEntityEvent<E>(EntityEvent<E> callback)	// using simple lambda functions to automate adding and removing events
+	{
+		OnEnableCallback += () => EntityManager.instance.AddEntityEvent(callback);
+		OnDisableCallback += () => EntityManager.instance.RemoveEntityEvent(callback);
+	}
+
+	/// <summary>
+	/// Subscribes callback to the Event Handler.
+	/// Callback will fire when component is enabled.
+	/// Events are automatically added and removed when System is enabled or disabled.
+	/// </summary>
+	public void AddEnableComponentEvent<C>(Action<C> callback) where C : EntityComponent<C>
+	{
+		OnEnableCallback += () => Group<C>.instance.EnableComponentCallback += callback;
+		OnDisableCallback += () => Group<C>.instance.EnableComponentCallback -= callback;
+	}
+
+	/// <summary>
+	/// Subscribes callback to the Event Handler.
+	/// Callback will fire when component is disabled.
+	/// Events are automatically added and removed when System is enabled or disabled.
+	/// </summary>
+	public void AddDisableComponentEvent<C>(Action<C> callback) where C : EntityComponent<C>
+	{
+		OnEnableCallback += () => Group<C>.instance.DisableComponentCallback += callback;
+		OnDisableCallback += () => Group<C>.instance.DisableComponentCallback -= callback;
+	}
+
+	/// <summary>
+	/// Subscribes callback to the Event Handler.
+	/// Callback will fire on when a System Sends the Event.
+	/// Events are automatically added and removed when System is enabled or disabled.
+	/// </summary>
+	public void AddSystemEvent<E>(Action<E> callback)
+	{
+		OnEnableCallback += () => EntityManager.instance.AddSystemEvent(callback);
+		OnDisableCallback += () => EntityManager.instance.RemoveSystemEvent(callback);
+	}
+
+	/// <summary>
+	/// Call the Event on all subscribed systems with specified arguments.
+	/// </summary>
+	public void SendSystemEvent<E>(E args)
+	{
+		EntityManager.instance.CallSystemEvent(args);
+	}
+
+	#endregion
+
 }
 
 
@@ -174,8 +211,11 @@ namespace SimpleECS.Internal
 		public C[] components = new C[8];										// current list of all enabled components of type
 		public int ComponentCount = 0;
 
-		public System.Action<Entity> EnabledComponentCallback = delegate {};	// gets called when a component is enabled
-		public System.Action<Entity> DisabledComponentCallback = delegate {};	// gets called when a component is disabled
+		public System.Action<Entity> EnabledComponentEntityCallback = delegate {};	// gets called when a component is enabled
+		public System.Action<Entity> DisabledComponentEntityCallback = delegate {};	// gets called when a component is disabled
+
+		public System.Action<C> EnableComponentCallback;
+		public System.Action<C> DisableComponentCallback;
 
 		public void EnableComponent(C c)										// Called by the entity component when enabled
 		{
@@ -187,7 +227,11 @@ namespace SimpleECS.Internal
 			components[ComponentCount] = c; 									// add component to the end of array
 			entityLookup.Add(c.entity.ID, ComponentCount); 						// add component index to dictionary lookups
 			ComponentCount++;													// increaese amount of components
-			EnabledComponentCallback(c.entity);									// signal to all groups that a new component has been added
+
+			if (EnabledComponentEntityCallback != null)
+				EnabledComponentEntityCallback(c.entity);							// signal to all groups that a new component has been added
+			if (EnableComponentCallback != null)
+				EnableComponentCallback(c);
 		}
 
 		public void DisableComponent(C c)
@@ -199,7 +243,11 @@ namespace SimpleECS.Internal
 
 			-- ComponentCount;													// reduce the amount of components
 			entityLookup.Remove(c.entity.ID);									// remove entity from lookup
-			DisabledComponentCallback(c.entity);								// signal to groups that entity has been removed
+
+			if (DisabledComponentEntityCallback != null)
+				DisabledComponentEntityCallback(c.entity);							// signal to groups that entity has been removed
+			if (DisableComponentCallback != null)
+				DisableComponentCallback(c);
 		}
 
 		List<Entity> entityList = new List<Entity>();							// function to return alist of entities in this group
@@ -221,8 +269,8 @@ namespace SimpleECS.Internal
 
 		public override void Destroy ()											// on Destroy clear out all callbacks and remove the instance reference
 		{
-			EnabledComponentCallback = null;
-			DisabledComponentCallback = null;
+			EnabledComponentEntityCallback = null;
+			DisabledComponentEntityCallback = null;
 			_i = null;
 		}
 	}

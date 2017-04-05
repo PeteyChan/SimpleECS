@@ -7,7 +7,7 @@ public class EnemyDamageSystem : EntitySystem, UpdateSystem
 {
 	public override void InitializeSystem ()
 	{
-		AddEvent<BulletCollisionEvent>(OnBulletCollisionEvent);
+		AddEntityEvent<BulletCollisionEvent>(OnBulletCollisionEvent);
 	}
 
 	void OnBulletCollisionEvent(Entity sender, Entity reciever, BulletCollisionEvent args)

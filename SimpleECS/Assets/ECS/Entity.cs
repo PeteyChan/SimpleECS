@@ -141,7 +141,7 @@ public sealed class Entity : MonoBehaviour
 	/// </summary>
 	public void SendEvent<E>(Entity sender, E args)
 	{
-		EntityManager.instance.InvokeEvent(sender, this, args);
+		EntityManager.instance.CallEntityEvent(sender, this, args);
 	}
 }
 
@@ -153,11 +153,6 @@ namespace SimpleECS.Internal
 	[System.Serializable]
 	public struct ComponentHolder
 	{
-		public ComponentHolder(bool has, bool enabled, EntityComponent component)
-		{
-			this.has = has; this.enabled = enabled; this.component = component;
-		}
-
 		public bool has;
 		public bool enabled;
 		public EntityComponent component;

@@ -9,11 +9,6 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 	where C1 : EntityComponent<C1> 
 	where C2 : EntityComponent<C2>
 {
-
-	/// 				///
-	///   Properties	///
-	/// 				///
-
 	Processor<C1, C2>[] processors
 	{
 		get {return Group<C1,C2>.instance.processors;}
@@ -28,11 +23,6 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 	bool _isActive;	// flags if system is active
 	Action OnEnableCallback = delegate {};
 	Action OnDisableCallback = delegate {};
-
-
-	/// 				///
-	///   Unity Events	///
-	/// 				///
 
 	void Awake()
 	{
@@ -95,9 +85,7 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 		}
 	}
 
-	/// 					///
-	///   Public Functions	///
-	/// 					///
+	#region Public Functions
 
 	/// <summary>
 	/// Method is Called Only Once during System Instantiation.
@@ -132,24 +120,72 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 	}
 
 	/// <summary>
-	/// Subscribes Callback to the Event Handler.
-	/// Callback will fire on Entity the Event is sent to.
-	/// Events should only be added during the Initialize System override. 
-	/// Events are automatically added and removed during System enabled or disabled.
-	/// </summary>
-	public void AddEvent<E>(EntityEvent<E> callback)
-	{
-		OnEnableCallback += () => EntityManager.instance.AddEvent(callback);
-		OnDisableCallback += () => EntityManager.instance.RemoveEvent(callback);
-	}
-
-	/// <summary>
 	/// Returns how many Entities are currently using this System
 	/// </summary>
 	public int GetEntityCount ()
 	{
 		return processorCount;
 	}
+
+	#endregion
+
+	#region SystemEvents
+
+	/// <summary>
+	/// Subscribes callback to the Event Handler.
+	/// Callback will be invoked when the event is sent to an entity.
+	/// Events should only be added during Initialize System. 
+	/// Events are automatically added and removed when System is enabled or disabled.
+	/// </summary>
+	public void AddEntityEvent<E>(EntityEvent<E> callback)	// using simple lambda functions to automate adding and removing events
+	{
+		OnEnableCallback += () => EntityManager.instance.AddEntityEvent(callback);
+		OnDisableCallback += () => EntityManager.instance.RemoveEntityEvent(callback);
+	}
+
+	/// <summary>
+	/// Subscribes callback to the Event Handler.
+	/// Callback will fire when component is enabled.
+	/// Events are automatically added and removed when System is enabled or disabled.
+	/// </summary>
+	public void AddEnableComponentEvent<C>(Action<C> callback) where C : EntityComponent<C>
+	{
+		OnEnableCallback += () => Group<C>.instance.EnableComponentCallback += callback;
+		OnDisableCallback += () => Group<C>.instance.EnableComponentCallback -= callback;
+	}
+
+	/// <summary>
+	/// Subscribes callback to the Event Handler.
+	/// Callback will fire when component is disabled.
+	/// Events are automatically added and removed when System is enabled or disabled.
+	/// </summary>
+	public void AddDisableComponentEvent<C>(Action<C> callback) where C : EntityComponent<C>
+	{
+		OnEnableCallback += () => Group<C>.instance.DisableComponentCallback += callback;
+		OnDisableCallback += () => Group<C>.instance.DisableComponentCallback -= callback;
+	}
+
+	/// <summary>
+	/// Subscribes callback to the Event Handler.
+	/// Callback will fire on when a System Sends the Event.
+	/// Events are automatically added and removed when System is enabled or disabled.
+	/// </summary>
+	public void AddSystemEvent<E>(Action<E> callback)
+	{
+		OnEnableCallback += () => EntityManager.instance.AddSystemEvent(callback);
+		OnDisableCallback += () => EntityManager.instance.RemoveSystemEvent(callback);
+	}
+
+	/// <summary>
+	/// Call the Event on all subscribed systems with specified arguments.
+	/// </summary>
+	public void SendSystemEvent<E>(E args)
+	{
+		EntityManager.instance.CallSystemEvent(args);
+	}
+
+	#endregion
+
 }
 
 namespace SimpleECS.Internal
@@ -170,11 +206,11 @@ namespace SimpleECS.Internal
 					_i.AddEntities(Group<C1>.instance.GetEntities());						// On Instantiate Initialize processor list
 					_i.AddEntities(Group<C2>.instance.GetEntities());
 
-					Group<C1>.instance.EnabledComponentCallback += _i.OnEnableComponent;	// Subscribe to enable and disable callbacks to keep group up-to-date
-					Group<C2>.instance.EnabledComponentCallback += _i.OnEnableComponent;
+					Group<C1>.instance.EnabledComponentEntityCallback += _i.OnEnableComponent;	// Subscribe to enable and disable callbacks to keep group up-to-date
+					Group<C2>.instance.EnabledComponentEntityCallback += _i.OnEnableComponent;
 
-					Group<C1>.instance.DisabledComponentCallback += _i.OnDisableComponent;
-					Group<C2>.instance.DisabledComponentCallback += _i.OnDisableComponent;
+					Group<C1>.instance.DisabledComponentEntityCallback += _i.OnDisableComponent;
+					Group<C2>.instance.DisabledComponentEntityCallback += _i.OnDisableComponent;
 				}
 				return _i;
 			}

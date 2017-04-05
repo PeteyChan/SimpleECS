@@ -19,7 +19,6 @@ namespace SimpleECS.Internal
 	{
 		
 	}
-
 }
 
 
@@ -28,17 +27,9 @@ namespace SimpleECS.Internal
 /// </summary>
 public abstract class EntitySystem : BaseEntitySystem
 {
-	/// 				///
-	///   Properties	///
-	/// 				///
-
 	bool _isActive;							// the built in enable flag is a bit unreliable so rolling my own bool
 	Action OnEnableCallback = delegate {};	// I use these callbacks to automatically assign and remove entity events
 	Action OnDisableCallback = delegate {};
-
-	/// 				///
-	///   Unity Events	///
-	/// 				///
 
 	void Awake()
 	{
@@ -88,9 +79,7 @@ public abstract class EntitySystem : BaseEntitySystem
 		if (_isActive) FixedUpdateSystem();
 	}
 
-	/// 					///
-	///   Public Functions	///
-	/// 					///
+	#region Public Functions
 
 	/// <summary>
 	/// Method is Called Only Once during System Instantiation.
@@ -111,17 +100,65 @@ public abstract class EntitySystem : BaseEntitySystem
 	public virtual void FixedUpdateSystem()
 	{}
 
+	#endregion
+
+	#region SystemEvents
+
 	/// <summary>
-	/// Subscribes Callback to the Event Handler.
-	/// Callback will fire on Entity the Event is sent to.
-	/// Events should only be added during the Initialize System override. 
-	/// Events are automatically added and removed during System enabled or disabled.
+	/// Subscribes callback to the Event Handler.
+	/// Callback will be invoked when the event is sent to an entity.
+	/// Events should only be added during Initialize System. 
+	/// Events are automatically added and removed when System is enabled or disabled.
 	/// </summary>
-	public void AddEvent<E>(EntityEvent<E> callback)	// using simple lambda functions to automate adding and removing events
+	public void AddEntityEvent<E>(EntityEvent<E> callback)	// using simple lambda functions to automate adding and removing events
 	{
-		OnEnableCallback += () => EntityManager.instance.AddEvent(callback);
-		OnDisableCallback += () => EntityManager.instance.RemoveEvent(callback);
+		OnEnableCallback += () => EntityManager.instance.AddEntityEvent(callback);
+		OnDisableCallback += () => EntityManager.instance.RemoveEntityEvent(callback);
 	}
+
+	/// <summary>
+	/// Subscribes callback to the Event Handler.
+	/// Callback will fire when component is enabled.
+	/// Events are automatically added and removed when System is enabled or disabled.
+	/// </summary>
+	public void AddEnableComponentEvent<C>(Action<C> callback) where C : EntityComponent<C>
+	{
+		OnEnableCallback += () => Group<C>.instance.EnableComponentCallback += callback;
+		OnDisableCallback += () => Group<C>.instance.EnableComponentCallback -= callback;
+	}
+
+	/// <summary>
+	/// Subscribes callback to the Event Handler.
+	/// Callback will fire when component is disabled.
+	/// Events are automatically added and removed when System is enabled or disabled.
+	/// </summary>
+	public void AddDisableComponentEvent<C>(Action<C> callback) where C : EntityComponent<C>
+	{
+		OnEnableCallback += () => Group<C>.instance.DisableComponentCallback += callback;
+		OnDisableCallback += () => Group<C>.instance.DisableComponentCallback -= callback;
+	}
+		
+	/// <summary>
+	/// Subscribes callback to the Event Handler.
+	/// Callback will fire on when a System Sends the Event.
+	/// Events are automatically added and removed when System is enabled or disabled.
+	/// </summary>
+	public void AddSystemEvent<E>(Action<E> callback)
+	{
+		OnEnableCallback += () => EntityManager.instance.AddSystemEvent(callback);
+		OnDisableCallback += () => EntityManager.instance.RemoveSystemEvent(callback);
+	}
+
+	/// <summary>
+	/// Call the Event on all subscribed systems with specified arguments.
+	/// </summary>
+	public void SendSystemEvent<E>(E args)
+	{
+		EntityManager.instance.CallSystemEvent(args);
+	}
+
+	#endregion
+
 }
 
 

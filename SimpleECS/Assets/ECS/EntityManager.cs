@@ -24,8 +24,6 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 
 		int ComponentCount = -1; 	// Cache of how many components are in the Assembly
 		public Dictionary<System.Type, int> componentIDLookup = new Dictionary<System.Type, int>();	// Lookup table for component ID's
-		public Dictionary<int , object> entityEventLookup = new Dictionary<int, object>();				// Lookup table for Events, same reason as above
-		public Stack<Group> groups = new Stack<Group>(); 		// Keeps track of all groups so I can clear them out when not needed
 
 		public Action UpdateCallback = delegate {};			// this is the actual update callback, Systems just register thier Update calls to this
 		public Action FixedUpdateCallback = delegate {};	// same as above except with fixed update
@@ -95,6 +93,8 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 
 		#region GetGroups
 
+		public Stack<Group> groups = new Stack<Group>(); 			// Keeps track of all groups so I can clear them out when not needed
+
 		public Group<C> GetGroup<C>() where C : EntityComponent<C>	// Returns an instance of a group, gets called during Group Instantiation
 		{
 			Group<C> newGroup = new Group<C>(GetEntityComponentID<C>());
@@ -145,13 +145,23 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 		}
 		#endregion
 
+		#region Events
+
+		public Dictionary<int , object> entityEventLookup = new Dictionary<int, object>();				// Lookup table for Events, same reason as above
+		public Dictionary<int , object> systemEventLookup = new Dictionary<int, object>();
+
 		/// <summary>
 		/// Entity Events
 		/// </summary>
 
-		public class EventHolder<E>	// helper class to store Event delegate
+		public class EntityEventHolder<E>	// helper class to store Event delegate
 		{
-			public EntityEvent<E> entityEvent = delegate{};
+			public EntityEvent<E> entityEvent = delegate {};
+		}
+
+		public class SystemEventHolder<E>
+		{
+			public Action<E> systemEvent = delegate {};
 		}
 
 		public class EventID
@@ -175,36 +185,69 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			}
 		}
 
-		public void AddEvent<E>(EntityEvent<E> callback) // Adds an Event Listener
+		public void AddEntityEvent<E>(EntityEvent<E> callback) // Adds an Event Listener
 		{
 			object e;
 			if (entityEventLookup.TryGetValue(EventID<E>.ID, out e))
 			{
-				((EventHolder<E>)e).entityEvent += callback;
+				((EntityEventHolder<E>)e).entityEvent += callback;
 				return;
 			}
 
-			EventHolder<E> newEvent = new EventHolder<E>();
+			EntityEventHolder<E> newEvent = new EntityEventHolder<E>();
 			newEvent.entityEvent += callback;
 
 			entityEventLookup.Add(EventID<E>.ID, newEvent);
 		}
 
-		public void RemoveEvent<E>(EntityEvent<E> callback)	// Removes Event Listener
+		public void RemoveEntityEvent<E>(EntityEvent<E> callback)	// Removes Event Listener
 		{
 			object e;
 			if (entityEventLookup.TryGetValue(EventID<E>.ID, out e))
 			{	
-				((EventHolder<E>)e).entityEvent -= callback;
+				((EntityEventHolder<E>)e).entityEvent -= callback;
 			}
 		}
 
-		public void InvokeEvent<E>(Entity sender, Entity reciever, E args)	// Calls Event with Arguments
+		public void CallEntityEvent<E>(Entity sender, Entity reciever, E args)	// Calls Event with Arguments
 		{
 			object e;
 			if (entityEventLookup.TryGetValue(EventID<E>.ID, out e))
-				((EventHolder<E>)e).entityEvent(sender, reciever, args);
+				((EntityEventHolder<E>)e).entityEvent(sender, reciever, args);
 		}
+
+		public void AddSystemEvent<E>(Action<E> callback) // Adds an Event Listener
+		{
+			object e;
+			if (systemEventLookup.TryGetValue(EventID<E>.ID, out e))
+			{
+				((SystemEventHolder<E>)e).systemEvent += callback;
+				return;
+			}
+
+			SystemEventHolder<E> newEvent = new SystemEventHolder<E>();
+			newEvent.systemEvent += callback;
+
+			systemEventLookup.Add(EventID<E>.ID, newEvent);
+		}
+
+		public void RemoveSystemEvent<E>(Action<E> callback)	// Removes Event Listener
+		{
+			object e;
+			if (systemEventLookup.TryGetValue(EventID<E>.ID, out e))
+			{	
+				((SystemEventHolder<E>)e).systemEvent -= callback;
+			}
+		}
+
+		public void CallSystemEvent<E>(E args)	// Calls Event with Arguments
+		{
+			object e;
+			if (systemEventLookup.TryGetValue(EventID<E>.ID, out e))
+				((SystemEventHolder<E>)e).systemEvent(args);
+		}
+
+		#endregion
 	}
 		 
 	/// 

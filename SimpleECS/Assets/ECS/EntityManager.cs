@@ -24,6 +24,9 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 		#if UNITY_EDITOR
 		public List<SystemInfo> SystemsInfo = new List<SystemInfo>();	// systems is added to by the system on awake
 		public int SystemInfoIndex;
+		System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
+		public double UpdateTime;
+		public double FixedUpdateTime;
 		#endif
 
 		int ComponentCount = -1; 	// Cache of how many components are in the Assembly
@@ -68,12 +71,31 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 
 		void Update()
 		{
-			UpdateCallback();	
+			#if UNITY_EDITOR
+			timer.Reset();
+			timer.Start();
+			#endif
+
+			UpdateCallback();
+
+			#if UNITY_EDITOR
+			timer.Stop();
+			UpdateTime = timer.Elapsed.TotalMilliseconds;
+			#endif
 		}
 
 		void FixedUpdate()
 		{
+			#if UNITY_EDITOR
+			timer.Reset();
+			timer.Start();
+			#endif
+
 			FixedUpdateCallback();
+			#if UNITY_EDITOR
+			timer.Stop();
+			FixedUpdateTime = timer.Elapsed.TotalMilliseconds;
+			#endif
 		}
 
 		int newEntityId;				
@@ -335,6 +357,11 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 				EditorGUILayout.LabelField(string.Format("Systems : {0}", manager.SystemsInfo.Count), GUILayout.MaxWidth(128f));
 				EditorGUILayout.LabelField(string.Format("Component Types : {0}", manager.componentIDLookup.Count));
 				EditorGUILayout.EndHorizontal();
+				EditorGUILayout.BeginHorizontal();
+				EditorGUILayout.LabelField(string.Format("Update : {0:F2} ms", manager.UpdateTime), GUILayout.MaxWidth(128f));
+				EditorGUILayout.LabelField(string.Format("Fixed Update : {0:F2} ms", manager.FixedUpdateTime));
+				EditorGUILayout.EndHorizontal();
+
 				EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 
 				EditorGUILayout.BeginHorizontal();
@@ -370,6 +397,12 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 				for (int i = manager.SystemInfoIndex ; i < Mathf.Min(manager.SystemsInfo.Count, manager.SystemInfoIndex + 25); ++i)
 				{
 					var info = manager.SystemsInfo[i];
+
+					if (!info.System.isActiveAndEnabled)
+					{
+						info.ShowInfo = false;
+						GUI.enabled = false;
+					}
 
 					EditorGUILayout.BeginHorizontal();
 					info.ShowInfo = EditorGUI.Foldout(GUILayoutUtility.GetRect(8f , 16f), info.ShowInfo, "");
@@ -458,6 +491,8 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 
 						EditorGUI.indentLevel -= 2;
 					}
+
+					GUI.enabled = true;
 				}
 				EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 				EditorUtility.SetDirty(target);

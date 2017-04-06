@@ -2,7 +2,7 @@
 
 ### Motivation
 
-Ever since I first came across Entity Component Systems I thought it was a great Idea. Separating data from the logic is genius, no more questioning "should this belong to this class?" nonsense. To me the less thinking I need to do when to make my game the better. I searched for a bit for other Entity Systems but thier workflows often involved too much manual setup of entities and/or components to tie the systems to Unity for my liking. I just make games for a hobby and I'm also quite fond of Unity's simple drag and drop method of creating prefabs. It didn't look too hard to roll my own so I thought I'd give it a go and this is the result.
+Ever since I first came across Entity Component Systems I thought it was a great Idea. Separating data from the logic is genius, no more questioning "should this belong to this class?" nonsense. To me the less thinking I need to do when to make my game the better. I searched for a bit for other Entity Systems but thier workflows often involved too much manual setup of entities and/or components. I just make games for a hobby so I wanted something more similar to Unity's current workflow. It didn't look too hard to roll my own so I gave it a go and this is the result.
 
 ## Features
 - Freely enable and disable Entity Systems during runtime

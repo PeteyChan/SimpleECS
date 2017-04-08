@@ -22,7 +22,7 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 
 
 		#if UNITY_EDITOR
-		public List<SystemInfo> SystemsInfo = new List<SystemInfo>();	// systems is added to by the system on awake
+		public List<SystemsInfo> SystemsInfo = new List<SystemsInfo>();	// systems is added to by the system on awake
 		public int SystemInfoIndex;
 		System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
 		public double UpdateTime;
@@ -284,20 +284,18 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 
 	#if UNITY_EDITOR
 
-	public class SystemInfo
+	public class SystemsInfo
 	{
 		public BaseEntitySystem System;
 		public bool ShowInfo;
-		public List<Type> ComponentPoolTypes = new List<Type>();
+		public bool ShowFps;
+		public Type Group = null;
 
 		public List<Type> EntityEvents = new List<Type>();
 		public bool showEntityEvents;
 
-		public List<Type> EnableComponentEvent = new List<Type>();
-		public bool showEnableComponentEvent;
-
-		public List<Type> DisableComponentEvent = new List<Type>();
-		public bool showDisableComponentEvent;
+		public int AddGroupEvent = 0;
+		public int RemoveGroupEvent = 0;
 
 		public List<Type> SystemEvents = new List<Type>();
 		public bool showSystemEvents;
@@ -306,7 +304,6 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 		public double FixedUpdateTime;
 
 		System.Diagnostics.Stopwatch timer = new global::System.Diagnostics.Stopwatch();
-		System.Diagnostics.Stopwatch fixedTimer = new global::System.Diagnostics.Stopwatch();
 
 		public void StartUpdateTimer()
 		{
@@ -322,14 +319,14 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 
 		public void StartFixedUpdateTimer()
 		{
-			fixedTimer.Start();
+			timer.Start();
 		}
 
 		public void StopFixedUpdateTimer()
 		{
-			fixedTimer.Stop();
-			FixedUpdateTime = fixedTimer.Elapsed.TotalMilliseconds;
-			fixedTimer.Reset();
+			timer.Stop();
+			FixedUpdateTime = timer.Elapsed.TotalMilliseconds;
+			timer.Reset();
 		}
 	}
 
@@ -343,164 +340,182 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			manager = (EntityManager)target;
 		}
 
+		void OnDisable()
+		{
+			foreach(var info in manager.SystemsInfo)
+			{
+				info.ShowFps = false;
+			}
+		}
+
+		string lastSearch = "";
+		string currentSearch = "";
+
+		public class SearchFilter
+		{
+			public SearchFilter(int order, SystemsInfo info)
+			{
+				this.order = order;
+				this.info = info;
+			}
+			public int order;
+			public SystemsInfo info;
+		}
+
+		List<SearchFilter> searchResults = new List<SearchFilter>();
+		int searchIndex;
+
+
+		enum SearchType
+		{ 
+			Name, Update, FixedUpdate, Component  
+		}
+
+		SearchType searchtype = SearchType.Name;
+		SearchType lastSearchType = SearchType.Name;
+		bool refreshSearch;
+
 		public override void OnInspectorGUI ()
 		{
 			if (Application.isPlaying)
 			{
 				EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-
 				EditorGUILayout.BeginHorizontal();
-				EditorGUILayout.LabelField(string.Format("Entities : {0}", manager.totalEntityCount), GUILayout.MaxWidth(128f));
-				EditorGUILayout.LabelField(string.Format("Groups : {0}", manager.groups.Count));
+				EditorGUILayout.LabelField(new GUIContent(string.Format("Entities : {0}", manager.totalEntityCount), "Total amount of instantiated Entities"),GUILayout.MaxWidth(128f));
+				EditorGUILayout.LabelField(new GUIContent(string.Format("Groups : {0}", manager.groups.Count), "Total amount of instantiated Groups"));
 				EditorGUILayout.EndHorizontal();
 				EditorGUILayout.BeginHorizontal();
-				EditorGUILayout.LabelField(string.Format("Systems : {0}", manager.SystemsInfo.Count), GUILayout.MaxWidth(128f));
-				EditorGUILayout.LabelField(string.Format("Component Types : {0}", manager.componentIDLookup.Count));
+				EditorGUILayout.LabelField(new GUIContent(string.Format("Systems : {0}", manager.SystemsInfo.Count), "Total amount of instantiated Systems"), GUILayout.MaxWidth(128f));
+				EditorGUILayout.LabelField(new GUIContent(string.Format("Component Types : {0}", manager.componentIDLookup.Count), "Total amount of unique component types"));
 				EditorGUILayout.EndHorizontal();
 				EditorGUILayout.BeginHorizontal();
-				EditorGUILayout.LabelField(string.Format("Update : {0:F2} ms", manager.UpdateTime), GUILayout.MaxWidth(128f));
-				EditorGUILayout.LabelField(string.Format("Fixed Update : {0:F2} ms", manager.FixedUpdateTime));
+				EditorGUILayout.LabelField(new GUIContent(string.Format("Update : {0:F2} ms", manager.UpdateTime) , "Total time to update all Update Systems")  , GUILayout.MaxWidth(128f));
+				EditorGUILayout.LabelField(new GUIContent(string.Format("Fixed Update : {0:F2} ms", manager.FixedUpdateTime), "Total time to update all Fixed Update Systems"));
 				EditorGUILayout.EndHorizontal();
-
 				EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 
-				EditorGUILayout.BeginHorizontal();
-				if (manager.SystemsInfo.Count >= 25)
-				{
-					if (manager.SystemInfoIndex >= 25)
-					{
-						if (GUILayout.Button("<- Previous 25", GUILayout.MaxWidth(Screen.width/2f - 24f)))
-							manager.SystemInfoIndex -= 25;
 
-						if (manager.SystemInfoIndex + 25 > manager.SystemsInfo.Count)
+				currentSearch = EditorGUILayout.TextField (new GUIContent("Search Systems", "Perform filtering of Systems"), currentSearch);
+				searchtype = (SearchType)EditorGUILayout.EnumPopup(new GUIContent("Search Type", 
+						"Name : Search by Name \nUpdate : Search update systems by name \nFixedUpdate : Search Fixed Update systems by name \nComponent : Search by systems by component type"), searchtype);
+
+				if (!string.IsNullOrEmpty(currentSearch))
+				{
+					currentSearch = currentSearch.Replace(" ", "");
+
+					if (currentSearch != lastSearch || searchtype != lastSearchType || refreshSearch)
+					{
+						lastSearch = currentSearch;
+						lastSearchType = searchtype;
+						searchResults.Clear();
+
+						switch(searchtype)
 						{
-							GUI.enabled = false;
-							GUILayout.Button("Next 25 ->", GUILayout.MaxWidth(Screen.width/2f - 24f));
-							GUI.enabled = true;
+						case SearchType.Name:
+							NameSearch();
+							break;
+						case SearchType.Update:
+							UpdateSearch();
+							break;
+						case SearchType.FixedUpdate:
+							FixedSearch();
+							break;
+						case SearchType.Component:
+							ComponentSearch();
+							break;
+						default: 
+							NameSearch();
+							break;
 						}
 					}
-					if (manager.SystemInfoIndex + 25 < manager.SystemsInfo.Count)
-					{
-						if (manager.SystemInfoIndex < 25)
-						{
-							GUI.enabled = false;
-							GUILayout.Button("<- Previous 25", GUILayout.MaxWidth(Screen.width/2f - 24f));
-							GUI.enabled = true;
-						}
 
-						if (GUILayout.Button("Next 25 ->", GUILayout.MaxWidth(Screen.width/2f - 24f)))
-							manager.SystemInfoIndex += 25;
+					DrawPrevAndNextButtons(ref searchIndex, searchResults.Count);
+
+					for(int i = searchIndex; i < Mathf.Min(searchResults.Count, searchIndex + 25); ++i)
+					{
+						DisplaySystemInfo(searchResults[i].order, searchResults[i].info);
 					}
 				}
-				EditorGUILayout.EndHorizontal();
+				else DrawAllSystems();
 
-				for (int i = manager.SystemInfoIndex ; i < Mathf.Min(manager.SystemsInfo.Count, manager.SystemInfoIndex + 25); ++i)
-				{
-					var info = manager.SystemsInfo[i];
-
-					if (!info.System.isActiveAndEnabled)
-					{
-						info.ShowInfo = false;
-						GUI.enabled = false;
-					}
-
-					EditorGUILayout.BeginHorizontal();
-					info.ShowInfo = EditorGUI.Foldout(GUILayoutUtility.GetRect(8f , 16f), info.ShowInfo, "");
-
-					EditorGUI.LabelField(GUILayoutUtility.GetRect(Screen.width - 129f - 32f, 16f), string.Format("{0} : {1}", i, info.System.GetType()));
-
-					if (info.System.isActiveAndEnabled)
-					{
-						if (info.System is IEntityCount)
-							EditorGUILayout.LabelField(string.Format("| {0} Entities", (info.System as IEntityCount).GetEntityCount()), GUILayout.MaxWidth(128f));
-						else
-							EditorGUILayout.LabelField("", GUILayout.MaxWidth(128f));
-					}
-					else
-					{
-						EditorGUILayout.LabelField("| Disabled" , GUILayout.MaxWidth(128f));
-					}
-					EditorGUILayout.EndHorizontal();
-
-					if (info.ShowInfo)
-					{
-						EditorGUI.indentLevel += 2;
-						if (info.ComponentPoolTypes.Count > 0)
-						{
-							string pool = ":";
-							foreach(var types in info.ComponentPoolTypes)
-							{
-								pool += string.Format(" {0} :", types.ToString());
-							}
-							EditorGUILayout.LabelField(pool);
-						}
-
-						if (info.System is UpdateSystem)
-						{
-							EditorGUILayout.LabelField (string.Format("Update System : {0:F2} ms", info.UpdateTime));
-						}
-
-						if (info.System is FixedUpdateSystem)
-						{
-							EditorGUILayout.LabelField (string.Format("Fixed Update System : {0:F2} ms", info.FixedUpdateTime));
-						}
-
-						if (info.SystemEvents.Count > 0)
-						{
-							EditorGUI.indentLevel ++;
-							info.showSystemEvents = EditorGUILayout.Foldout(info.showSystemEvents, string.Format("System Events : {0}", info.SystemEvents.Count));
-							if (info.showSystemEvents)
-							{
-								ListTypes(info.SystemEvents);
-							}
-							EditorGUI.indentLevel --;
-						}
-
-						if (info.EntityEvents.Count > 0)
-						{
-							EditorGUI.indentLevel ++;
-							info.showEntityEvents = EditorGUILayout.Foldout(info.showEntityEvents, String.Format("EntityEvents : {0}", info.EntityEvents.Count));
-							if (info.showEntityEvents)
-							{
-								ListTypes(info.EntityEvents);
-							}
-							EditorGUI.indentLevel --;
-						}
-
-						if (info.EnableComponentEvent.Count > 0)
-						{
-							EditorGUI.indentLevel ++;
-							info.showEnableComponentEvent = EditorGUILayout.Foldout(info.showEnableComponentEvent, string.Format("Enable Component Events : {0}", info.EnableComponentEvent.Count));
-							if (info.showEnableComponentEvent)
-							{
-								ListTypes(info.EnableComponentEvent);
-							}
-							EditorGUI.indentLevel --;
-						}
-
-						if (info.DisableComponentEvent.Count > 0)
-						{
-							EditorGUI.indentLevel ++;
-							info.showDisableComponentEvent = EditorGUILayout.Foldout(info.showDisableComponentEvent, string.Format("Disable Component Events : {0}", info.DisableComponentEvent.Count));
-							if (info.showDisableComponentEvent)
-							{
-								ListTypes(info.DisableComponentEvent);
-							}
-							EditorGUI.indentLevel --;
-						}
-
-						EditorGUI.indentLevel -= 2;
-					}
-
-					GUI.enabled = true;
-				}
-				EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 				EditorUtility.SetDirty(target);
+
+				var guiStyle = GUI.skin.GetStyle("HelpBox");
+
+				var color = GUI.color;
+				GUI.enabled = false;
+				GUI.color = new Color(1,1,1,2);
+				EditorGUILayout.TextField(GUI.tooltip, guiStyle, GUILayout.Height(72f));
+				GUI.color = color;
+				GUI.enabled = true;
 			}
 			else
 			{
 				EditorGUILayout.HelpBox("SimpleECS Manager class, needs to be in scene for SimpleECS to work. Automatically sets itself to 'Don't Destroy on Load'. When transitioning to a new scene will automatically destroy any duplicate Entity Managers.", MessageType.Info); 
 			}
+		}
+
+		void NameSearch()
+		{
+			int order = 0;
+			foreach(var item in manager.SystemsInfo)
+			{
+				if (item.System.GetType().ToString().IndexOf(currentSearch, StringComparison.OrdinalIgnoreCase) >= 0)
+				{
+					searchResults.Add(new SearchFilter(order, item));
+				}
+				order ++;
+			}
+			searchIndex = 0;
+		}
+
+		void UpdateSearch()
+		{
+			int order = 0;
+			foreach(var item in manager.SystemsInfo)
+			{
+				if (item.System is UpdateSystem)
+				{
+					if (item.System.GetType().ToString().IndexOf(currentSearch, StringComparison.OrdinalIgnoreCase) >= 0)
+					{
+						searchResults.Add(new SearchFilter(order, item));
+					}	
+				}
+				order ++;
+			}
+			searchIndex = 0;
+		}
+
+		void FixedSearch()
+		{
+			int order = 0;
+			foreach(var item in manager.SystemsInfo)
+			{
+				if (item.System is FixedUpdateSystem)
+				{
+					if (item.System.GetType().ToString().IndexOf(currentSearch, StringComparison.OrdinalIgnoreCase) >= 0)
+					{
+						searchResults.Add(new SearchFilter(order, item));
+					}	
+				}
+				order ++;
+			}
+			searchIndex = 0;
+		}
+
+		void ComponentSearch()
+		{
+			int order = 0;
+			foreach(var item in manager.SystemsInfo)
+			{
+				if (item.Group == null) continue;
+				if (item.Group.ToString().IndexOf(currentSearch, StringComparison.OrdinalIgnoreCase) >= 0)
+				{
+					searchResults.Add(new SearchFilter(order, item));
+				}	
+				order ++;
+			}
+			searchIndex = 0;
 		}
 
 		void ListTypes(List<Type> types)
@@ -512,7 +527,178 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			}
 			//EditorGUI.indentLevel --;
 		}
+
+
+
+		void DrawPrevAndNextButtons(ref int index, int systemCount)
+		{
+			EditorGUILayout.BeginHorizontal();
+
+			if (systemCount >= 25)
+			{
+				if (index >= 25)
+				{
+					if (GUILayout.Button("<- Previous 25", GUILayout.MaxWidth(Screen.width/2f - 24f)))
+						index -= 25;
+
+					if (index + 25 > systemCount)
+					{
+						GUI.enabled = false;
+						GUILayout.Button("Next 25 ->", GUILayout.MaxWidth(Screen.width/2f - 24f));
+						GUI.enabled = true;
+					}
+				}
+				if (index + 25 < systemCount)
+				{
+					if (index < 25)
+					{
+						GUI.enabled = false;
+						GUILayout.Button("<- Previous 25", GUILayout.MaxWidth(Screen.width/2f - 24f));
+						GUI.enabled = true;
+					}
+
+					if (GUILayout.Button("Next 25 ->", GUILayout.MaxWidth(Screen.width/2f - 24f)))
+						index += 25;
+				}
+			}
+			EditorGUILayout.EndHorizontal();
+		}
+
+		void DrawAllSystems()
+		{
+			DrawPrevAndNextButtons(ref manager.SystemInfoIndex, manager.SystemsInfo.Count);
+
+			for(int i = manager.SystemInfoIndex ; i < Mathf.Min(manager.SystemInfoIndex + 25, manager.SystemsInfo.Count); ++i)
+			{
+				DisplaySystemInfo(i, manager.SystemsInfo[i]);
+			}
+			EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+		}
+
+		string DisplayStringWithSpaces(string text)
+		{
+			if (string.IsNullOrEmpty(text)) return text;
+
+			System.Text.StringBuilder newText = new System.Text.StringBuilder(text.Length*2);
+			newText.Append(text[0]);
+			for(int i = 1; i < text.Length; ++i)
+			{
+				if (char.IsUpper(text[i]) && (char.IsLower(text[i-1])))
+				{
+					newText.Append(" ");	
+				}
+				newText.Append(text[i]);
+			}
+			return newText.ToString();
+		}
+
+
+		void DisplaySystemInfo(int order, SystemsInfo info)
+		{
+			if (info == null || info.System == null)
+			{
+				refreshSearch = true;
+				return;
+			}
+
+			info.ShowFps = true;
+			if (!info.System.isActiveAndEnabled)
+			{
+				info.ShowFps = false;
+				GUI.enabled = false;
+			}
+
+			EditorGUILayout.BeginHorizontal();
+			info.ShowInfo = EditorGUI.Foldout(GUILayoutUtility.GetRect(8f , 16f), info.ShowInfo, "");
+
+			EditorGUI.LabelField(GUILayoutUtility.GetRect(Screen.width - 84f - 84f - 32f, 16f), string.Format("{0} : {1}", order, DisplayStringWithSpaces(info.System.GetType().ToString())));
+
+			if (info.System.isActiveAndEnabled)
+			{
+				if (info.System is IEntityCount)
+					EditorGUILayout.LabelField(new GUIContent(string.Format("| {0} Entities", (info.System as IEntityCount).GetEntityCount()), "Entities currently using this system"), GUILayout.MaxWidth(84f));
+				else
+					EditorGUILayout.LabelField("", GUILayout.MaxWidth(84f));
+
+				double updateTime = 0;
+				if (info.ShowFps &&(info.System is UpdateSystem || info.System is FixedUpdateSystem))
+				{
+					updateTime += info.UpdateTime;
+					updateTime += info.FixedUpdateTime;
+
+					EditorGUILayout.LabelField(new GUIContent(string.Format("| {0:F2} ms", updateTime), "Total time to update system"), GUILayout.MaxWidth(84f));
+				}
+				else EditorGUILayout.LabelField("", GUILayout.MaxWidth(84f));
+
+				EditorGUILayout.LabelField("", GUILayout.MaxWidth(32f));
+
+			}
+			else
+			{
+				EditorGUILayout.LabelField("| Disabled" , GUILayout.MaxWidth(84f+32f+84f));
+			}
+			EditorGUILayout.EndHorizontal();
+
+			if (info.ShowInfo)
+			{
+				EditorGUI.indentLevel += 2;
+				if (info.Group != null)
+				{
+					EditorGUILayout.LabelField(info.Group.ToString().Remove(0,19));
+				}
+
+				if (info.System is UpdateSystem)
+				{
+					EditorGUILayout.LabelField (string.Format("Update System : {0:F2} ms", info.UpdateTime));
+				}
+
+				if (info.System is FixedUpdateSystem)
+				{
+					EditorGUILayout.LabelField (string.Format("Fixed Update System : {0:F2} ms", info.FixedUpdateTime));
+				}
+
+				if (info.SystemEvents.Count > 0)
+				{
+					EditorGUI.indentLevel ++;
+					info.showSystemEvents = EditorGUILayout.Foldout(info.showSystemEvents, string.Format("System Events : {0}", info.SystemEvents.Count));
+					if (info.showSystemEvents)
+					{
+						ListTypes(info.SystemEvents);
+					}
+					EditorGUI.indentLevel --;
+				}
+
+				if (info.EntityEvents.Count > 0)
+				{
+					EditorGUI.indentLevel ++;
+					info.showEntityEvents = EditorGUILayout.Foldout(info.showEntityEvents, String.Format("Entity Events : {0}", info.EntityEvents.Count));
+					if (info.showEntityEvents)
+					{
+						ListTypes(info.EntityEvents);
+					}
+					EditorGUI.indentLevel --;
+				}
+
+				if (info.AddGroupEvent > 0)
+				{
+					EditorGUI.indentLevel ++;
+					EditorGUILayout.LabelField(string.Format("Add Group Events : {0}", info.AddGroupEvent));
+					EditorGUI.indentLevel --;
+				}
+
+				if (info.RemoveGroupEvent > 0)
+				{
+					EditorGUI.indentLevel ++;
+					EditorGUILayout.LabelField(string.Format("Remove Group Events : {0}", info.AddGroupEvent));
+					EditorGUI.indentLevel --;
+				}
+
+				EditorGUI.indentLevel -= 2;
+			}
+
+			GUI.enabled = true;
+		}
+	}
 }
 #endif
 
-}

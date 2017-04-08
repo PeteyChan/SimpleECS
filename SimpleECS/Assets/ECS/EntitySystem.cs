@@ -32,7 +32,7 @@ public abstract class EntitySystem : BaseEntitySystem
 	Action OnDisableCallback = delegate {};
 
 	#if UNITY_EDITOR
-		SimpleECS.Internal.SystemInfo info = new SimpleECS.Internal.SystemInfo();
+		SimpleECS.Internal.SystemsInfo info = new SimpleECS.Internal.SystemsInfo();
 	#endif
 
 	void Awake()
@@ -84,14 +84,14 @@ public abstract class EntitySystem : BaseEntitySystem
 	void _ProcessUpdate()
 	{
 		#if UNITY_EDITOR
-		if (info.ShowInfo)
+		if (info.ShowFps)
 			info.StartUpdateTimer();
 		#endif
 
 		if (_isActive) UpdateSystem();
 
 		#if UNITY_EDITOR
-		if (info.ShowInfo)
+		if (info.ShowFps)
 			info.StopUpdateTimer();
 		#endif
 	}
@@ -99,14 +99,14 @@ public abstract class EntitySystem : BaseEntitySystem
 	void _ProcessFixedUpdate()
 	{
 		#if UNITY_EDITOR
-		if (info.ShowInfo)
+		if (info.ShowFps)
 			info.StartFixedUpdateTimer();
 		#endif
 
 		if (_isActive) FixedUpdateSystem();
 
 		#if UNITY_EDITOR
-		if (info.ShowInfo)
+		if (info.ShowFps)
 			info.StopFixedUpdateTimer();
 		#endif
 	}
@@ -149,36 +149,6 @@ public abstract class EntitySystem : BaseEntitySystem
 
 		#if UNITY_EDITOR
 		info.EntityEvents.Add(typeof(E));
-		#endif
-	}
-
-	/// <summary>
-	/// Subscribes callback to the Event Handler.
-	/// Callback will fire when component is enabled.
-	/// Events are automatically added and removed when System is enabled or disabled.
-	/// </summary>
-	public void AddEnableComponentEvent<C>(Action<C> callback) where C : EntityComponent<C>
-	{
-		OnEnableCallback += () => Group<C>.instance.EnableComponentCallback += callback;
-		OnDisableCallback += () => Group<C>.instance.EnableComponentCallback -= callback;
-
-		#if UNITY_EDITOR
-		info.EnableComponentEvent.Add(typeof(C));
-		#endif
-	}
-
-	/// <summary>
-	/// Subscribes callback to the Event Handler.
-	/// Callback will fire when component is disabled.
-	/// Events are automatically added and removed when System is enabled or disabled.
-	/// </summary>
-	public void AddDisableComponentEvent<C>(Action<C> callback) where C : EntityComponent<C>
-	{
-		OnEnableCallback += () => Group<C>.instance.DisableComponentCallback += callback;
-		OnDisableCallback += () => Group<C>.instance.DisableComponentCallback -= callback;
-
-		#if UNITY_EDITOR
-		info.DisableComponentEvent.Add(typeof(C));
 		#endif
 	}
 

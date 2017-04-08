@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 [AddComponentMenu("EntitySystem/EnemyDamageSystem")]
-public class EnemyDamageSystem : EntitySystem, UpdateSystem
+public class EnemyDamageSystem : EntitySystem
 {
 	public override void InitializeSystem ()
 	{

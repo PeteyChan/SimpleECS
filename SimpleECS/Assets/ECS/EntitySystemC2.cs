@@ -25,8 +25,10 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 	Action OnDisableCallback = delegate {};
 
 	#if UNITY_EDITOR
-	SimpleECS.Internal.SystemInfo info = new SimpleECS.Internal.SystemInfo();
+	SimpleECS.Internal.SystemsInfo info = new SimpleECS.Internal.SystemsInfo();
 	#endif
+
+	public System.Action<C1,C2> AddGroupInitializeCallback;	// this calls the addgroup callbacks that are assigned by this system only
 
 	void Awake()
 	{
@@ -38,14 +40,16 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 
 		#if UNITY_EDITOR	// used for displaying Simple ECS data in Entity Manager
 		info.System = this;
-		info.ComponentPoolTypes.Add(typeof(C1));
-		info.ComponentPoolTypes.Add(typeof(C2));
+		info.Group = typeof(Group<C1,C2>);
 		EntityManager.instance.SystemsInfo.Add(info);
 		#endif
 
 		InitializeSystem();
 		if (this is UpdateSystem) EntityManager.instance.UpdateCallback += _ProcessUpdate;
 		if (this is FixedUpdateSystem) EntityManager.instance.FixedUpdateCallback += _ProcessFixedUpdate;
+	
+		if (isActiveAndEnabled && AddGroupInitializeCallback != null)
+			ProcessComponents(AddGroupInitializeCallback);
 	}
 
 	void OnDestroy()
@@ -77,7 +81,7 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 	void _ProcessUpdate()
 	{
 		#if UNITY_EDITOR
-		if (info.ShowInfo)
+		if (info.ShowFps)
 			info.StartUpdateTimer();
 		#endif
 
@@ -91,7 +95,7 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 		}
 
 		#if UNITY_EDITOR
-		if (info.ShowInfo)
+		if (info.ShowFps)
 			info.StopUpdateTimer();
 		#endif
 	}
@@ -99,7 +103,7 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 	void _ProcessFixedUpdate()
 	{
 		#if UNITY_EDITOR
-		if (info.ShowInfo)
+		if (info.ShowFps)
 			info.StartFixedUpdateTimer();
 		#endif
 
@@ -113,7 +117,7 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 		}
 
 		#if UNITY_EDITOR
-		if (info.ShowInfo)
+		if (info.ShowFps)
 			info.StopFixedUpdateTimer();
 		#endif
 	}
@@ -182,31 +186,32 @@ public class EntitySystem<C1, C2>: BaseEntitySystem , IEntityCount	// EntitySyst
 
 	/// <summary>
 	/// Subscribes callback to the Event Handler.
-	/// Callback will fire when component is enabled.
+	/// Callback will fire when group is added to system.
 	/// Events are automatically added and removed when System is enabled or disabled.
 	/// </summary>
-	public void AddEnableComponentEvent<C>(Action<C> callback) where C : EntityComponent<C>
+	public void AddGroupEvent(Action<C1, C2> callback)
 	{
-		OnEnableCallback += () => Group<C>.instance.EnableComponentCallback += callback;
-		OnDisableCallback += () => Group<C>.instance.EnableComponentCallback -= callback;
+		AddGroupInitializeCallback += callback;
+		OnEnableCallback += () => Group<C1,C2>.instance.AddGroupCallback += callback;
+		OnDisableCallback += () => Group<C1,C2>.instance.AddGroupCallback -= callback;
 
 		#if UNITY_EDITOR
-		info.EnableComponentEvent.Add(typeof(C));
+		info.AddGroupEvent++;
 		#endif
 	}
 
 	/// <summary>
 	/// Subscribes callback to the Event Handler.
-	/// Callback will fire when component is disabled.
+	/// Callback will fire when group is removed from system.
 	/// Events are automatically added and removed when System is enabled or disabled.
 	/// </summary>
-	public void AddDisableComponentEvent<C>(Action<C> callback) where C : EntityComponent<C>
+	public void RemoveGroupEvent(Action<C1, C2> callback)
 	{
-		OnEnableCallback += () => Group<C>.instance.DisableComponentCallback += callback;
-		OnDisableCallback += () => Group<C>.instance.DisableComponentCallback -= callback;
+		OnEnableCallback += () => Group<C1, C2>.instance.RemoveGroupCallback += callback;
+		OnDisableCallback += () => Group<C1, C2>.instance.RemoveGroupCallback -= callback;
 
 		#if UNITY_EDITOR
-		info.DisableComponentEvent.Add(typeof(C));
+		info.RemoveGroupEvent++;
 		#endif
 	}
 
@@ -268,8 +273,10 @@ namespace SimpleECS.Internal
 		Dictionary<int, int> entityLookup = new Dictionary<int, int>(); 	// lookups for entity array positions
 		public Processor<C1,C2>[] processors = new Processor<C1, C2>[8];	// current list of all enabled components of type
 		public int processorCount = 0;
-
 		Processor<C1,C2> newProcessor;
+
+		public Action<C1, C2> AddGroupCallback;
+		public Action<C1, C2> RemoveGroupCallback;
 
 		public void OnEnableComponent(Entity e)	// Called by the component when enabled
 		{
@@ -289,6 +296,9 @@ namespace SimpleECS.Internal
 			processors[processorCount] = newProcessor; 			// add processor to the end of array
 			entityLookup.Add(e.ID, processorCount); 			// add processor position to dictionary lookups
 			++ processorCount;									// increaese amount of components
+
+			if (AddGroupCallback != null)						// signal systems that group has been added
+				AddGroupCallback(newProcessor.c1, newProcessor.c2);
 		}
 
 		public void OnDisableComponent(Entity e)
@@ -301,6 +311,9 @@ namespace SimpleECS.Internal
 			entityLookup[lastProcessor.id] = arrayPos;				// update position of swapped processor
 			-- processorCount;										// reduce the amount of processors in list
 			entityLookup.Remove(e.ID);								// remove entity from lookup
+
+			if (RemoveGroupCallback != null)						// signal system that group has been removed
+				RemoveGroupCallback(e.Get<C1>(), e.Get<C2>());
 		}
 
 		void AddEntities(List<Entity> e)							// Adds a list of entities to system

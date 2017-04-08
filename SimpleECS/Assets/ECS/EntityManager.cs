@@ -442,12 +442,7 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 
 				var guiStyle = GUI.skin.GetStyle("HelpBox");
 
-				var color = GUI.color;
-				GUI.enabled = false;
-				GUI.color = new Color(1,1,1,2);
-				EditorGUILayout.TextField(GUI.tooltip, guiStyle, GUILayout.Height(72f));
-				GUI.color = color;
-				GUI.enabled = true;
+				EditorGUILayout.LabelField(GUI.tooltip, guiStyle, GUILayout.Height(64f));
 			}
 			else
 			{
@@ -528,8 +523,6 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			//EditorGUI.indentLevel --;
 		}
 
-
-
 		void DrawPrevAndNextButtons(ref int index, int systemCount)
 		{
 			EditorGUILayout.BeginHorizontal();
@@ -608,10 +601,19 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 				GUI.enabled = false;
 			}
 
-			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.BeginHorizontal(EditorStyles.helpBox, GUILayout.Width(Screen.width - 48f));
 			info.ShowInfo = EditorGUI.Foldout(GUILayoutUtility.GetRect(8f , 16f), info.ShowInfo, "");
 
-			EditorGUI.LabelField(GUILayoutUtility.GetRect(Screen.width - 84f - 84f - 32f, 16f), string.Format("{0} : {1}", order, DisplayStringWithSpaces(info.System.GetType().ToString())));
+			var buttonStyle = new GUIStyle("label");
+			//buttonStyle.contentOffset = new Vector2(0, -2f);
+
+			var content = new GUIContent(string.Format("{0} : {1}", order, DisplayStringWithSpaces(info.System.GetType().ToString())), "Execution Order and Name of System\nClick to Hightlight System in Heirachy"); 
+
+			if (GUILayout.Button( content, buttonStyle , GUILayout.Width(Screen.width - 200f), GUILayout.Height(16f)))
+			{
+				EditorGUIUtility.PingObject(info.System);
+			}
+
 
 			if (info.System.isActiveAndEnabled)
 			{
@@ -629,9 +631,6 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 					EditorGUILayout.LabelField(new GUIContent(string.Format("| {0:F2} ms", updateTime), "Total time to update system"), GUILayout.MaxWidth(84f));
 				}
 				else EditorGUILayout.LabelField("", GUILayout.MaxWidth(84f));
-
-				EditorGUILayout.LabelField("", GUILayout.MaxWidth(32f));
-
 			}
 			else
 			{

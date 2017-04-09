@@ -3,9 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 
 [AddComponentMenu("EntitySystem/SpinSystem")]
-public class SpinSystem : EntitySystem<SpinComponent>, UpdateSystem
+public class SpinSystem : EntitySystem
 {
-	public override void UpdateSystem (SpinComponent spin)
+	public override void Initialize ()
+	{
+		AddUpdate<SpinComponent>(UpdateSystem);
+	}
+
+	public void UpdateSystem (SpinComponent spin)
 	{
 		spin.timeSpinning += Time.deltaTime;
 

@@ -51,11 +51,12 @@
      <Compile Include="Assets\ECS\EntityComponent.cs" />
      <Compile Include="Assets\ECS\EntityManager.cs" />
      <Compile Include="Assets\ECS\EntitySystem.cs" />
-     <Compile Include="Assets\ECS\EntitySystemC1.cs" />
-     <Compile Include="Assets\ECS\EntitySystemC2.cs" />
-     <Compile Include="Assets\ECS\EntitySystemC3.cs" />
-     <Compile Include="Assets\ECS\EntitySystemC4.cs" />
-     <Compile Include="Assets\ECS\EntitySystemC5.cs" />
+     <Compile Include="Assets\ECS\GroupC1.cs" />
+     <Compile Include="Assets\ECS\GroupC2.cs" />
+     <Compile Include="Assets\ECS\GroupC3.cs" />
+     <Compile Include="Assets\ECS\GroupC4.cs" />
+     <Compile Include="Assets\ECS\GroupC5.cs" />
+     <Compile Include="Assets\Testing\NewEntitySystem.cs" />
      <Compile Include="Assets\Testing\SystemA.cs" />
      <Compile Include="Assets\Testing\SystemB.cs" />
      <Compile Include="Assets\Testing\SystemC.cs" />

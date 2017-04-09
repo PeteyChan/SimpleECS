@@ -22,7 +22,7 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 
 
 		#if UNITY_EDITOR
-		public List<SystemsInfo> SystemsInfo = new List<SystemsInfo>();	// systems is added to by the system on awake
+		public List<EntitySystemInfo> SystemsInfo = new List<EntitySystemInfo>();	// systems is added to by the system on awake
 		public int SystemInfoIndex;
 		System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
 		public double UpdateTime;
@@ -119,12 +119,13 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 
 		#region GetGroups
 
-		public Stack<Group> groups = new Stack<Group>(); 			// Keeps track of all groups so I can clear them out when not needed
+		public Dictionary<Type, Group> groupLookup = new Dictionary<Type, Group>();
 
 		public Group<C> GetGroup<C>() where C : EntityComponent<C>	// Returns an instance of a group, gets called during Group Instantiation
 		{
 			Group<C> newGroup = new Group<C>(GetEntityComponentID<C>());
-			groups.Push(newGroup);
+
+			groupLookup[typeof(Group<C>)] = newGroup;
 			return newGroup;
 		}
 
@@ -133,7 +134,7 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			where C2 : EntityComponent<C2>
 		{
 			Group<C1, C2> newGroup = new Group<C1,C2>();
-			groups.Push(newGroup);
+			groupLookup[typeof(Group<C1,C2>)] = newGroup;
 			return newGroup;
 		}
 
@@ -143,7 +144,7 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			where C3 : EntityComponent<C3>
 		{
 			Group<C1, C2, C3> newGroup = new Group<C1,C2,C3>();
-			groups.Push(newGroup);
+			groupLookup[typeof(Group<C1,C2,C3>)] = newGroup;
 			return newGroup;
 		}
 
@@ -154,7 +155,7 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			where C4 : EntityComponent<C4>
 		{
 			Group<C1, C2, C3, C4> newGroup = new Group<C1,C2,C3,C4>();
-			groups.Push(newGroup);
+			groupLookup[typeof(Group<C1,C2,C3,C4>)] = newGroup;
 			return newGroup;
 		}
 
@@ -166,7 +167,7 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			where C5 : EntityComponent<C5>
 		{
 			Group<C1, C2, C3, C4, C5> newGroup = new Group<C1,C2,C3,C4,C5>();
-			groups.Push(newGroup);
+			groupLookup[typeof(Group<C1,C2,C3,C4,C5>)] = newGroup;
 			return newGroup;
 		}
 		#endregion
@@ -284,21 +285,31 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 
 	#if UNITY_EDITOR
 
-	public class SystemsInfo
+	public class EntitySystemInfo
 	{
-		public BaseEntitySystem System;
+		public EntitySystem System;
 		public bool ShowInfo;
-		public bool ShowFps;
-		public Type Group = null;
 
 		public List<Type> EntityEvents = new List<Type>();
 		public bool showEntityEvents;
 
-		public int AddGroupEvent = 0;
-		public int RemoveGroupEvent = 0;
+		public List<Type>AddGroupEvents = new List<Type>();
+		public bool showAddGroupEvents;
+
+		public List<Type>RemoveGroupEvents = new List<Type>();
+		public bool showRemoveGroupEvents;
 
 		public List<Type> SystemEvents = new List<Type>();
 		public bool showSystemEvents;
+
+		public bool isUpdateSystem;
+		public bool isFixedUpdateSystem;
+
+		public List<Type> UpdateTypes = new List<Type>();
+		public bool showUpdate;
+
+		public List<Type> FixedUpdateTypes = new List<Type>();
+		public bool showFixedUpdate;
 
 		public double UpdateTime;
 		public double FixedUpdateTime;
@@ -307,6 +318,7 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 
 		public void StartUpdateTimer()
 		{
+			timer.Reset();
 			timer.Start();
 		}
 
@@ -314,11 +326,11 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 		{
 			timer.Stop();
 			UpdateTime = timer.Elapsed.TotalMilliseconds;
-			timer.Reset();
 		}
 
 		public void StartFixedUpdateTimer()
 		{
+			timer.Reset();
 			timer.Start();
 		}
 
@@ -326,7 +338,6 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 		{
 			timer.Stop();
 			FixedUpdateTime = timer.Elapsed.TotalMilliseconds;
-			timer.Reset();
 		}
 	}
 
@@ -340,40 +351,32 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			manager = (EntityManager)target;
 		}
 
-		void OnDisable()
-		{
-			foreach(var info in manager.SystemsInfo)
-			{
-				info.ShowFps = false;
-			}
-		}
-
-		string lastSearch = "";
-		string currentSearch = "";
-
 		public class SearchFilter
 		{
-			public SearchFilter(int order, SystemsInfo info)
+			public SearchFilter(int order, EntitySystemInfo info)
 			{
 				this.order = order;
 				this.info = info;
 			}
 			public int order;
-			public SystemsInfo info;
+			public EntitySystemInfo info;
 		}
 
 		List<SearchFilter> searchResults = new List<SearchFilter>();
 		int searchIndex;
 
-
 		enum SearchType
 		{ 
-			Name, Update, FixedUpdate, Component  
+			Name, UpdateByName, FixedUpdateByName, UpdateByComponent, FixedUpdateByComponent, EntityEvent, SystemEvent
 		}
 
 		SearchType searchtype = SearchType.Name;
 		SearchType lastSearchType = SearchType.Name;
+		string lastSearch = "";
+		string currentSearch = "";
 		bool refreshSearch;
+
+		int DisplaySystemCount = 20;
 
 		public override void OnInspectorGUI ()
 		{
@@ -382,7 +385,7 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 				EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 				EditorGUILayout.BeginHorizontal();
 				EditorGUILayout.LabelField(new GUIContent(string.Format("Entities : {0}", manager.totalEntityCount), "Total amount of instantiated Entities"),GUILayout.MaxWidth(128f));
-				EditorGUILayout.LabelField(new GUIContent(string.Format("Groups : {0}", manager.groups.Count), "Total amount of instantiated Groups"));
+				EditorGUILayout.LabelField(new GUIContent(string.Format("Groups : {0}", manager.groupLookup.Count), "Total amount of instantiated Groups"));
 				EditorGUILayout.EndHorizontal();
 				EditorGUILayout.BeginHorizontal();
 				EditorGUILayout.LabelField(new GUIContent(string.Format("Systems : {0}", manager.SystemsInfo.Count), "Total amount of instantiated Systems"), GUILayout.MaxWidth(128f));
@@ -394,10 +397,9 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 				EditorGUILayout.EndHorizontal();
 				EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 
-
 				currentSearch = EditorGUILayout.TextField (new GUIContent("Search Systems", "Perform filtering of Systems"), currentSearch);
 				searchtype = (SearchType)EditorGUILayout.EnumPopup(new GUIContent("Search Type", 
-						"Name : Search by Name \nUpdate : Search update systems by name \nFixedUpdate : Search Fixed Update systems by name \nComponent : Search by systems by component type"), searchtype);
+						"Define how you search for Systems.\n\nE.g Search for all Update Systems with name\n       Search for all Fixed Update Systems that implement component\n       Search for all systems that implement Entity Event"), searchtype);
 
 				if (!string.IsNullOrEmpty(currentSearch))
 				{
@@ -409,31 +411,40 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 						lastSearchType = searchtype;
 						searchResults.Clear();
 
+
 						switch(searchtype)
 						{
 						case SearchType.Name:
-							NameSearch();
+							SearchByName ();
 							break;
-						case SearchType.Update:
-							UpdateSearch();
+						case SearchType.UpdateByName:
+							SearchUpdateByName();
 							break;
-						case SearchType.FixedUpdate:
-							FixedSearch();
+						case SearchType.FixedUpdateByName:
+							SearchFixedUpdateByName();
 							break;
-						case SearchType.Component:
-							ComponentSearch();
+						case SearchType.UpdateByComponent:
+							SearchUpdateByComponent();
 							break;
-						default: 
-							NameSearch();
+						case SearchType.FixedUpdateByComponent:
+							SearchFixedUpdateByComponent();
+							break;
+						case SearchType.EntityEvent:
+							SearchByEntityEvent();
+							break;
+						case SearchType.SystemEvent:
+							SearchBySystemEvent();
+							break;
+						default:
 							break;
 						}
 					}
 
 					DrawPrevAndNextButtons(ref searchIndex, searchResults.Count);
 
-					for(int i = searchIndex; i < Mathf.Min(searchResults.Count, searchIndex + 25); ++i)
+					for(int i = searchIndex; i < Mathf.Min(searchResults.Count, searchIndex + DisplaySystemCount); ++i)
 					{
-						DisplaySystemInfo(searchResults[i].order, searchResults[i].info);
+						DrawSystemInfo(searchResults[i].order, searchResults[i].info);
 					}
 				}
 				else DrawAllSystems();
@@ -441,7 +452,6 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 				EditorUtility.SetDirty(target);
 
 				var guiStyle = GUI.skin.GetStyle("HelpBox");
-
 				EditorGUILayout.LabelField(GUI.tooltip, guiStyle, GUILayout.Height(64f));
 			}
 			else
@@ -450,122 +460,142 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			}
 		}
 
-		void NameSearch()
+		void ListTypes(string name, string tooltip, List<Type> types, ref bool show)
 		{
-			int order = 0;
-			foreach(var item in manager.SystemsInfo)
-			{
-				if (item.System.GetType().ToString().IndexOf(currentSearch, StringComparison.OrdinalIgnoreCase) >= 0)
-				{
-					searchResults.Add(new SearchFilter(order, item));
-				}
-				order ++;
-			}
-			searchIndex = 0;
-		}
+			show = EditorGUILayout.Foldout(show, new GUIContent(name, tooltip));
+			if (!show)return;
 
-		void UpdateSearch()
-		{
-			int order = 0;
-			foreach(var item in manager.SystemsInfo)
-			{
-				if (item.System is UpdateSystem)
-				{
-					if (item.System.GetType().ToString().IndexOf(currentSearch, StringComparison.OrdinalIgnoreCase) >= 0)
-					{
-						searchResults.Add(new SearchFilter(order, item));
-					}	
-				}
-				order ++;
-			}
-			searchIndex = 0;
-		}
-
-		void FixedSearch()
-		{
-			int order = 0;
-			foreach(var item in manager.SystemsInfo)
-			{
-				if (item.System is FixedUpdateSystem)
-				{
-					if (item.System.GetType().ToString().IndexOf(currentSearch, StringComparison.OrdinalIgnoreCase) >= 0)
-					{
-						searchResults.Add(new SearchFilter(order, item));
-					}	
-				}
-				order ++;
-			}
-			searchIndex = 0;
-		}
-
-		void ComponentSearch()
-		{
-			int order = 0;
-			foreach(var item in manager.SystemsInfo)
-			{
-				if (item.Group == null) continue;
-				if (item.Group.ToString().IndexOf(currentSearch, StringComparison.OrdinalIgnoreCase) >= 0)
-				{
-					searchResults.Add(new SearchFilter(order, item));
-				}	
-				order ++;
-			}
-			searchIndex = 0;
-		}
-
-		void ListTypes(List<Type> types)
-		{
-			//EditorGUI.indentLevel ++;
 			foreach(var type in types)
 			{
-				EditorGUILayout.LabelField(string.Format("| {0}", type.ToString()));	
+				EditorGUILayout.LabelField(string.Format("| {0} ", type));	
 			}
-			//EditorGUI.indentLevel --;
+		}
+
+		void DrawSystemInfo(int index, EntitySystemInfo info)
+		{
+			if (info == null || info.System == null)
+			{
+				refreshSearch = true;
+				return;
+			}
+
+			if (!info.System.isActiveAndEnabled) GUI.enabled = false;
+
+			EditorGUILayout.BeginHorizontal(EditorStyles.helpBox, GUILayout.Width(Screen.width - 48f));
+
+			info.ShowInfo = EditorGUI.Foldout(GUILayoutUtility.GetRect(8f , 16f), info.ShowInfo, "");
+
+			// var buttonStyle = new GUIStyle("label");
+			//buttonStyle.contentOffset = new Vector2(0, -2f);
+
+			var content = new GUIContent(string.Format("{0} : {1}", index, DisplayStringWithSpaces(info.System.GetType().ToString())), "Execution Order and Name of System\nClick to Hightlight System in Heirachy"); 
+
+			if (GUILayout.Button( content , GUI.skin.label, GUILayout.Width(Screen.width - 128f), GUILayout.Height(16f)))
+			{
+				EditorGUIUtility.PingObject(info.System);
+			}
+
+			if (info.isUpdateSystem || info.isFixedUpdateSystem)
+				EditorGUILayout.LabelField(new GUIContent(string.Format("| {0:F2} ms", info.UpdateTime + info.FixedUpdateTime), "How long it system takes to complete all update and fixed updates"), GUILayout.MaxWidth(72f));
+			else EditorGUILayout.LabelField("", GUILayout.MaxWidth(72f));
+
+			EditorGUILayout.EndHorizontal();
+			EditorGUI.indentLevel ++;
+			if (info.ShowInfo)
+			{
+				if (info.isUpdateSystem)
+					info.showUpdate = EditorGUILayout.Foldout(info.showUpdate, new GUIContent(string.Format("Update Groups: {0:F2} ms", info.UpdateTime), "List of all Groups currently updated by system and how long it takes to update"));
+				if (info.showUpdate)
+				{
+					foreach(var type in info.UpdateTypes)
+					{
+						EditorGUILayout.LabelField(new GUIContent(string.Format("{0} Entities : {1}", manager.groupLookup[type].Count, type.ToString().Remove(0, 19)), "Entities Currently in Group and Group Type"));
+					}
+				}
+
+				if (info.isFixedUpdateSystem)
+					info.showFixedUpdate = EditorGUILayout.Foldout(info.showFixedUpdate, new GUIContent(string.Format("Fixed Update Groups: {0:F2} ms", info.FixedUpdateTime), "List of all Groups currently fixed updated by system and how long it takes to update"));
+				if (info.showFixedUpdate)
+				{
+					foreach(var type in info.FixedUpdateTypes)
+					{
+						EditorGUILayout.LabelField(new GUIContent(string.Format("{0} Entities : {1}", manager.groupLookup[type].Count, type.ToString().Remove(0, 19)), "Entities Currently in Group and Group Type"));
+					}
+				}
+				if (info.EntityEvents.Count > 0)
+					info.showEntityEvents = EditorGUILayout.Foldout(info.showEntityEvents, new GUIContent("Entity Events", "List of Entity Event callbacks implemented by this system"));
+				if (info.showEntityEvents)
+				{
+					foreach(var type in info.EntityEvents)
+					{
+						EditorGUILayout.LabelField(string.Format("{0}", type.ToString()));
+					}
+				}
+				if (info.SystemEvents.Count > 0)
+					info.showSystemEvents = EditorGUILayout.Foldout(info.showSystemEvents, new GUIContent("System Events", "List of System Event callbacks implement by this system"));
+				if (info.showSystemEvents)
+				{
+					foreach(var type in info.SystemEvents)
+					{
+						EditorGUILayout.LabelField(string.Format("{0}", type.ToString()));
+					}
+				}
+				if (info.AddGroupEvents.Count > 0)
+					info.showAddGroupEvents = EditorGUILayout.Foldout(info.showAddGroupEvents, new GUIContent("Enable Group Events", "List of all add group events implemented by this system"));
+				if (info.showAddGroupEvents)
+				{
+					foreach(var type in info.AddGroupEvents)
+					{
+						EditorGUILayout.LabelField(type.ToString().Remove(0,19));
+					}
+				}
+				if (info.RemoveGroupEvents.Count > 0)
+					info.showRemoveGroupEvents = EditorGUILayout.Foldout(info.showRemoveGroupEvents, new GUIContent("Disable Group Events", "List of all remove group events implemented by this system"));
+				if (info.showRemoveGroupEvents)
+				{
+					foreach(var type in info.RemoveGroupEvents)
+					{
+						EditorGUILayout.LabelField(type.ToString().Remove(0,19));
+					}
+				}
+			}
+
+			EditorGUI.indentLevel --;
+			GUI.enabled = true;
 		}
 
 		void DrawPrevAndNextButtons(ref int index, int systemCount)
 		{
 			EditorGUILayout.BeginHorizontal();
 
-			if (systemCount >= 25)
+			if (systemCount >= DisplaySystemCount)
 			{
-				if (index >= 25)
+				if (index >= DisplaySystemCount)
 				{
-					if (GUILayout.Button("<- Previous 25", GUILayout.MaxWidth(Screen.width/2f - 24f)))
-						index -= 25;
+					if (GUILayout.Button(string.Format("<- Previous {0}", DisplaySystemCount), GUILayout.MaxWidth(Screen.width/2f - 24f)))
+						index -= DisplaySystemCount;
 
-					if (index + 25 > systemCount)
+					if (index + 20 > systemCount)
 					{
 						GUI.enabled = false;
-						GUILayout.Button("Next 25 ->", GUILayout.MaxWidth(Screen.width/2f - 24f));
+						GUILayout.Button(string.Format("Next {0} ->", DisplaySystemCount), GUILayout.MaxWidth(Screen.width/2f - 24f));
 						GUI.enabled = true;
 					}
 				}
-				if (index + 25 < systemCount)
+				if (index + DisplaySystemCount < systemCount)
 				{
-					if (index < 25)
+					if (index < DisplaySystemCount)
 					{
 						GUI.enabled = false;
-						GUILayout.Button("<- Previous 25", GUILayout.MaxWidth(Screen.width/2f - 24f));
+						GUILayout.Button(string.Format("<- Previous {0}", DisplaySystemCount), GUILayout.MaxWidth(Screen.width/2f - 24f));
 						GUI.enabled = true;
 					}
 
-					if (GUILayout.Button("Next 25 ->", GUILayout.MaxWidth(Screen.width/2f - 24f)))
-						index += 25;
+					if (GUILayout.Button(string.Format("Next {0} ->", DisplaySystemCount), GUILayout.MaxWidth(Screen.width/2f - 24f)))
+						index += DisplaySystemCount;
 				}
 			}
 			EditorGUILayout.EndHorizontal();
-		}
-
-		void DrawAllSystems()
-		{
-			DrawPrevAndNextButtons(ref manager.SystemInfoIndex, manager.SystemsInfo.Count);
-
-			for(int i = manager.SystemInfoIndex ; i < Mathf.Min(manager.SystemInfoIndex + 25, manager.SystemsInfo.Count); ++i)
-			{
-				DisplaySystemInfo(i, manager.SystemsInfo[i]);
-			}
-			EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 		}
 
 		string DisplayStringWithSpaces(string text)
@@ -585,117 +615,141 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			return newText.ToString();
 		}
 
-
-		void DisplaySystemInfo(int order, SystemsInfo info)
+		void DrawAllSystems()
 		{
-			if (info == null || info.System == null)
+			DrawPrevAndNextButtons(ref manager.SystemInfoIndex, manager.SystemsInfo.Count);
+
+			for(int i = manager.SystemInfoIndex; i < Mathf.Min(manager.SystemsInfo.Count, manager.SystemInfoIndex + DisplaySystemCount); ++i)
 			{
-				refreshSearch = true;
-				return;
+				DrawSystemInfo(i+1, manager.SystemsInfo[i]);
 			}
+		}
 
-			info.ShowFps = true;
-			if (!info.System.isActiveAndEnabled)
+
+		void SearchByName()
+		{
+			int order = 0;
+			foreach(var item in manager.SystemsInfo)
 			{
-				info.ShowFps = false;
-				GUI.enabled = false;
-			}
-
-			EditorGUILayout.BeginHorizontal(EditorStyles.helpBox, GUILayout.Width(Screen.width - 48f));
-			info.ShowInfo = EditorGUI.Foldout(GUILayoutUtility.GetRect(8f , 16f), info.ShowInfo, "");
-
-			var buttonStyle = new GUIStyle("label");
-			//buttonStyle.contentOffset = new Vector2(0, -2f);
-
-			var content = new GUIContent(string.Format("{0} : {1}", order, DisplayStringWithSpaces(info.System.GetType().ToString())), "Execution Order and Name of System\nClick to Hightlight System in Heirachy"); 
-
-			if (GUILayout.Button( content, buttonStyle , GUILayout.Width(Screen.width - 200f), GUILayout.Height(16f)))
-			{
-				EditorGUIUtility.PingObject(info.System);
-			}
-
-
-			if (info.System.isActiveAndEnabled)
-			{
-				if (info.System is IEntityCount)
-					EditorGUILayout.LabelField(new GUIContent(string.Format("| {0} Entities", (info.System as IEntityCount).GetEntityCount()), "Entities currently using this system"), GUILayout.MaxWidth(84f));
-				else
-					EditorGUILayout.LabelField("", GUILayout.MaxWidth(84f));
-
-				double updateTime = 0;
-				if (info.ShowFps &&(info.System is UpdateSystem || info.System is FixedUpdateSystem))
+				order ++;
+				if (item.System.GetType().ToString().IndexOf(currentSearch, StringComparison.OrdinalIgnoreCase) >= 0)
 				{
-					updateTime += info.UpdateTime;
-					updateTime += info.FixedUpdateTime;
-
-					EditorGUILayout.LabelField(new GUIContent(string.Format("| {0:F2} ms", updateTime), "Total time to update system"), GUILayout.MaxWidth(84f));
+					searchResults.Add(new SearchFilter(order, item));
 				}
-				else EditorGUILayout.LabelField("", GUILayout.MaxWidth(84f));
 			}
-			else
+			searchIndex = 0;
+		}
+
+		void SearchUpdateByName()
+		{
+			int order = 0;
+			foreach(var item in manager.SystemsInfo)
 			{
-				EditorGUILayout.LabelField("| Disabled" , GUILayout.MaxWidth(84f+32f+84f));
+				order ++;
+				if (!item.isUpdateSystem) continue;
+
+				if (item.System.GetType().ToString().IndexOf(currentSearch, StringComparison.OrdinalIgnoreCase) >= 0)
+				{
+					searchResults.Add(new SearchFilter(order, item));
+				}
 			}
-			EditorGUILayout.EndHorizontal();
+			searchIndex = 0;
 
-			if (info.ShowInfo)
+
+		}
+
+		void SearchFixedUpdateByName()
+		{
+			int order = 0;
+			foreach(var item in manager.SystemsInfo)
 			{
-				EditorGUI.indentLevel += 2;
-				if (info.Group != null)
-				{
-					EditorGUILayout.LabelField(info.Group.ToString().Remove(0,19));
-				}
+				order ++;
+				if (!item.isFixedUpdateSystem) continue;
 
-				if (info.System is UpdateSystem)
+				if (item.System.GetType().ToString().IndexOf(currentSearch, StringComparison.OrdinalIgnoreCase) >= 0)
 				{
-					EditorGUILayout.LabelField (string.Format("Update System : {0:F2} ms", info.UpdateTime));
+					searchResults.Add(new SearchFilter(order, item));
 				}
+			}
+			searchIndex = 0;
+		}
 
-				if (info.System is FixedUpdateSystem)
-				{
-					EditorGUILayout.LabelField (string.Format("Fixed Update System : {0:F2} ms", info.FixedUpdateTime));
-				}
+		void SearchUpdateByComponent()
+		{
+			int order = 0;
+			foreach(var item in manager.SystemsInfo)
+			{
+				order ++;
+				if (!item.isUpdateSystem) continue;
 
-				if (info.SystemEvents.Count > 0)
+				foreach(var type in item.UpdateTypes)
 				{
-					EditorGUI.indentLevel ++;
-					info.showSystemEvents = EditorGUILayout.Foldout(info.showSystemEvents, string.Format("System Events : {0}", info.SystemEvents.Count));
-					if (info.showSystemEvents)
+					if (type.ToString().Remove(0,19).IndexOf(currentSearch, StringComparison.OrdinalIgnoreCase) >=0)
 					{
-						ListTypes(info.SystemEvents);
+						searchResults.Add(new SearchFilter(order, item));
+						break;
 					}
-					EditorGUI.indentLevel --;
 				}
-
-				if (info.EntityEvents.Count > 0)
-				{
-					EditorGUI.indentLevel ++;
-					info.showEntityEvents = EditorGUILayout.Foldout(info.showEntityEvents, String.Format("Entity Events : {0}", info.EntityEvents.Count));
-					if (info.showEntityEvents)
-					{
-						ListTypes(info.EntityEvents);
-					}
-					EditorGUI.indentLevel --;
-				}
-
-				if (info.AddGroupEvent > 0)
-				{
-					EditorGUI.indentLevel ++;
-					EditorGUILayout.LabelField(string.Format("Add Group Events : {0}", info.AddGroupEvent));
-					EditorGUI.indentLevel --;
-				}
-
-				if (info.RemoveGroupEvent > 0)
-				{
-					EditorGUI.indentLevel ++;
-					EditorGUILayout.LabelField(string.Format("Remove Group Events : {0}", info.AddGroupEvent));
-					EditorGUI.indentLevel --;
-				}
-
-				EditorGUI.indentLevel -= 2;
 			}
+			searchIndex = 0;
+		}
+			
+		void SearchFixedUpdateByComponent()
+		{
+			int order = 0;
+			foreach(var item in manager.SystemsInfo)
+			{
+				order ++;
+				if (!item.isFixedUpdateSystem) continue;
 
-			GUI.enabled = true;
+				foreach(var type in item.FixedUpdateTypes)
+				{
+					if (type.ToString().Remove(0,19).IndexOf(currentSearch, StringComparison.OrdinalIgnoreCase) >=0)
+					{
+						searchResults.Add(new SearchFilter(order, item));
+						break;
+					}
+				}
+			}
+			searchIndex = 0;
+		}
+
+		void SearchByEntityEvent()
+		{
+			int order = 0;
+			foreach(var item in manager.SystemsInfo)
+			{
+				order ++;
+				if (item.EntityEvents.Count == 0) continue;
+				foreach(var type in item.EntityEvents)
+				{
+					if (type.ToString().IndexOf(currentSearch, StringComparison.OrdinalIgnoreCase) >=0)
+					{
+						searchResults.Add(new SearchFilter(order, item));
+						break;
+					}
+				}
+			}
+			searchIndex = 0;
+		}
+
+		void SearchBySystemEvent()
+		{
+			int order = 0;
+			foreach(var item in manager.SystemsInfo)
+			{
+				order ++;
+				if (item.SystemEvents.Count == 0) continue;
+				foreach(var type in item.SystemEvents)
+				{
+					if (type.ToString().IndexOf(currentSearch, StringComparison.OrdinalIgnoreCase) >=0)
+					{
+						searchResults.Add(new SearchFilter(order, item));
+						break;
+					}
+				}
+			}
+			searchIndex = 0;
 		}
 	}
 }

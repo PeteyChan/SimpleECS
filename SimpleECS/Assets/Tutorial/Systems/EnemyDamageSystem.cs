@@ -5,7 +5,7 @@ using System.Collections.Generic;
 [AddComponentMenu("EntitySystem/EnemyDamageSystem")]
 public class EnemyDamageSystem : EntitySystem
 {
-	public override void InitializeSystem ()
+	public override void Initialize()
 	{
 		AddEntityEvent<BulletCollisionEvent>(OnBulletCollisionEvent);
 	}

@@ -1,183 +1,583 @@
 ﻿using UnityEngine;
-using System;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using SimpleECS.Internal;
 
-// not prefacing with "I" because I'm using these as tags not interfaces
-interface UpdateSystem{}
-interface FixedUpdateSystem{}
-
-namespace SimpleECS.Internal
+public abstract class EntitySystem : MonoBehaviour
 {
-	public interface IEntityCount	// just a way to mark the systems with this property, only used in EntityManagerInspector
-	{
-		int GetEntityCount();
-	}
+	bool _active;
 
-	public abstract class BaseEntitySystem : MonoBehaviour // All systems inherit this so I can group them and add functionality to all of them later if I need to
-	{
-		
-	}
-}
+	Action _OnEnableCallback;
+	Action _OnDisableCallback;
+	Action _OnInitializeCallback;
 
-
-/// <summary>
-/// Non Component System, used for systems that only have events
-/// </summary>
-public abstract class EntitySystem : BaseEntitySystem
-{
-	bool _isActive;							// the built in enable flag is a bit unreliable so rolling my own bool
-	Action OnEnableCallback = delegate {};	// I use these callbacks to automatically assign and remove entity events
-	Action OnDisableCallback = delegate {};
+	Action _UpdateCallback;
+	Action _FixedUpdateCallback;
 
 	#if UNITY_EDITOR
-		SimpleECS.Internal.SystemsInfo info = new SimpleECS.Internal.SystemsInfo();
+	EntitySystemInfo info = new EntitySystemInfo();
 	#endif
+
+	public virtual void Initialize(){}
 
 	void Awake()
 	{
-		if (!EntityManager.loaded)
-		{
-			Debug.Log("Must Add Entity Manager to the Scene to use EntitySystems");
-			return;
-		}
+		Initialize();
+		if (_OnInitializeCallback != null)
+			_OnInitializeCallback();
 
-		#if UNITY_EDITOR	// used for displaying Simple ECS data in Entity Manager
+		if (_UpdateCallback != null)
+			EntityManager.instance.UpdateCallback += _UpdateSystem;
+
+		if (_FixedUpdateCallback != null)
+			EntityManager.instance.FixedUpdateCallback += _FixedUpdateSystem;
+
+		#if UNITY_EDITOR
 		info.System = this;
 		EntityManager.instance.SystemsInfo.Add(info);
 		#endif
-
-		InitializeSystem();
-
-		// add updates to entity manager callbacks
-		if (this is UpdateSystem) EntityManager.instance.UpdateCallback += _ProcessUpdate;				// Add to Update if tagged as Update
-		if (this is FixedUpdateSystem) EntityManager.instance.FixedUpdateCallback += _ProcessFixedUpdate;	// Add to fixed Update if tagged as fixed update
 	}
 
 	void OnDestroy()
 	{
-		if (!EntityManager.loaded) return; 			// early out if no Entity Manager
+		if (_UpdateCallback != null)
+			EntityManager.instance.UpdateCallback -= _UpdateSystem;
+
+		if (_FixedUpdateCallback != null)
+			EntityManager.instance.FixedUpdateCallback -= _FixedUpdateSystem;
 
 		#if UNITY_EDITOR
-		EntityManager.instance.SystemsInfo.Remove(info);	// remove system from entity manager
+		EntityManager.instance.SystemsInfo.Remove(info);
 		#endif
-
-		OnEnableCallback = null;								// clear out the delegates on Destroy, makes sure there are no references keeping this alive
-		OnDisableCallback = null;
-		if (this is UpdateSystem) EntityManager.instance.UpdateCallback -= _ProcessUpdate;
-		if (this is FixedUpdateSystem) EntityManager.instance.FixedUpdateCallback -= _ProcessFixedUpdate;
 	}
-		
+
 	void OnEnable()
 	{
-		_isActive = true;
-		OnEnableCallback();
+		_active = true;
+		if (_OnEnableCallback != null)
+			_OnEnableCallback();
 	}
 
 	void OnDisable()
 	{
-		_isActive = false;
-		OnDisableCallback();
+		_active = false;
+		if (_OnDisableCallback != null)
+			_OnDisableCallback();
 	}
-
-	void _ProcessUpdate()
+		
+	void _UpdateSystem()
 	{
 		#if UNITY_EDITOR
-		if (info.ShowFps)
-			info.StartUpdateTimer();
+		info.StartUpdateTimer();
 		#endif
 
-		if (_isActive) UpdateSystem();
+		if (_active)
+		{
+			_UpdateCallback();	
+		}
 
 		#if UNITY_EDITOR
-		if (info.ShowFps)
-			info.StopUpdateTimer();
-		#endif
-	}
-
-	void _ProcessFixedUpdate()
-	{
-		#if UNITY_EDITOR
-		if (info.ShowFps)
-			info.StartFixedUpdateTimer();
-		#endif
-
-		if (_isActive) FixedUpdateSystem();
-
-		#if UNITY_EDITOR
-		if (info.ShowFps)
-			info.StopFixedUpdateTimer();
+		info.StopUpdateTimer();
 		#endif
 	}
 
-	#region Public Functions
-
-	/// <summary>
-	/// Method is Called Only Once during System Instantiation.
-	/// This is where you should add all AddEvent Code and set if the system is and Update or FixedUpdate System
-	/// </summary>
-	public virtual void InitializeSystem()
-	{}
-
-	/// <summary>
-	/// Updates the system.
-	/// </summary>
-	public virtual void UpdateSystem()
-	{}
-
-	/// <summary>
-	/// Does a fixed update on the system.
-	/// </summary>
-	public virtual void FixedUpdateSystem()
-	{}
-
-	#endregion
-
-	#region SystemEvents
-
-	/// <summary>
-	/// Subscribes callback to the Event Handler.
-	/// Callback will be invoked when the event is sent to an entity.
-	/// Events should only be added during Initialize System. 
-	/// Events are automatically added and removed when System is enabled or disabled.
-	/// </summary>
-	public void AddEntityEvent<E>(EntityEvent<E> callback)	// using simple lambda functions to automate adding and removing events
+	void _FixedUpdateSystem()
 	{
-		OnEnableCallback += () => EntityManager.instance.AddEntityEvent(callback);
-		OnDisableCallback += () => EntityManager.instance.RemoveEntityEvent(callback);
+		#if UNITY_EDITOR
+		info.StartFixedUpdateTimer();
+		#endif
 
+		if (_active)
+		{
+			_FixedUpdateCallback();
+		}
+
+		#if UNITY_EDITOR
+		info.StopFixedUpdateTimer();
+		#endif
+	}
+
+	/// <summary>
+	/// Callback is performed when event is sent to entity
+	/// </summary>
+	public void AddEntityEvent<E>(EntityEvent<E> action)
+	{
 		#if UNITY_EDITOR
 		info.EntityEvents.Add(typeof(E));
 		#endif
+
+		_OnEnableCallback += () => EntityManager.instance.AddEntityEvent<E>(action);
+		_OnDisableCallback += () => EntityManager.instance.RemoveEntityEvent<E>(action);
 	}
 
 	/// <summary>
-	/// Subscribes callback to the Event Handler.
-	/// Callback will fire on when a System Sends the Event.
-	/// Events are automatically added and removed when System is enabled or disabled.
+	/// Listens for event from all systems
 	/// </summary>
-	public void AddSystemEvent<E>(Action<E> callback)
+	public void AddSystemEvent<E>(Action<E> action)
 	{
-		OnEnableCallback += () => EntityManager.instance.AddSystemEvent(callback);
-		OnDisableCallback += () => EntityManager.instance.RemoveSystemEvent(callback);
-
 		#if UNITY_EDITOR
 		info.SystemEvents.Add(typeof(E));
 		#endif
+		_OnEnableCallback += () => EntityManager.instance.AddSystemEvent<E>(action);
+		_OnDisableCallback += () => EntityManager.instance.RemoveSystemEvent<E>(action);
 	}
 
 	/// <summary>
-	/// Call the Event on all subscribed systems with specified arguments.
+	/// Send Event to all listening systems
 	/// </summary>
 	public void SendSystemEvent<E>(E args)
 	{
 		EntityManager.instance.CallSystemEvent(args);
 	}
 
+	#region EnableGroup
+
+	/// <summary>
+	/// Performs action once entity contains enabled component
+	/// </summary>
+	public void AddEnableGroupEvent<C1>(Action<C1> action)
+		where C1 : EntityComponent<C1>
+	{
+		#if UNITY_EDITOR
+		info.AddGroupEvents.Add(typeof(Group<C1>));
+		#endif
+
+		_OnInitializeCallback += () => ProcessGroup<C1>(action);
+		_OnEnableCallback += () => Group<C1>.instance.EnableComponentCallback += action;
+		_OnDisableCallback += () => Group<C1>.instance.EnableComponentCallback -= action;
+	}
+
+	/// <summary>
+	/// Performs action once entity contains all enabled components
+	/// </summary>
+	public void AddEnableGroupEvent<C1,C2>(Action<C1,C2> action)
+		where C1 : EntityComponent<C1>
+		where C2 : EntityComponent<C2>
+	{
+		#if UNITY_EDITOR
+		info.AddGroupEvents.Add(typeof(Group<C1,C2>));
+		#endif
+
+		_OnInitializeCallback += () => ProcessGroup<C1,C2>(action);
+		_OnEnableCallback += () => Group<C1,C2>.instance.AddGroupCallback += action;
+		_OnDisableCallback += () => Group<C1,C2>.instance.AddGroupCallback -= action;
+	}
+
+	/// <summary>
+	/// Performs action once entity contains all enabled components
+	/// </summary>
+	public void AddEnableGroupEvent<C1,C2,C3>(Action<C1,C2,C3> action)
+		where C1 : EntityComponent<C1>
+		where C2 : EntityComponent<C2>
+		where C3 : EntityComponent<C3>
+	{
+		#if UNITY_EDITOR
+		info.AddGroupEvents.Add(typeof(Group<C1,C2,C3>));
+		#endif
+
+		_OnInitializeCallback += () => ProcessGroup<C1,C2,C3>(action);
+		_OnEnableCallback += () => Group<C1,C2,C3>.instance.AddGroupCallback += action;
+		_OnDisableCallback += () => Group<C1,C2,C3>.instance.AddGroupCallback -= action;
+	}
+
+	/// <summary>
+	/// Performs action once entity contains all enabled components
+	/// </summary>
+	public void AddEnableGroupEvent<C1,C2,C3,C4>(Action<C1,C2,C3,C4> action)
+		where C1 : EntityComponent<C1>
+		where C2 : EntityComponent<C2>
+		where C3 : EntityComponent<C3>
+		where C4 : EntityComponent<C4>
+	{
+		#if UNITY_EDITOR
+		info.AddGroupEvents.Add(typeof(Group<C1,C2,C3,C4>));
+		#endif
+
+		_OnInitializeCallback += () => ProcessGroup<C1,C2,C3,C4>(action);
+		_OnEnableCallback += () => Group<C1,C2,C3,C4>.instance.AddGroupCallback += action;
+		_OnDisableCallback += () => Group<C1,C2,C3,C4>.instance.AddGroupCallback -= action;
+	}
+
+	/// <summary>
+	/// Performs action once entity contains all enabled components
+	/// </summary>
+	public void AddEnableGroupEvent<C1,C2,C3,C4,C5>(Action<C1,C2,C3,C4,C5> action)
+		where C1 : EntityComponent<C1>
+		where C2 : EntityComponent<C2>
+		where C3 : EntityComponent<C3>
+		where C4 : EntityComponent<C4>
+		where C5 : EntityComponent<C5>
+	{
+		#if UNITY_EDITOR
+		info.AddGroupEvents.Add(typeof(Group<C1,C2,C3,C4,C5>));
+		#endif
+
+		_OnInitializeCallback += () => ProcessGroup<C1,C2,C3,C4,C5>(action);
+		_OnEnableCallback += () => Group<C1,C2,C3,C4,C5>.instance.AddGroupCallback += action;
+		_OnDisableCallback += () => Group<C1,C2,C3,C4,C5>.instance.AddGroupCallback -= action;
+	}
+
 	#endregion
 
+	#region DisableGroup
+
+	/// <summary>
+	/// Performs action when entity no longer contains enabled component
+	/// </summary>
+	public void AddDisableGroupEvent<C1>(Action<C1> action)
+		where C1 : EntityComponent<C1>
+	{
+		#if UNITY_EDITOR
+		info.RemoveGroupEvents.Add(typeof(Group<C1>));
+		#endif
+
+		_OnEnableCallback += () => Group<C1>.instance.DisableComponentCallback += action;
+		_OnDisableCallback += () => Group<C1>.instance.DisableComponentCallback -= action;
+	}
+
+	/// <summary>
+	/// Performs action when entity no longer contains all enabled components
+	/// </summary>
+	public void AddDisableGroupEvent<C1,C2>(Action<C1,C2> action)
+		where C1 : EntityComponent<C1>
+		where C2 : EntityComponent<C2>
+	{
+		#if UNITY_EDITOR
+		info.RemoveGroupEvents.Add(typeof(Group<C1,C2>));
+		#endif
+
+		_OnEnableCallback += () => Group<C1,C2>.instance.RemoveGroupCallback += action;
+		_OnDisableCallback += () => Group<C1,C2>.instance.RemoveGroupCallback -= action;
+	}
+
+	/// <summary>
+	/// Performs action when entity no longer contains all enabled components
+	/// </summary>
+	public void AddDisableGroupEvent<C1,C2,C3>(Action<C1,C2,C3> action)
+		where C1 : EntityComponent<C1>
+		where C2 : EntityComponent<C2>
+		where C3 : EntityComponent<C3>
+	{
+		#if UNITY_EDITOR
+		info.RemoveGroupEvents.Add(typeof(Group<C1,C2,C3>));
+		#endif
+
+		_OnEnableCallback += () => Group<C1,C2,C3>.instance.RemoveGroupCallback += action;
+		_OnDisableCallback += () => Group<C1,C2,C3>.instance.RemoveGroupCallback -= action;
+	}
+
+	/// <summary>
+	/// Performs action when entity no longer contains all enabled components
+	/// </summary>
+	public void AddDisableGroupEvent<C1,C2,C3,C4>(Action<C1,C2,C3,C4> action)
+		where C1 : EntityComponent<C1>
+		where C2 : EntityComponent<C2>
+		where C3 : EntityComponent<C3>
+		where C4 : EntityComponent<C4>
+	{
+		#if UNITY_EDITOR
+		info.RemoveGroupEvents.Add(typeof(Group<C1,C2,C3,C4>));
+		#endif
+
+		_OnEnableCallback += () => Group<C1,C2,C3,C4>.instance.RemoveGroupCallback += action;
+		_OnDisableCallback += () => Group<C1,C2,C3,C4>.instance.RemoveGroupCallback -= action;
+	}
+
+	/// <summary>
+	/// Performs action when entity no longer contains all enabled components
+	/// </summary>
+	public void AddDisableGroupEvent<C1,C2,C3,C4,C5>(Action<C1,C2,C3,C4,C5> action)
+		where C1 : EntityComponent<C1>
+		where C2 : EntityComponent<C2>
+		where C3 : EntityComponent<C3>
+		where C4 : EntityComponent<C4>
+		where C5 : EntityComponent<C5>
+	{
+		#if UNITY_EDITOR
+		info.RemoveGroupEvents.Add(typeof(Group<C1,C2,C3,C4,C5>));
+		#endif
+
+		_OnEnableCallback += () => Group<C1,C2,C3,C4,C5>.instance.RemoveGroupCallback += action;
+		_OnDisableCallback += () => Group<C1,C2,C3,C4,C5>.instance.RemoveGroupCallback -= action;
+	}
+
+	#endregion
+
+	#region Update
+
+	/// <summary>
+	/// Performs action every update
+	/// </summary>
+	public void AddUpdate(Action action)
+	{
+		#if UNITY_EDITOR
+		info.isUpdateSystem = true;
+		#endif
+		_UpdateCallback += action;
+	}
+
+	/// <summary>
+	/// Performs action every update on entities that contains all components
+	/// </summary>
+	public void AddUpdate<C1>(Action<C1> action)
+		where C1: EntityComponent<C1>
+	{
+		#if UNITY_EDITOR
+		info.isUpdateSystem = true;
+		info.UpdateTypes.Add(typeof(Group<C1>));
+		#endif
+
+		_UpdateCallback += () => ProcessGroup<C1>(action);
+	}
+
+	/// <summary>
+	/// Performs action every update on entities that contains all components
+	/// </summary>
+	public void AddUpdate<C1, C2>(Action<C1, C2> action)
+		where C1: EntityComponent<C1>
+		where C2: EntityComponent<C2>
+	{
+		#if UNITY_EDITOR
+		info.isUpdateSystem = true;
+		info.UpdateTypes.Add(typeof(Group<C1,C2>));
+		#endif
+
+		_UpdateCallback += () => ProcessGroup<C1,C2>(action);
+	}
+
+	/// <summary>
+	/// Performs action every update on entities that contains all components
+	/// </summary>
+	public void AddUpdate<C1,C2,C3>(Action<C1,C2,C3> action)
+		where C1: EntityComponent<C1>
+		where C2: EntityComponent<C2>
+		where C3: EntityComponent<C3>
+	{
+		#if UNITY_EDITOR
+		info.isUpdateSystem = true;
+		info.UpdateTypes.Add(typeof(Group<C1,C2,C3>));
+		#endif
+
+		_UpdateCallback += () => ProcessGroup<C1,C2,C3>(action);
+	}
+
+	/// <summary>
+	/// Performs action every update on entities that contains all components
+	/// </summary>
+	public void AddUpdate<C1,C2,C3,C4>(Action<C1,C2,C3,C4> action)
+		where C1: EntityComponent<C1>
+		where C2: EntityComponent<C2>
+		where C3: EntityComponent<C3>
+		where C4: EntityComponent<C4>
+	{
+		#if UNITY_EDITOR
+		info.isUpdateSystem = true;
+		info.UpdateTypes.Add(typeof(Group<C1,C2,C3,C4>));
+		#endif
+
+		_UpdateCallback += () => ProcessGroup<C1,C2,C3,C4>(action);
+	}
+
+	/// <summary>
+	/// Performs action every update on entities that contains all components
+	/// </summary>
+	public void AddUpdate<C1,C2,C3,C4,C5>(Action<C1,C2,C3,C4,C5> action)
+		where C1: EntityComponent<C1>
+		where C2: EntityComponent<C2>
+		where C3: EntityComponent<C3>
+		where C4: EntityComponent<C4>
+		where C5: EntityComponent<C5>
+	{
+		#if UNITY_EDITOR
+		info.isUpdateSystem = true;
+		info.UpdateTypes.Add(typeof(Group<C1,C2,C3,C4,C5>));
+		#endif
+
+		_UpdateCallback += () => ProcessGroup<C1,C2,C3,C4,C5>(action);
+	}
+
+	#endregion
+
+	#region fixedUpdate
+
+	/// <summary>
+	/// Performs action every fixed update
+	/// </summary>
+	public void AddFixedUpdate(Action action)
+	{		
+		#if UNITY_EDITOR
+		info.isFixedUpdateSystem = true;
+		#endif
+
+		_FixedUpdateCallback += action;
+	}
+
+	/// <summary>
+	/// Performs action every fixed update on entities that contains component
+	/// </summary>
+	public void AddFixedUpdate<C1>(Action<C1> action)
+		where C1: EntityComponent<C1>
+	{		
+		#if UNITY_EDITOR
+		info.isFixedUpdateSystem = true;
+		info.FixedUpdateTypes.Add(typeof(Group<C1>));
+		#endif
+
+		_FixedUpdateCallback += () => ProcessGroup<C1>(action);
+	}
+
+	/// <summary>
+	/// Performs action every fixed update on entities that contains all components
+	/// </summary>
+	public void AddFixedUpdate<C1, C2>(Action<C1, C2> action)
+		where C1: EntityComponent<C1>
+		where C2: EntityComponent<C2>
+	{		
+		#if UNITY_EDITOR
+		info.isFixedUpdateSystem = true;
+		info.FixedUpdateTypes.Add(typeof(Group<C1,C2>));
+		#endif
+
+		_FixedUpdateCallback += () => ProcessGroup<C1,C2>(action);
+	}
+
+	/// <summary>
+	/// Performs action every fixed update on entities that contains all components
+	/// </summary>
+	public void AddFixedUpdate<C1,C2,C3>(Action<C1,C2,C3> action)
+		where C1: EntityComponent<C1>
+		where C2: EntityComponent<C2>
+		where C3: EntityComponent<C3>
+	{		
+		#if UNITY_EDITOR
+		info.isFixedUpdateSystem = true;
+		info.FixedUpdateTypes.Add(typeof(Group<C1,C2,C3>));
+		#endif
+
+		_FixedUpdateCallback += () => ProcessGroup<C1,C2,C3>(action);
+	}
+
+	/// <summary>
+	/// Performs action every fixed update on entities that contains all components
+	/// </summary>
+	public void AddFixedUpdate<C1,C2,C3,C4>(Action<C1,C2,C3,C4> action)
+		where C1: EntityComponent<C1>
+		where C2: EntityComponent<C2>
+		where C3: EntityComponent<C3>
+		where C4: EntityComponent<C4>
+	{		
+		#if UNITY_EDITOR
+		info.isFixedUpdateSystem = true;
+		info.FixedUpdateTypes.Add(typeof(Group<C1,C2,C3,C4>));
+		#endif
+
+		_FixedUpdateCallback += () => ProcessGroup<C1,C2,C3,C4>(action);
+	}
+
+	/// <summary>
+	/// Performs action every fixed update on entities that contains all components
+	/// </summary>
+	public void AddFixedUpdate<C1,C2,C3,C4,C5>(Action<C1,C2,C3,C4,C5> action)
+		where C1: EntityComponent<C1>
+		where C2: EntityComponent<C2>
+		where C3: EntityComponent<C3>
+		where C4: EntityComponent<C4>
+		where C5: EntityComponent<C5>
+	{		
+		#if UNITY_EDITOR
+		info.isFixedUpdateSystem = true;
+		info.FixedUpdateTypes.Add(typeof(Group<C1,C2,C3,C4,C5>));
+		#endif
+
+		_FixedUpdateCallback += () => ProcessGroup<C1,C2,C3,C4,C5>(action);
+	}
+
+	#endregion
+
+	#region ProcessGroup
+
+	/// <summary>
+	/// Does action on all entities which contains all specified components
+	/// </summary>
+	public void ProcessGroup<C1>(Action<C1> action)
+		where C1: EntityComponent<C1>
+	{
+		var Group = Group<C1>.instance.components;
+		var count = Group<C1>.instance.ComponentCount;
+		for (int i = 0; i < count; ++i)
+			action(Group[i]);
+	}
+
+	/// <summary>
+	/// Does action on all entities which contains all specified components
+	/// </summary>
+	public void ProcessGroup<C1,C2>(Action<C1,C2> action)
+		where C1: EntityComponent<C1>
+		where C2: EntityComponent<C2>
+	{
+		var Group = Group<C1,C2>.instance.processors;
+		var count = Group<C1,C2>.instance.processorCount;
+		for (int i = 0; i < count; ++i)
+		{
+			var p = Group[i];
+			action(p.c1, p.c2);	
+		}
+	}
+
+	/// <summary>
+	/// Does action on all entities which contains all specified components
+	/// </summary>
+	public void ProcessGroup<C1,C2,C3>(Action<C1,C2,C3> action)
+		where C1: EntityComponent<C1>
+		where C2: EntityComponent<C2>
+		where C3: EntityComponent<C3>
+	{
+		var Group = Group<C1,C2,C3>.instance.processors;
+		var count = Group<C1,C2,C3>.instance.processorCount;
+		for (int i = 0; i < count; ++i)
+		{
+			var p = Group[i];
+			action(p.c1, p.c2, p.c3);	
+		}
+	}
+
+	/// <summary>
+	/// Does action on all entities which contains all specified components
+	/// </summary>
+	public void ProcessGroup<C1,C2,C3,C4>(Action<C1,C2,C3,C4> action)
+		where C1: EntityComponent<C1>
+		where C2: EntityComponent<C2>
+		where C3: EntityComponent<C3>
+		where C4: EntityComponent<C4>
+	{
+		var Group = Group<C1,C2,C3,C4>.instance.processors;
+		var count = Group<C1,C2,C3,C4>.instance.processorCount;
+		for (int i = 0; i < count; ++i)
+		{
+			var p = Group[i];
+			action(p.c1, p.c2, p.c3, p.c4);	
+		}
+	}
+
+	/// <summary>
+	/// Does action on all entities which contains all specified components
+	/// </summary>
+	public void ProcessGroup<C1,C2,C3,C4,C5>(Action<C1,C2,C3,C4,C5> action)
+		where C1: EntityComponent<C1>
+		where C2: EntityComponent<C2>
+		where C3: EntityComponent<C3>
+		where C4: EntityComponent<C4>
+		where C5: EntityComponent<C5>
+	{
+		var Group = Group<C1,C2,C3,C4,C5>.instance.processors;
+		var count = Group<C1,C2,C3,C4,C5>.instance.processorCount;
+		for (int i = 0; i < count; ++i)
+		{
+			var p = Group[i];
+			action(p.c1, p.c2, p.c3, p.c4, p.c5);	
+		}
+	}
+
+	#endregion
 }
-
-
-

@@ -3,11 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 
 [AddComponentMenu("EntitySystem/PlayerShootSystem")]
-public class PlayerShootSystem : EntitySystem<PlayerComponent, InputComponent>, UpdateSystem
+public class PlayerShootSystem : EntitySystem
 {
 	public GameObject Bullet;
 
-	public override void UpdateSystem (PlayerComponent player, InputComponent input)
+
+	public override void Initialize ()
+	{
+		AddUpdate<PlayerComponent, InputComponent>(UpdateSystem);
+	}
+
+	public void UpdateSystem (PlayerComponent player, InputComponent input)
 	{
 		var transform = player.entity.transform;
 

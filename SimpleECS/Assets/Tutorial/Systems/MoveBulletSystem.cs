@@ -3,12 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 
 [AddComponentMenu("EntitySystem/MoveBulletSystem")]
-public class MoveBulletSystem : EntitySystem<BulletComponent, RigidbodyComponent>, UpdateSystem
+public class MoveBulletSystem : EntitySystem
 {
 	public float bulletSpeed = 20f; 
 	public float bulletLife = 1f;
 
-	public override void UpdateSystem (BulletComponent bullet, RigidbodyComponent rigidbody)
+	public override void Initialize ()
+	{
+		AddUpdate<BulletComponent, RigidbodyComponent>(UpdateSystem);
+	}
+
+	public void UpdateSystem (BulletComponent bullet, RigidbodyComponent rigidbody)
 	{
 		bullet.timeAlive += Time.fixedDeltaTime;
 
@@ -18,12 +23,5 @@ public class MoveBulletSystem : EntitySystem<BulletComponent, RigidbodyComponent
 		{
 			bullet.entity.Destroy();
 		}
-	}
-
-
-	[ContextMenu("Disable")]
-	void Disable()
-	{
-		this.enabled = false;
 	}
 }

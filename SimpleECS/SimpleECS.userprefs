@@ -1,23 +1,8 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj" RefactoringSettings.EnableRefactorings="True">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\ECS\EntityManager.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\ECS\Entity.cs">
     <Files>
-      <File FileName="Assets\ECS\EntityManager.cs" Line="446" Column="5" />
-      <File FileName="Assets\ECS\EntitySystem.cs" Line="1" Column="1" />
-      <File FileName="Assets\ECS\EntitySystemC1.cs" Line="1" Column="1" />
-      <File FileName="Assets\ECS\EntitySystemC2.cs" Line="1" Column="1" />
-      <File FileName="Assets\ECS\EntitySystemC3.cs" Line="1" Column="1" />
-      <File FileName="Assets\ECS\EntitySystemC4.cs" Line="1" Column="1" />
-      <File FileName="Assets\ECS\EntitySystemC5.cs" Line="1" Column="1" />
-      <File FileName="Assets\Testing\SystemNull.cs" Line="1" Column="1" />
-      <File FileName="Assets\Testing\SystemA.cs" Line="1" Column="1" />
-      <File FileName="Assets\Testing\SystemB.cs" Line="1" Column="1" />
-      <File FileName="Assets\Testing\SystemC.cs" Line="1" Column="1" />
-      <File FileName="Assets\Testing\SystemD.cs" Line="1" Column="1" />
-      <File FileName="Assets\Testing\SystemE.cs" Line="1" Column="1" />
-      <File FileName="Assets\ECS\Entity.cs" Line="1" Column="1" />
-      <File FileName="Assets\Testing\TestE.cs" Line="1" Column="1" />
-      <File FileName="Assets\Tutorial\Systems\EnemyDamageSystem.cs" Line="1" Column="1" />
+      <File FileName="Assets\ECS\Entity.cs" Line="272" Column="68" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

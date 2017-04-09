@@ -367,7 +367,7 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 
 		enum SearchType
 		{ 
-			Name, UpdateByName, FixedUpdateByName, UpdateByComponent, FixedUpdateByComponent, EntityEvent, SystemEvent
+			Name, UpdateSystemWithName, FixedUpdateSystemWithName, UpdateSystemWithComponent, FixedUpdateSystemWithComponent, EntityEvent, SystemEvent, EnableGroupEventWithComponent, DisableGroupEventWithComponent
 		}
 
 		SearchType searchtype = SearchType.Name;
@@ -377,6 +377,11 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 		bool refreshSearch;
 
 		int DisplaySystemCount = 20;
+
+		public override bool RequiresConstantRepaint ()
+		{
+			return true;
+		}
 
 		public override void OnInspectorGUI ()
 		{
@@ -398,7 +403,7 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 				EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 
 				currentSearch = EditorGUILayout.TextField (new GUIContent("Search Systems", "Perform filtering of Systems"), currentSearch);
-				searchtype = (SearchType)EditorGUILayout.EnumPopup(new GUIContent("Search Type", 
+				searchtype = (SearchType)EditorGUILayout.EnumPopup(new GUIContent("Search By", 
 						"Define how you search for Systems.\n\nE.g Search for all Update Systems with name\n       Search for all Fixed Update Systems that implement component\n       Search for all systems that implement Entity Event"), searchtype);
 
 				if (!string.IsNullOrEmpty(currentSearch))
@@ -417,16 +422,16 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 						case SearchType.Name:
 							SearchByName ();
 							break;
-						case SearchType.UpdateByName:
+						case SearchType.UpdateSystemWithName:
 							SearchUpdateByName();
 							break;
-						case SearchType.FixedUpdateByName:
+						case SearchType.FixedUpdateSystemWithName:
 							SearchFixedUpdateByName();
 							break;
-						case SearchType.UpdateByComponent:
+						case SearchType.UpdateSystemWithComponent:
 							SearchUpdateByComponent();
 							break;
-						case SearchType.FixedUpdateByComponent:
+						case SearchType.FixedUpdateSystemWithComponent:
 							SearchFixedUpdateByComponent();
 							break;
 						case SearchType.EntityEvent:
@@ -434,6 +439,12 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 							break;
 						case SearchType.SystemEvent:
 							SearchBySystemEvent();
+							break;
+						case SearchType.EnableGroupEventWithComponent:
+							SearchEnableGroupByComponent();
+							break;
+						case SearchType.DisableGroupEventWithComponent:
+							SearchDisableGroupByComponent();
 							break;
 						default:
 							break;
@@ -448,9 +459,6 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 					}
 				}
 				else DrawAllSystems();
-
-				EditorUtility.SetDirty(target);
-
 				var guiStyle = GUI.skin.GetStyle("HelpBox");
 				EditorGUILayout.LabelField(GUI.tooltip, guiStyle, GUILayout.Height(64f));
 			}
@@ -473,13 +481,17 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 
 		void DrawSystemInfo(int index, EntitySystemInfo info)
 		{
+			var defaultColor = GUI.color;
+			var disabledColor = GUI.color;
+			disabledColor.a = .5f;
+
 			if (info == null || info.System == null)
 			{
 				refreshSearch = true;
 				return;
 			}
 
-			if (!info.System.isActiveAndEnabled) GUI.enabled = false;
+			if (!info.System.isActiveAndEnabled) GUI.color = disabledColor;
 
 			EditorGUILayout.BeginHorizontal(EditorStyles.helpBox, GUILayout.Width(Screen.width - 48f));
 
@@ -561,7 +573,7 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			}
 
 			EditorGUI.indentLevel --;
-			GUI.enabled = true;
+			GUI.color = defaultColor;
 		}
 
 		void DrawPrevAndNextButtons(ref int index, int systemCount)
@@ -575,7 +587,7 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 					if (GUILayout.Button(string.Format("<- Previous {0}", DisplaySystemCount), GUILayout.MaxWidth(Screen.width/2f - 24f)))
 						index -= DisplaySystemCount;
 
-					if (index + 20 > systemCount)
+					if (index + DisplaySystemCount > systemCount)
 					{
 						GUI.enabled = false;
 						GUILayout.Button(string.Format("Next {0} ->", DisplaySystemCount), GUILayout.MaxWidth(Screen.width/2f - 24f));
@@ -743,6 +755,44 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 				foreach(var type in item.SystemEvents)
 				{
 					if (type.ToString().IndexOf(currentSearch, StringComparison.OrdinalIgnoreCase) >=0)
+					{
+						searchResults.Add(new SearchFilter(order, item));
+						break;
+					}
+				}
+			}
+			searchIndex = 0;
+		}
+
+		void SearchEnableGroupByComponent()
+		{
+			int order = 0;
+			foreach(var item in manager.SystemsInfo)
+			{
+				order ++;
+				if (item.AddGroupEvents.Count == 0) continue;
+				foreach(var type in item.AddGroupEvents)
+				{
+					if (type.ToString().Remove(0,26).IndexOf(currentSearch, StringComparison.OrdinalIgnoreCase) >=0)
+					{
+						searchResults.Add(new SearchFilter(order, item));
+						break;
+					}
+				}
+			}
+			searchIndex = 0;
+		}
+
+		void SearchDisableGroupByComponent()
+		{
+			int order = 0;
+			foreach(var item in manager.SystemsInfo)
+			{
+				order ++;
+				if (item.RemoveGroupEvents.Count == 0) continue;
+				foreach(var type in item.RemoveGroupEvents)
+				{
+					if (type.ToString().Remove(0,26).IndexOf(currentSearch, StringComparison.OrdinalIgnoreCase) >=0)
 					{
 						searchResults.Add(new SearchFilter(order, item));
 						break;

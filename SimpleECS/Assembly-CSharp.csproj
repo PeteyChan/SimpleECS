@@ -68,6 +68,10 @@
      <Compile Include="Assets\Testing\TestC.cs" />
      <Compile Include="Assets\Testing\TestD.cs" />
      <Compile Include="Assets\Testing\TestE.cs" />
+     <Compile Include="Assets\Testing\TestF.cs" />
+     <Compile Include="Assets\Testing\TestG.cs" />
+     <Compile Include="Assets\Testing\TestH.cs" />
+     <Compile Include="Assets\Testing\TestI.cs" />
      <Compile Include="Assets\Tutorial\Components\BulletComponent.cs" />
      <Compile Include="Assets\Tutorial\Components\EnemyComponent.cs" />
      <Compile Include="Assets\Tutorial\Components\InputComponent.cs" />

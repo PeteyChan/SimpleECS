@@ -191,30 +191,165 @@ namespace SimpleECS.Internal
 			e = (Entity)target;
 		}
 
-		bool ShowComponents;
+		bool onlyEnabled;
 		Entity e;
 
+		bool refreshSearch;
+		string lastSearch = "";
+		string currentSearch = "";
+		List<ComponentHolder> searchResults = new List<ComponentHolder>();
+		List<ComponentHolder> allComponents = new List<ComponentHolder>();
+
+		int DisplaySystemCount = 10;
+		int index = 0;
+
+		public override bool RequiresConstantRepaint ()
+		{
+			return true;
+		}
 
 		public override void OnInspectorGUI ()
 		{
-			DrawDefaultInspector();
-
 			if (Application.isPlaying && EntityManager.loaded)
 			{
-				ShowComponents = EditorGUILayout.Foldout(ShowComponents, "Show Components");
-				EditorGUI.indentLevel ++;
-				if (ShowComponents)
+				allComponents.Clear();
+				int componentCount = 0;
+				int enabledCount = 0;
+
+				for (int i = 0; i < EntityManager.instance.GetComponentCount(); ++i)
 				{
-					for (int i = 0; i < EntityManager.instance.GetComponentCount(); ++i)
+					if (e[i].has)
 					{
-						if (e[i].has)
-							EditorGUILayout.LabelField((e[i].component.GetType()).ToString());
+						componentCount++;
+						if (e[i].enabled) enabledCount ++;
+						else if (onlyEnabled) continue;
+
+						allComponents.Add(e[i]);
+					}
+
+				}
+
+				EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+				EditorGUILayout.LabelField(string.Format("Entity ID : {0}", e.ID));
+				EditorGUILayout.LabelField(string.Format("Total Components : {0}", componentCount));
+				EditorGUILayout.LabelField(string.Format("Enabled Components : {0}", enabledCount));
+				EditorGUILayout.LabelField(string.Format("Disabled Components : {0}", componentCount - enabledCount));
+
+				EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+
+				currentSearch = EditorGUILayout.TextField (new GUIContent("Search", "Perform filtering of Components"), currentSearch);					
+				onlyEnabled = EditorGUILayout.Toggle("Only Enabled", onlyEnabled);
+
+				var defaultColor = GUI.color;
+				var disabledColor = GUI.color;
+				disabledColor.a = .5f;
+
+				if (!string.IsNullOrEmpty(currentSearch))
+				{
+					if (currentSearch != lastSearch || refreshSearch)
+					{
+						index = 0;
+						searchResults.Clear();
+						foreach (var item in allComponents)
+						{
+							if (onlyEnabled && !item.enabled) continue;
+
+							if (item.component.GetType().ToString().IndexOf(currentSearch, StringComparison.OrdinalIgnoreCase) >= 0)
+								searchResults.Add(item);
+						}
+					}
+					DrawPrevAndNextButtons(ref index, searchResults.Count);
+					for (int i = index; i < Mathf.Min(index + DisplaySystemCount, searchResults.Count); ++i)
+					{
+						DrawComponent(searchResults[i], disabledColor, defaultColor);	
 					}
 				}
-				EditorGUI.indentLevel --;
-
-				EditorUtility.SetDirty(target);
+				else
+				{
+					DrawPrevAndNextButtons(ref index, allComponents.Count);
+					for (int i = index; i < Mathf.Min(index + DisplaySystemCount, allComponents.Count); ++i)
+					{
+						DrawComponent(allComponents[i], disabledColor, defaultColor);	
+					}
+				}
 			}
+			else 
+				DrawDefaultInspector();
+		}
+
+		void DrawComponent(ComponentHolder item, Color disabledColor, Color defaultColor)
+		{
+			if (item.component == null)
+			{
+				refreshSearch = true;
+				allComponents.Clear();
+				return;
+			}
+
+			if (!item.enabled)
+				GUI.color = disabledColor;
+			
+			EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+
+			if (GUILayout.Button(DisplayStringWithSpaces(item.component.GetType().ToString()), EditorStyles.label, GUILayout.MaxWidth(Screen.width - 64f)))
+			{
+				EditorGUIUtility.PingObject(item.component);
+			}	
+			GUI.color = defaultColor;
+
+			EditorGUILayout.EndHorizontal();
+		}
+
+	
+		string DisplayStringWithSpaces(string text)
+		{
+			if (string.IsNullOrEmpty(text)) return text;
+
+			System.Text.StringBuilder newText = new System.Text.StringBuilder(text.Length*2);
+			newText.Append(text[0]);
+			for(int i = 1; i < text.Length; ++i)
+			{
+				if (char.IsUpper(text[i]) && (char.IsLower(text[i-1])))
+				{
+					newText.Append(" ");	
+				}
+				newText.Append(text[i]);
+			}
+			return newText.ToString();
+		}
+
+		void DrawPrevAndNextButtons(ref int index, int componentCount)
+		{
+			EditorGUILayout.BeginHorizontal();
+
+			if (componentCount >= DisplaySystemCount)
+			{
+				if (index >= DisplaySystemCount)
+				{
+					if (GUILayout.Button(string.Format("<- Previous {0}", DisplaySystemCount), GUILayout.MaxWidth(Screen.width/2f - 24f)))
+						index -= DisplaySystemCount;
+
+					if (index + 20 > componentCount)
+					{
+						GUI.enabled = false;
+						GUILayout.Button(string.Format("Next {0} ->", DisplaySystemCount), GUILayout.MaxWidth(Screen.width/2f - 24f));
+						GUI.enabled = true;
+					}
+				}
+				if (index + DisplaySystemCount < componentCount)
+				{
+					if (index < DisplaySystemCount)
+					{
+						GUI.enabled = false;
+						GUILayout.Button(string.Format("<- Previous {0}", DisplaySystemCount), GUILayout.MaxWidth(Screen.width/2f - 24f));
+						GUI.enabled = true;
+					}
+
+					if (GUILayout.Button(string.Format("Next {0} ->", DisplaySystemCount), GUILayout.MaxWidth(Screen.width/2f - 24f)))
+						index += DisplaySystemCount;
+				}
+			}
+			EditorGUILayout.EndHorizontal();
 		}
 	}
 

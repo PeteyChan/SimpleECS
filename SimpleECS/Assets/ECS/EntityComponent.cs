@@ -67,20 +67,6 @@ public abstract class EntityComponent<C> : EntityComponent where C : EntityCompo
 			entity[_componentID] = holder;
 		}
 	}
-
-	// will make collection lookups faster for collections of the same component however
-	// will make lookups slower if collection contains different types of components
-	public override int GetHashCode ()
-	{
-		return entity.ID;
-	}
-
-	public override bool Equals (object other)
-	{
-		if (other is C)
-			return ((C)other).entity.ID == entity.ID;;
-		return false;
-	}
 }
 	
 public abstract class EntityComponent : MonoBehaviour
@@ -88,8 +74,76 @@ public abstract class EntityComponent : MonoBehaviour
 	[ReadOnly]
 	public Entity entity;
 
+	/// <summary>
+	/// Calls Events on Entity that Match Argument's Type.
+	/// </summary>
 	public void SendEvent<E>(E args)
 	{
 		entity.SendEvent(args);
+	}
+
+	/// <summary>
+	/// Returns true if entity contains component
+	/// </summary>
+	public bool Has<C>() where C : EntityComponent<C>
+	{
+		return entity[Group<C>.instance.ID].has;
+	}
+
+	/// <summary>
+	/// Returns true if entity contains component and is enabled
+	/// </summary>
+	public bool HasEnabled<C>() where C : EntityComponent<C>
+	{
+		return entity[Group<C>.instance.ID].enabled;
+	}
+
+	/// <summary>
+	/// Returns true if has component. Outputs component
+	/// </summary>
+	public bool TryGet<C>(out C component) where C: EntityComponent<C>
+	{
+		ComponentHolder h = entity[Group<C>.instance.ID];
+		component = (C)h.component;
+		return h.has;
+	}
+
+	/// <summary>
+	/// Returns true if has component and enabled. Outputs component;
+	/// </summary>
+	public bool TryGetEnabled<C>(out C component) where C : EntityComponent<C>	// used to speed up systems a little bit
+	{
+		ComponentHolder h = entity[Group<C>.instance.ID];
+		component = (C)h.component;
+		return h.enabled;
+	}
+
+	/// <summary>
+	/// Returns Component if in variable, returns false 
+	/// </summary>
+	public C Get<C>() where C : EntityComponent<C>
+	{
+		return (C)entity[Group<C>.instance.ID].component;
+	}
+
+	/// <summary>
+	/// Returns Component or Adds and returns Component if None Found.
+	/// </summary>
+	public C GetOrAdd<C>() where C : EntityComponent<C>
+	{
+		var c = Get<C>();
+		if (c == null) 
+			c = gameObject.AddComponent<C>();
+		return c;
+	}
+
+	/// <summary>
+	/// Removes Component
+	/// </summary>
+	public void Remove<C>() where C : EntityComponent<C>
+	{
+		var c = Get<C>();
+		if (c != null)
+			Destroy(c);
 	}
 }

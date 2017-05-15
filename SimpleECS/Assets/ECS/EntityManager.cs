@@ -804,6 +804,5 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			searchIndex = 0;
 		}
 	}
+	#endif
 }
-#endif
-

@@ -1,9 +1,9 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2008
-
-Project("{14FA79DE-4A24-FBC9-739B-EFAE8803887C}") = "SimpleECS", "Assembly-CSharp.csproj", "{29D41768-4CB5-BEFA-5EA8-201018656D09}"
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleECS", "Assembly-CSharp.csproj", "{29D41768-4CB5-BEFA-5EA8-201018656D09}"
 EndProject
-Project("{14FA79DE-4A24-FBC9-739B-EFAE8803887C}") = "SimpleECS", "Assembly-CSharp-Editor.csproj", "{F334164A-2854-8A81-06DA-1877AFD2CD56}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleECS", "Assembly-CSharp-Editor.csproj", "{F334164A-2854-8A81-06DA-1877AFD2CD56}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

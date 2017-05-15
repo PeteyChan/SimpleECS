@@ -378,33 +378,31 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 
 		int DisplaySystemCount = 20;
 
-		public override bool RequiresConstantRepaint ()
-		{
-			return true;
-		}
-
 		public override void OnInspectorGUI ()
 		{
 			if (Application.isPlaying)
 			{
-				EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+				EditorGUILayout.LabelField("", GUI.skin.horizontalSlider, GUILayout.Width(Screen.width - 48f));
 				EditorGUILayout.BeginHorizontal();
-				EditorGUILayout.LabelField(new GUIContent(string.Format("Entities : {0}", manager.totalEntityCount), "Total amount of instantiated Entities"),GUILayout.MaxWidth(128f));
-				EditorGUILayout.LabelField(new GUIContent(string.Format("Groups : {0}", manager.groupLookup.Count), "Total amount of instantiated Groups"));
+				EditorGUILayout.LabelField(new GUIContent(string.Format("Entities : {0}", manager.totalEntityCount), "Total amount of instantiated Entities"), GUILayout.Width(Screen.width/2f - 24f));
+				EditorGUILayout.LabelField(new GUIContent(string.Format("Groups : {0}", manager.groupLookup.Count), "Total amount of instantiated Groups"), GUILayout.Width(Screen.width/2f- 24f));
 				EditorGUILayout.EndHorizontal();
 				EditorGUILayout.BeginHorizontal();
-				EditorGUILayout.LabelField(new GUIContent(string.Format("Systems : {0}", manager.SystemsInfo.Count), "Total amount of instantiated Systems"), GUILayout.MaxWidth(128f));
-				EditorGUILayout.LabelField(new GUIContent(string.Format("Component Types : {0}", manager.componentIDLookup.Count), "Total amount of unique component types"));
+				EditorGUILayout.LabelField(new GUIContent(string.Format("Systems : {0}", manager.SystemsInfo.Count), "Total amount of instantiated Systems"), GUILayout.Width(Screen.width/2f- 24f));
+				EditorGUILayout.LabelField(new GUIContent(string.Format("Component Types : {0}", manager.componentIDLookup.Count), "Total amount of unique component types"), GUILayout.Width(Screen.width/2f- 24f));
 				EditorGUILayout.EndHorizontal();
 				EditorGUILayout.BeginHorizontal();
-				EditorGUILayout.LabelField(new GUIContent(string.Format("Update : {0:F2} ms", manager.UpdateTime) , "Total time to update all Update Systems")  , GUILayout.MaxWidth(128f));
-				EditorGUILayout.LabelField(new GUIContent(string.Format("Fixed Update : {0:F2} ms", manager.FixedUpdateTime), "Total time to update all Fixed Update Systems"));
+				EditorGUILayout.LabelField(new GUIContent(string.Format("Update : {0:F2} ms", manager.UpdateTime) , "Total time to update all Update Systems")  , GUILayout.Width(Screen.width/2f- 24f));
+				EditorGUILayout.LabelField(new GUIContent(string.Format("Fixed Update : {0:F2} ms", manager.FixedUpdateTime), "Total time to update all Fixed Update Systems"), GUILayout.Width(Screen.width/2f- 24f));
 				EditorGUILayout.EndHorizontal();
-				EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+				EditorGUILayout.LabelField("", GUI.skin.horizontalSlider, GUILayout.Width(Screen.width - 48f));
 
-				currentSearch = EditorGUILayout.TextField (new GUIContent("Search Systems", "Perform filtering of Systems"), currentSearch);
+				currentSearch = EditorGUILayout.TextField (new GUIContent("Search Systems", "Perform filtering of Systems"), 
+					currentSearch, GUILayout.MaxWidth(Screen.width - 48f));
+
 				searchtype = (SearchType)EditorGUILayout.EnumPopup(new GUIContent("Search By", 
-						"Define how you search for Systems.\n\nE.g Search for all Update Systems with name\n       Search for all Fixed Update Systems that implement component\n       Search for all systems that implement Entity Event"), searchtype);
+						"Define how you search for Systems.\n\nE.g Search for all Update Systems with name\n       Search for all Fixed Update Systems that implement component\n       Search for all systems that implement Entity Event"), 
+					searchtype, GUILayout.MaxWidth(Screen.width - 48f));
 
 				if (!string.IsNullOrEmpty(currentSearch))
 				{
@@ -459,8 +457,11 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 					}
 				}
 				else DrawAllSystems();
+
+				EditorUtility.SetDirty(target);
+
 				var guiStyle = GUI.skin.GetStyle("HelpBox");
-				EditorGUILayout.LabelField(GUI.tooltip, guiStyle, GUILayout.Height(64f));
+				EditorGUILayout.LabelField(GUI.tooltip, guiStyle, GUILayout.Height(64f), GUILayout.MaxWidth(Screen.width - 48f));
 			}
 			else
 			{
@@ -500,9 +501,10 @@ namespace SimpleECS.Internal	// putting it in this name space to clean up Intell
 			// var buttonStyle = new GUIStyle("label");
 			//buttonStyle.contentOffset = new Vector2(0, -2f);
 
-			var content = new GUIContent(string.Format("{0} : {1}", index, DisplayStringWithSpaces(info.System.GetType().ToString())), "Execution Order and Name of System\nClick to Hightlight System in Heirachy"); 
+			var content = new GUIContent(string.Format("{0} : {1}", index, DisplayStringWithSpaces(info.System.GetType().ToString())), info.System.Tooltip());// "Execution Order and Name of System\nClick to Hightlight System in Heirachy"); 
 
-			if (GUILayout.Button( content , GUI.skin.label, GUILayout.Width(Screen.width - 128f), GUILayout.Height(16f)))
+			info.System.enabled = EditorGUILayout.Toggle(info.System.enabled);
+			if (GUILayout.Button( content , GUI.skin.label, GUILayout.Width(Screen.width - 160f), GUILayout.Height(16f)))
 			{
 				EditorGUIUtility.PingObject(info.System);
 			}

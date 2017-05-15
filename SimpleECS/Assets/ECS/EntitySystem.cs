@@ -21,6 +21,15 @@ public abstract class EntitySystem : MonoBehaviour
 
 	public virtual void Initialize(){}
 
+	/// <summary>
+	/// Changes the tooltip displayed when hovering the system in the Entity Manager Inspector
+	/// \n creates new line
+	/// </summary>
+	public virtual string Tooltip()
+	{
+		return string.Format("Click to Hightlight System in Heirachy");
+	}
+
 	void Awake()
 	{
 		Initialize();

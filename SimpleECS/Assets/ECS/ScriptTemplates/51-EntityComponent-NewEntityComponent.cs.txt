@@ -1,9 +1,0 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
-
-[AddComponentMenu("EntityComponent/#SCRIPTNAME#")]
-public class #SCRIPTNAME# : EntityComponent<#SCRIPTNAME#>
-{
-	
-}

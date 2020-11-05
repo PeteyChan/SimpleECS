@@ -39,6 +39,8 @@ if (entity.Has<int>() && entity.Not<string>())
   // you can also do basic querying of components with has and not  
 }
 
+entity.SetComponents(3, "Hello", new Vector3()); // alternate way of setting components to an entity
+
 entity.GetAllComponents();       // returns all components currently on the entity
 ```
 ## Systems

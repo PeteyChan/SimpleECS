@@ -1,5 +1,5 @@
 # SimpleECS
-A Simple and easy to use Entity Component System
+A Simple and easy to use C# Entity Component System
 
 
 ## Entities and Components

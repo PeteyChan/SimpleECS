@@ -63,15 +63,15 @@ namespace SimpleECS
         public Entity() { }
 
         /// <summary>
-        /// Components supplied are set by their most derrived type
+        /// Components supplied are set by their type
         /// </summary>
         public Entity(params object[] components)
         {
-            SetComponents(components);
+            SetByType(components);
         }
 
         /// <summary>
-        /// Sets/Adds the component to this entity
+        /// Sets/Adds the component to entity as is
         /// </summary>
         public Entity Set<T>(T component)
         {
@@ -91,7 +91,7 @@ namespace SimpleECS
         /// <summary>
         /// Sets/Adds components to entity by their type
         /// </summary>
-        public Entity SetComponents(params object[] components)
+        public Entity SetByType(params object[] components)
         {
             foreach (var component in components)
             {
@@ -608,7 +608,7 @@ namespace SimpleECS
         //simple openset hashmap for faster lookups than a normal dictionary
         class ECSMap
         {
-            public IndexData[] map = new IndexData[map_data[0].prime + map_data[0].steps];
+            public (int index, int value)[] map =  new (int index, int value)[map_data[0].prime + map_data[0].steps];
             int factor = map_data[0].prime;
             int steps = map_data[0].steps;
             byte current_data = 0;
@@ -618,7 +618,7 @@ namespace SimpleECS
                 current_data = 0;
                 factor = map_data[0].prime;
                 steps = map_data[0].steps;
-                map = new IndexData[factor + steps];
+                map = new (int index, int value)[factor + steps];
             }
 
             void Resize()
@@ -628,7 +628,7 @@ namespace SimpleECS
                 steps = map_data[current_data].steps;
 
                 var data = map_data[current_data];
-                IndexData[] newMap = new IndexData[factor + steps];
+                (int index, int value)[] newMap = new (int, int)[factor + steps];
 
                 for (int index = 0; index < map.Length; ++index)
                 {
@@ -710,7 +710,7 @@ namespace SimpleECS
                         var data = map[pos + i];
                         if (data.index == 0 || data.index == index)
                         {
-                            map[pos + i] = new IndexData { index = index, value = value };
+                            map[pos + i] = (index, value);
                             return;
                         }
                     }
@@ -724,7 +724,7 @@ namespace SimpleECS
                         var data = map[pos + i];
                         if (data.index == 0 || data.index == index)
                         {
-                            map[pos + i] = new IndexData { index = index, value = value };
+                            map[pos + i] = (index, value);
                             return;
                         }
                     }
@@ -746,12 +746,6 @@ namespace SimpleECS
                 (6151, 14),
                 (12289, 15)
             };
-
-            public struct IndexData
-            {
-                public int index;
-                public int value;
-            }
         }
     }
 }

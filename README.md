@@ -39,7 +39,7 @@ if (entity.Has<int>() && entity.Not<string>())
   // you can also do basic querying of components with has and not  
 }
 
-entity.SetComponents(3, "Hello", new Vector3()); // alternate way of setting components to an entity
+entity.SetByType(3, "Hello", new Vector3()); // sets component as their type
 
 entity.GetAllComponents();       // returns all components currently on the entity
 ```
@@ -129,7 +129,7 @@ var query = new Entity.Query().Include<Transform, Player>(); // instead of this
 var query = new Entity.Query().Include<Player, Transfrom>(); // do this
 ```
 
-entity.Set() and entity.SetComponents() work slightly differently. 
+entity.Set() and entity.SetByType() work slightly differently. 
 Choose which one works best for your situation 
 ```C#
 class Component: IInterface
@@ -138,13 +138,14 @@ class Component: IInterface
 IInterface component = new Component();
 
 entity.Set(component);           // set adds the component as the current type
-                                 // which in this case will set IInterface as the 
-                                 // component to the entity
+                                 // which in this case is IInterface 
+                                 // i.e entity.Has<IInterface>() == true
                                   
-entity.SetComponents(component); // while set components adds objects by it's type
+entity.SetByType(component);     // while set components adds objects by it's type
                                  // which in this case is Component
+                                 // i.e entity.Has<Component>() == true
 
-new Entity(component);           // coincidentally this is equivilant to new Entity().SetComponents(component)
+new Entity(component);           // coincidentally this is equivilant to new Entity().SetByType(component)
 ```
 
 Lastly, when removing large amounts of components, the backing arrays may be larger than they need to be.

@@ -148,7 +148,7 @@ entity.SetByType(component);     // while SetByType adds objects by it's type
 new Entity(component);           // coincidentally this is equivilant to new Entity().SetByType(component)
 ```
 
-Lastly, when removing large amounts of components, the backing arrays may be larger than they need to be.
+Lastly, when removing large amounts of components, the now empty backing arrays may be larger than they need to be.
 To free up space, especially if your changing scenes in a game engine you can resize them simply by calling
 ```C#
 // resizes all backing arrays to the minimum power of 2 needed to contain all components

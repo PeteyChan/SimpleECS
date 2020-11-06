@@ -56,7 +56,7 @@ include or exclude. Queries are very straight forward to create and use.
 
 ```C#
 // you can chain as many includes and excludes as you want
-// but adding too many can decrease performance
+// but adding too many can decrease iteration performance
 
 var query = new Entity.Query().Include<int, string>() // included components
                               .Exclude<float>();      // excluded components

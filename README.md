@@ -141,7 +141,7 @@ entity.Set(component);           // set adds the component as the current type
                                  // which in this case is IInterface 
                                  // i.e entity.Has<IInterface>() == true
                                   
-entity.SetByType(component);     // while set components adds objects by it's type
+entity.SetByType(component);     // while SetByType adds objects by it's type
                                  // which in this case is Component
                                  // i.e entity.Has<Component>() == true
 

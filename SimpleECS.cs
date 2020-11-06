@@ -204,26 +204,6 @@ namespace SimpleECS
             return this;
         }
 
-        bool HasAll(int[] componentIDs)
-        {
-            foreach (var id in componentIDs)
-            {
-                if (component_lookup[id] < 0)
-                    return false;
-            }
-            return true;
-        }
-
-        bool HasNone(int[] componentIDs)
-        {
-            foreach (var id in componentIDs)
-            {
-                if (component_lookup[id] >= 0)
-                    return false;
-            }
-            return true;
-        }
-
         public override int GetHashCode()
         => ID;
 

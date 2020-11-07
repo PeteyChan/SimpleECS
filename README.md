@@ -122,12 +122,8 @@ Entity.Events<Component>.OnRemove += (Entity entity, Component removedComponent)
 
 ## Tips
 
-Queries use the first include to peform their search over, so always try to 
-include the most specific component with the least entities first to increase performance
-```C#
-var query = new Entity.Query().Include<Transform, Player>(); // instead of this
-var query = new Entity.Query().Include<Player, Transfrom>(); // do this
-```
+Queries match over the smallest entity collection in it's include array, so
+it's always better to have atleast one. Otherwise the query will match over all entities.
 
 entity.Set() and entity.SetByType() work slightly differently. 
 Choose which one works best for your situation 

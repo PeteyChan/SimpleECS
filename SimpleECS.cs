@@ -37,7 +37,7 @@ namespace SimpleECS
         /// returns all entities with component type
         /// </summary>
         public static IReadOnlyList<Entity> GetEntitiesWithType(Type type)
-            => Components.pools[Components.GetTypeID(type)].GetEntityCollection();
+            => Components.entity_pools[Components.GetTypeID(type)];
 
         /// <summary>
         /// After removing large amounts of components, you can use this
@@ -96,7 +96,7 @@ namespace SimpleECS
             foreach (var component in components)
             {
                 var id = Components.GetTypeID(component.GetType());
-                Components.pools[id].SetComponent(this, component);
+                Components.component_pools[id].SetComponent(this, component);
             }
             return this;
         }
@@ -183,7 +183,7 @@ namespace SimpleECS
             {
                 if (item.index > 0)
                 {
-                    list.Add(Components.pools[item.index - 1].GetComponent(item.value));
+                    list.Add(Components.component_pools[item.index - 1].GetComponent(item.value));
                 }
             }
             return list;
@@ -198,7 +198,7 @@ namespace SimpleECS
             {
                 if (item.index > 0)
                 {
-                    Components.pools[item.index - 1].RemoveComponent(this);
+                    Components.component_pools[item.index - 1].RemoveComponent(this);
                 }
             }
             return this;
@@ -212,11 +212,6 @@ namespace SimpleECS
         public override string ToString()
         => $"Entity {ID}";
 
-
-
-
-
-
         abstract class Components
         {
             public readonly static Dictionary<Type, int> IDlookups = new Dictionary<Type, int>();
@@ -227,21 +222,24 @@ namespace SimpleECS
                 {
                     ComponentTypes.Add(type);
                     IDlookups[type] = value = IDlookups.Count;
-                    if (value == pools.Length)
+                    if (value == component_pools.Length)
                     {
-                        Array.Resize(ref pools, pools.Length * 2);
+                        Array.Resize(ref entity_pools, value * 2);
+                        Array.Resize(ref component_pools, value * 2);
                     }
+
+                    entity_pools[value] = new ECSCollection<Entity>();                                      
                     var poolType = typeof(Components<>).MakeGenericType(new Type[] { type });
-                    pools[value] = (Activator.CreateInstance(poolType) as Components);
+                    component_pools[value] = (Activator.CreateInstance(poolType) as Components);
                 }
                 return value;
             }
-
-            public static Components[] pools = new Components[32];
+            
+            public static ECSCollection<Entity>[] entity_pools = new ECSCollection<Entity>[32];
+            public static Components[] component_pools = new Components[32];
             public static Action ResizeBackingArrays = delegate { };
             public static List<Type> ComponentTypes = new List<Type>();
 
-            public abstract ECSCollection<Entity> GetEntityCollection();
             public abstract object GetComponent(int index);
             public abstract void RemoveComponent(Entity entity);
             public abstract void SetComponent(Entity entity, Object component);
@@ -261,7 +259,7 @@ namespace SimpleECS
             }
 
             public readonly static int ID = Components.GetTypeID(typeof(T));
-            public readonly static ECSCollection<Entity> entities = new ECSCollection<Entity>();
+            public readonly static ECSCollection<Entity> entities = Components.entity_pools[ID];
             public readonly static ECSCollection<T> components = new ECSCollection<T>();
 
             public static void Set(Entity entity, T component)
@@ -303,9 +301,6 @@ namespace SimpleECS
                     Events<T>.OnRemove?.Invoke(entity, component);
                 }
             }
-
-            public override ECSCollection<Entity> GetEntityCollection()
-                => entities;
 
             public override object GetComponent(int index)
                 => components.items[index];
@@ -392,8 +387,22 @@ namespace SimpleECS
                     update = false;
                 }
 
-                if (include_array.Length > 0)
-                    return Components.pools[include_array[0]].GetEntityCollection();
+                if (include_array.Length > 0)   // always iterate shortest entity list
+                {
+                    var entities = Components.entity_pools[include_array[0]];
+                    for(int i= 1; i < include_array.Length; ++ i)
+                    {
+                        var newpool = Components.entity_pools[include_array[i]];
+                        if (newpool.count < entities.count)
+                        {
+                            entities = newpool;
+                            var current = include_array[0];
+                            include_array[0] = include_array[i];
+                            include_array[i] = current;                 
+                        }
+                    }
+                    return entities;
+                }
                 return Entity.AllEntities;
             }
 
@@ -408,9 +417,9 @@ namespace SimpleECS
             }
 
             /// <summary>
-            /// Amount of entities this query will test for matches
+            /// Count of entities this query will test for matches
             /// </summary>
-            public int QueryCount => GetEntities().Count;
+            public int QueryCount => GetEntities().count;
 
             /// <summary>
             /// iterates over matching entities split across multiple threads
@@ -418,11 +427,11 @@ namespace SimpleECS
             public void ForeachParallel(Action<Entity> action)
             {
                 var entities = GetEntities();
-                System.Threading.Tasks.Parallel.For(0, entities.Count, (int index) =>
+                System.Threading.Tasks.Parallel.For(0, entities.count, (int index) =>
                 {
                     var entity = entities.items[index];
 
-                    for (int i = 1; i < include_array.Length; ++i)
+                    for (int i = 1; i < include_array.Length; ++i)  // 0 is the iterating array so can be skipped
                         if (entity.component_lookup[i] < 0)
                             return;
 
@@ -430,7 +439,7 @@ namespace SimpleECS
                         if (entity.component_lookup[i] >= 0)
                             return;
                             
-                    action(entities.items[index]);
+                    action(entity);
                 });
             }
 
@@ -450,7 +459,7 @@ namespace SimpleECS
                 {
                     this.query = query;
                     entities = query.GetEntities();
-                    index = entities.Count;
+                    index = entities.count;
                 }
 
                 public Query query;
@@ -463,8 +472,8 @@ namespace SimpleECS
 
                 public void Dispose() { }
 
-                public bool MoveNext()
-                {
+                public bool MoveNext()  // we iterate backwards so that we can do 
+                {                       // structural changes without invalidating iterators
                     while (index > 0)
                     {
                         index--;
@@ -488,7 +497,7 @@ namespace SimpleECS
 
                 public void Reset()
                 {
-                    index = entities.Count;
+                    index = entities.count;
                 }
             }
         }
@@ -506,10 +515,10 @@ namespace SimpleECS
             }
 
             public T[] items;
-            int count = 0;
+            public int count = 0;
 
             public ref T last => ref items[count - 1];
-            public int Count => count;
+            
             int IReadOnlyCollection<T>.Count => count;
 
             public void Resize()
@@ -591,15 +600,7 @@ namespace SimpleECS
             public (int index, int value)[] map =  new (int index, int value)[map_data[0].prime + map_data[0].steps];
             int factor = map_data[0].prime;
             int steps = map_data[0].steps;
-            byte current_data = 0;
-
-            public void Clear()
-            {
-                current_data = 0;
-                factor = map_data[0].prime;
-                steps = map_data[0].steps;
-                map = new (int index, int value)[factor + steps];
-            }
+            int current_data = 0;
 
             void Resize()
             {
@@ -713,18 +714,18 @@ namespace SimpleECS
 
             static (int prime, int steps)[] map_data = new (int, int)[]
             {
-                (7, 4),
-                (13, 5),
-                (31, 6),
-                (53, 7),
-                (97, 8),
-                (193, 9),
-                (389, 10),
-                (769, 11),
-                (1543, 12),
-                (3079, 13),
-                (6151, 14),
-                (12289, 15)
+                (7, 3),
+                (13, 4),
+                (31, 5),
+                (53, 6),
+                (97, 7),
+                (193, 8),   
+                (389, 9),
+                (769, 10),
+                (1543, 11),
+                (3079, 12),
+                (6151, 13),
+                (12289, 14)
             };
         }
     }

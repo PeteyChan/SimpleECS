@@ -73,7 +73,7 @@ foreach (var entity in query) // you then iterate with foreach
 
 You can also do simple multithreading if you are expecting a large query
 ```C#
-if (query.QueryCount > 10000) 
+if (query.QueryCount > 10000) // Query count is the number of entities the query will test, not the number of matches
 {                             
     query.ForeachParallel(entity =>     // structural changes such as adding and removing components or entities
     {                                   // is not safe. Only the modification of components and only 

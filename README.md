@@ -25,7 +25,7 @@ if (entity.TryGet(out Component c, out int i))    // you can retrieve components
 {
     c.value++;
     i++;
-    entity.Set(s);  // structs will need to be set afterwards
+    entity.Set(i);  // structs will need to be set afterwards
 }
 
 entity.Remove<int>(); // you remove components with Remove

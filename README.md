@@ -1,5 +1,6 @@
 # SimpleECS
-A Simple and easy to use C# Entity Component System
+A Simple and easy to use C# Entity Component System.
+Min C# Framework 4.7
 
 
 ## Entities and Components

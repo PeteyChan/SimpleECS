@@ -157,7 +157,7 @@ namespace SimpleECS
             var index = component_lookup[Components<T>.ID];
             if (index >= 0)
             {
-                value = Components<T>.components[index];
+                value = Components<T>.components.items[index];
                 return true;
             }
             value = default;
@@ -266,7 +266,7 @@ namespace SimpleECS
             {
                 var index = entity.component_lookup[ID];
                 if (index >= 0)
-                    components[index] = component;
+                    components.items[index] = component;
                 else
                 {
                     index = entities.Add(entity);
@@ -445,21 +445,23 @@ namespace SimpleECS
 
             IEnumerator IEnumerable.GetEnumerator()
             {
-                return new Iterator(this);
+                return iterator.Init(this);
             }
 
             IEnumerator<Entity> IEnumerable<Entity>.GetEnumerator()
             {
-                return new Iterator(this);
+                return iterator.Init(this);
             }
+            Iterator iterator = new Iterator();
 
-            struct Iterator : IEnumerator<Entity>
+            class Iterator : IEnumerator<Entity>
             {
-                public Iterator(Query query)
+                public Iterator Init(Query query)
                 {
                     this.query = query;
                     entities = query.GetEntities();
                     index = entities.count;
+                    return this;
                 }
 
                 public Query query;
@@ -489,7 +491,7 @@ namespace SimpleECS
 
                         return true;
 
-                    Next:
+                    Next: 
                         continue;
                     }
                     return false;
@@ -504,8 +506,7 @@ namespace SimpleECS
 
 
         /// <summary>
-        /// custom collection with custom enumeration so that 
-        /// removal of entities don't invalidate iterators 
+        /// custom collection built for purpose 
         /// </summary>
         class ECSCollection<T> : IReadOnlyList<T>
         {
@@ -528,12 +529,6 @@ namespace SimpleECS
                     newSize *= 2;
                 if (items.Length > newSize)
                     Array.Resize(ref items, newSize);
-            }
-
-            public T this[int index]
-            {
-                get => items[index];
-                set => items[index] = value;
             }
 
             /// <summary>
@@ -559,17 +554,19 @@ namespace SimpleECS
             T IReadOnlyList<T>.this[int index] => items[index];
 
             IEnumerator IEnumerable.GetEnumerator()
-            => new Iterator(this);
+            => iterator.Init(this);
 
             IEnumerator<T> IEnumerable<T>.GetEnumerator()
-            => new Iterator(this);
+            => iterator.Init(this);
 
-            struct Iterator : IEnumerator<T>
+            Iterator iterator = new Iterator();
+            class Iterator : IEnumerator<T>
             {
-                public Iterator(ECSCollection<T> list)
+                public Iterator Init(ECSCollection<T> list)
                 {
                     this.list = list;
                     position = list.count;
+                    return this;
                 }
                 ECSCollection<T> list;
                 int position;

@@ -1,5 +1,6 @@
 # SimpleECS
-A Simple and easy to use C# Entity Component System
+A Simple and easy to use C# Entity Component System.
+Min C# Framework 4.7
 
 
 ## Entities and Components
@@ -25,7 +26,7 @@ if (entity.TryGet(out Component c, out int i))    // you can retrieve components
 {
     c.value++;
     i++;
-    entity.Set(s);  // structs will need to be set afterwards
+    entity.Set(i);  // structs will need to be set afterwards
 }
 
 entity.Remove<int>(); // you remove components with Remove
@@ -72,7 +73,7 @@ foreach (var entity in query) // you then iterate with foreach
 
 You can also do simple multithreading if you are expecting a large query
 ```C#
-if (query.QueryCount > 10000) 
+if (query.QueryCount > 10000) // Query count is the number of entities the query will test, not the number of matches
 {                             
     query.ForeachParallel(entity =>     // structural changes such as adding and removing components or entities
     {                                   // is not safe. Only the modification of components and only 
@@ -122,12 +123,8 @@ Entity.Events<Component>.OnRemove += (Entity entity, Component removedComponent)
 
 ## Tips
 
-Queries use the first include to peform their search over, so always try to 
-include the most specific component with the least entities first to increase performance
-```C#
-var query = new Entity.Query().Include<Transform, Player>(); // instead of this
-var query = new Entity.Query().Include<Player, Transfrom>(); // do this
-```
+Queries match over the smallest entity collection in it's include array, so
+it's always better to have atleast one. Otherwise the query will match over all entities.
 
 entity.Set() and entity.SetByType() work slightly differently. 
 Choose which one works best for your situation 

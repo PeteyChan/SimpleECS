@@ -73,7 +73,7 @@ foreach (var entity in query) // you then iterate with foreach
 
 You can also do simple multithreading if you are expecting a large query
 ```C#
-if (query.QueryCount > 10000) // Query count is the number of entities the query will test, not the number of matches
+if (query.Count > 10000) // Count is the number of entities the query will test for matches, not the number of matching entities
 {                             
     query.ForeachParallel(entity =>     // structural changes such as adding and removing components or entities
     {                                   // is not safe. Only the modification of components and only 
@@ -91,31 +91,42 @@ foreach(var entity in Entity.AllWith<Component>())  // iteration is faster since
     // iterate over all entities that have component
 }
 
-foreach(var component in Entity.AllComponents<Component>()) // fastest way to iterate over components
+foreach(var component in Entity.AllRef<Component>()) // fastest way to iterate over components
 {
     // great if you don't need a reference to an entity
 }
 
-foreach(var entity in Entity.All)
+foreach(var (entity, component) in Entity.AllWithRef<Component>())
+{
+    // allows iteration of components with their associated entity
+}
+
+foreach(var entity in Entity.All())
 {
     // iterates over all entities that contain atleast one component
 }
 ```
 
 ## Events
-Finally there are a couple Event callbacks which are useful if you want to make reactive systems
+Finally there are a few Event callbacks which are useful if you want to make reactive systems
 
 ```C#
 // is called at the end of Set if the component was added
 // calling entity.Has<Component>() at this point will return true
-Entity.Events<Component>.OnAdd += (Entity entity, Component addedComponent) => 
+Entity.Event<Component>.OnAdd += (Entity entity, Component addedComponent) => 
 { 
     // do something when the component is added
 };
 
+// is called after OnAdd if a component was added
+Entity.Event<Component>.OnSet += (Entity entity, Component setComponent) =>
+{
+    // do something when the component is set
+};
+
 // is called at the end of Remove if the component was removed
 // calling entity.Has<Component>() at this point will return false
-Entity.Events<Component>.OnRemove += (Entity entity, Component removedComponent) =>
+Entity.Event<Component>.OnRemove += (Entity entity, Component removedComponent) =>
 {
     // do something when the component is removed
 };
@@ -137,6 +148,7 @@ IInterface component = new Component();
 entity.Set(component);           // set adds the component as the current type
                                  // which in this case is IInterface 
                                  // i.e entity.Has<IInterface>() == true
+                                 //     entity.Has<Component>() == false
                                   
 entity.SetByType(component);     // while SetByType adds objects by it's type
                                  // which in this case is Component

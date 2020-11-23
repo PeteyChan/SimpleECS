@@ -2,9 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-/// <summary>
-/// A very simple ECS Implementation
-/// </summary>
 namespace SimpleECS
 {
     public class Entity : IEquatable<Entity>
@@ -12,31 +9,36 @@ namespace SimpleECS
         /// <summary>
         /// returns all entities with atleast one component
         /// </summary>
-        public static IReadOnlyList<Entity> All => AllEntities;
+        public static IReadOnlyList<Entity> All() => AllEntities;
         readonly static ECSCollection<Entity> AllEntities = new ECSCollection<Entity>();
 
         /// <summary>
         /// returns all entities with component
-        /// fastest way to iterate entities with component
         /// </summary>
         public static IReadOnlyList<Entity> AllWith<T>() => Components<T>.entities;
 
         /// <summary>
-        /// returns all components of type assigned to entities
+        /// returns a list of all entities with components along with their component
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public static IReadOnlyList<(Entity, T)> AllWithRef<T>() => EntityComponentIterator<T>.instance;
+
+        /// <summary>
+        /// returns a list of all components assigned to entities
         /// fastest way to iterate all components
         /// </summary>
-        public static IReadOnlyList<T> AllComponents<T>() => Components<T>.components;
+        public static IReadOnlyList<T> AllRef<T>() => Components<T>.components;
 
         /// <summary>
         /// returns a list of all types that have been used as a 
         /// component atleast once during the life time of the program
         /// </summary>
-        public static IReadOnlyList<Type> AllComponentTypes => Components.ComponentTypes;
+        public static IReadOnlyList<Type> AllTypes() => Components.ComponentTypes;
 
         /// <summary>
         /// returns all entities with component type
         /// </summary>
-        public static IReadOnlyList<Entity> GetEntitiesWithType(Type type)
+        public static IReadOnlyList<Entity> AllWithType(Type type)
             => Components.entity_pools[Components.GetTypeID(type)];
 
         /// <summary>
@@ -88,6 +90,13 @@ namespace SimpleECS
         public Entity Set<T1, T2, T3, T4>(T1 t1, T2 t2, T3 t3, T4 t4)
             => Set(t1).Set(t2).Set(t3).Set(t4);
 
+        public Entity SetByType(object component)
+        {
+            var id = Components.GetTypeID(component.GetType());
+            Components.component_pools[id].SetComponent(this, component);
+            return this;
+        }
+
         /// <summary>
         /// Sets/Adds components to entity by their type
         /// </summary>
@@ -97,6 +106,31 @@ namespace SimpleECS
             {
                 var id = Components.GetTypeID(component.GetType());
                 Components.component_pools[id].SetComponent(this, component);
+            }
+            return this;
+        }
+
+        /// <summary>
+        /// Removes component of type
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public Entity Remove(Type type)
+        {
+            var id = Components.GetTypeID(type);
+            Components.component_pools[id].RemoveComponent(this);
+            return this;
+        }
+
+        /// <summary>
+        /// Removes components of types
+        /// </summary>
+        public Entity Remove(params Type[] types)
+        {
+            foreach (var type in types)
+            {
+                var id = Components.GetTypeID(type);
+                Components.component_pools[id].RemoveComponent(this);
             }
             return this;
         }
@@ -126,13 +160,19 @@ namespace SimpleECS
             => component_lookup[Components<T>.ID] >= 0;
 
         public bool Has<T1, T2>()
-            => Has<T1>() && Has<T2>();
+            => component_lookup[Components<T1>.ID] >= 0 &&
+               component_lookup[Components<T2>.ID] >= 0;
 
         public bool Has<T1, T2, T3>()
-            => Has<T1>() && Has<T2>() && Has<T3>();
+            => component_lookup[Components<T1>.ID] >= 0 &&
+               component_lookup[Components<T2>.ID] >= 0 &&
+               component_lookup[Components<T3>.ID] >= 0;
 
         public bool Has<T1, T2, T3, T4>()
-            => Has<T1>() && Has<T2>() && Has<T3>() && Has<T4>();
+            => component_lookup[Components<T1>.ID] >= 0 &&
+               component_lookup[Components<T2>.ID] >= 0 &&
+               component_lookup[Components<T3>.ID] >= 0 &&
+               component_lookup[Components<T4>.ID] >= 0;
 
         /// <summary>
         /// returns true if entity doesn't have component
@@ -141,13 +181,19 @@ namespace SimpleECS
             => component_lookup[Components<T>.ID] < 0;
 
         public bool Not<T1, T2>()
-            => Not<T1>() && Not<T2>();
+            => component_lookup[Components<T1>.ID] < 0 &&
+               component_lookup[Components<T2>.ID] < 0;
 
         public bool Not<T1, T2, T3>()
-            => Not<T1>() && Not<T2>() && Not<T3>();
+            => component_lookup[Components<T1>.ID] < 0 &&
+               component_lookup[Components<T2>.ID] < 0 &&
+               component_lookup[Components<T3>.ID] < 0;
 
         public bool Not<T1, T2, T3, T4>()
-            => Not<T1>() && Not<T2>() && Not<T3>() && Not<T4>();
+            => component_lookup[Components<T1>.ID] < 0 &&
+               component_lookup[Components<T2>.ID] < 0 &&
+               component_lookup[Components<T3>.ID] < 0 &&
+               component_lookup[Components<T4>.ID] < 0;
 
         /// <summary>
         /// returns true if component was sucessfully retrived from entity
@@ -194,12 +240,11 @@ namespace SimpleECS
         /// </summary>
         public Entity RemoveAll()
         {
-            foreach (var item in component_lookup.map)
+            for (int i = component_lookup.map.Length - 1; i >= 0; --i)
             {
-                if (item.index > 0)
-                {
-                    Components.component_pools[item.index - 1].RemoveComponent(this);
-                }
+                var cid = component_lookup.map[i].index - 1;
+                if (cid >= 0)
+                    Components.component_pools[cid].RemoveComponent(this);
             }
             return this;
         }
@@ -210,7 +255,7 @@ namespace SimpleECS
         bool IEquatable<Entity>.Equals(Entity other) => ID == other.ID;
 
         public override string ToString()
-        => $"Entity {ID}";
+        => $"{GetType().Name} {ID}";
 
         abstract class Components
         {
@@ -228,13 +273,13 @@ namespace SimpleECS
                         Array.Resize(ref component_pools, value * 2);
                     }
 
-                    entity_pools[value] = new ECSCollection<Entity>();                                      
+                    entity_pools[value] = new ECSCollection<Entity>();
                     var poolType = typeof(Components<>).MakeGenericType(new Type[] { type });
                     component_pools[value] = (Activator.CreateInstance(poolType) as Components);
                 }
                 return value;
             }
-            
+
             public static ECSCollection<Entity>[] entity_pools = new ECSCollection<Entity>[32];
             public static Components[] component_pools = new Components[32];
             public static Action ResizeBackingArrays = delegate { };
@@ -245,7 +290,12 @@ namespace SimpleECS
             public abstract void SetComponent(Entity entity, Object component);
         }
 
-
+        public static class Event<T>
+        {
+            public static Action<Entity,T> OnAdd;
+            public static Action<Entity,T> OnSet;
+            public static Action<Entity,T> OnRemove; 
+        }
 
         class Components<T> : Components
         {
@@ -278,28 +328,32 @@ namespace SimpleECS
                     {
                         entity.index = AllEntities.Add(entity);
                     }
-                    Events<T>.OnAdd?.Invoke(entity, component);
+                    
+                    Event<T>.OnAdd?.Invoke(entity, component);
                 }
+                Event<T>.OnSet?.Invoke(entity, component);
             }
 
             public static void Remove(Entity entity)
             {
                 var index = entity.component_lookup[ID];
-                if (index >= 0)
+
+                if (index < 0) return;
+
+                entities.items[entities.count-1].component_lookup[ID] = index;
+                entity.component_lookup.Remove(ID);
+                entity.component_count--;
+                var component = components.items[index];
+
+                entities.RemoveAndSwapLast(index);
+                components.RemoveAndSwapLast(index);
+
+                if (entity.component_count == 0)
                 {
-                    entities.last.component_lookup[ID] = index;
-                    entity.component_lookup.Remove(ID);
-                    var component = components.items[index];
-                    entities.RemoveAndSwapLast(index);
-                    components.RemoveAndSwapLast(index);
-                    entity.component_count--;
-                    if (entity.component_count == 0)
-                    {
-                        AllEntities.last.index = entity.index;
-                        AllEntities.RemoveAndSwapLast(entity.index);
-                    }
-                    Events<T>.OnRemove?.Invoke(entity, component);
-                }
+                    AllEntities.items[AllEntities.count - 1].index = entity.index;
+                    AllEntities.RemoveAndSwapLast(entity.index);
+                }                
+                Event<T>.OnRemove?.Invoke(entity, component);
             }
 
             public override object GetComponent(int index)
@@ -311,19 +365,6 @@ namespace SimpleECS
             public override void SetComponent(Entity entity, Object component)
                 => Set(entity, (T)component);
         }
-
-
-
-        /// <summary>
-        /// Provides callbacks for when an entity adds or removes a component
-        /// </summary>
-        public class Events<Component>
-        {
-            public static Action<Entity, Component> OnAdd;
-            public static Action<Entity, Component> OnRemove;
-        }
-
-
 
         /// <summary>
         /// Allows easy filtering of entities based on component composition.
@@ -390,7 +431,7 @@ namespace SimpleECS
                 if (include_array.Length > 0)   // always iterate shortest entity list
                 {
                     var entities = Components.entity_pools[include_array[0]];
-                    for(int i= 1; i < include_array.Length; ++ i)
+                    for (int i = 1; i < include_array.Length; ++i)
                     {
                         var newpool = Components.entity_pools[include_array[i]];
                         if (newpool.count < entities.count)
@@ -398,7 +439,7 @@ namespace SimpleECS
                             entities = newpool;
                             var current = include_array[0];
                             include_array[0] = include_array[i];
-                            include_array[i] = current;                 
+                            include_array[i] = current;
                         }
                     }
                     return entities;
@@ -419,7 +460,7 @@ namespace SimpleECS
             /// <summary>
             /// Count of entities this query will test for matches
             /// </summary>
-            public int QueryCount => GetEntities().count;
+            public int Count => GetEntities().count;
 
             /// <summary>
             /// iterates over matching entities split across multiple threads
@@ -438,7 +479,7 @@ namespace SimpleECS
                     for (int i = 0; i < exclude_array.Length; ++i)
                         if (entity.component_lookup[i] >= 0)
                             return;
-                            
+
                     action(entity);
                 });
             }
@@ -491,7 +532,7 @@ namespace SimpleECS
 
                         return true;
 
-                    Next: 
+                    Next:
                         continue;
                     }
                     return false;
@@ -516,10 +557,10 @@ namespace SimpleECS
             }
 
             public T[] items;
-            public int count = 0;
+            public int count;
 
-            public ref T last => ref items[count - 1];
-            
+            //public ref T last => ref items[count - 1];
+
             int IReadOnlyCollection<T>.Count => count;
 
             public void Resize()
@@ -553,13 +594,14 @@ namespace SimpleECS
 
             T IReadOnlyList<T>.this[int index] => items[index];
 
+            Iterator iterator = new Iterator();
+
             IEnumerator IEnumerable.GetEnumerator()
             => iterator.Init(this);
 
             IEnumerator<T> IEnumerable<T>.GetEnumerator()
             => iterator.Init(this);
 
-            Iterator iterator = new Iterator();
             class Iterator : IEnumerator<T>
             {
                 public Iterator Init(ECSCollection<T> list)
@@ -591,13 +633,77 @@ namespace SimpleECS
             }
         }
 
+        class EntityComponentIterator<T> : IReadOnlyList<(Entity, T)>
+        {
+            public static EntityComponentIterator<T> instance = new EntityComponentIterator<T>();
+            public (Entity, T) this[int index] => throw new NotImplementedException();
+
+            public int Count => Components<T>.entities.count;
+
+            public IEnumerator<(Entity, T)> GetEnumerator()
+            {
+                return iterator.Init();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return iterator.Init();
+            }
+
+            Iterator iterator = new Iterator();
+
+            class Iterator : IEnumerator<(Entity, T)>
+            {
+                public Iterator()
+                {
+                    index = Components<T>.components.count;
+                }
+
+                public Iterator Init()
+                {
+                    index = Components<T>.components.count;
+                    return this;
+                }
+
+                int index;
+                public (Entity, T) Current => (Components<T>.entities.items[index], Components<T>.components.items[index]);
+
+                object IEnumerator.Current => (Components<T>.entities.items[index], Components<T>.components.items[index]);
+
+                public void Dispose() { }
+
+                public bool MoveNext()
+                {
+                    index--;
+                    return index >= 0;
+                }
+
+                public void Reset()
+                {
+                    index = Components<T>.entities.count;
+                }
+            }
+        }
+
         //simple openset hashmap for faster lookups than a normal dictionary
         class ECSMap
         {
-            public (int index, int value)[] map =  new (int index, int value)[map_data[0].prime + map_data[0].steps];
+            public (int index, int value)[] map = new (int index, int value)[map_data[0].prime + map_data[0].steps];
             int factor = map_data[0].prime;
             int steps = map_data[0].steps;
             int current_data = 0;
+
+            public int Count
+            {
+                get
+                {
+                    var value = 0;
+                    foreach (var item in map)
+                        if (item.index > 0)
+                            value++;
+                    return value;
+                }
+            }
 
             void Resize()
             {
@@ -716,7 +822,7 @@ namespace SimpleECS
                 (31, 5),
                 (53, 6),
                 (97, 7),
-                (193, 8),   
+                (193, 8),
                 (389, 9),
                 (769, 10),
                 (1543, 11),

@@ -6,7 +6,7 @@ Min C# Framework 4.7
 ## Entities
 To create an entity use new with the components as parameters.
 Components can be any class or struct except entity.
-Components are stored as their GetType() function type.
+Components are stored as their GetType().
 ```C#
 var entity = new Entity("my entity", 3, 5f);    // creates a new entity with components
 ```

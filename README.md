@@ -100,7 +100,7 @@ query.Foreach( (ref Entity entity) => // all entities have themselves as compone
 });
 ```
 
-You manually iteration is possible if you need to
+Manually iteration is possible if needed
 ```C#
 foreach(var archetype in query)
 {

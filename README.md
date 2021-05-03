@@ -82,7 +82,7 @@ There are no systems in simpleECS, instead it uses simple queries to manage enti
 
 Queries let you iterate over entities based on specified components.
 Queries cache their results and only update their queries when the world changes,
-so make sure to resuse them and not create them every frame.
+so make sure to reuse them and not create them every frame.
 
 ```C#
 var query = new Query().Has<int>().Has<float>() // filters entities to those with components

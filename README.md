@@ -168,7 +168,7 @@ Using worlds is really simple
 var world = new World(); // creates a new World
 
 blueprint.world = world; // changes the world a blueprint creates entities in
-query.world = world;     // changes the world queries operate on
+query.world = world;     // changes the world query operate on
 
 var new_entity = entity.MoveTo(world); // moves entity from it's current world to it's new world and returns the entity's new value in that world
                                        // the original entity is now invalid

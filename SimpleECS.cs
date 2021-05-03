@@ -4,832 +4,1233 @@ using System.Collections.Generic;
 
 namespace SimpleECS
 {
-    public class Entity : IEquatable<Entity>
+    public struct Entity : IEquatable<Entity>
     {
         /// <summary>
-        /// returns all entities with atleast one component
-        /// </summary>
-        public static IReadOnlyList<Entity> All() => AllEntities;
-        readonly static ECSCollection<Entity> AllEntities = new ECSCollection<Entity>();
-
-        /// <summary>
-        /// returns all entities with component
-        /// </summary>
-        public static IReadOnlyList<Entity> AllWith<T>() => Components<T>.entities;
-
-        /// <summary>
-        /// returns a list of all entities with components along with their component
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        public static IReadOnlyList<(Entity, T)> AllWithRef<T>() => EntityComponentIterator<T>.instance;
-
-        /// <summary>
-        /// returns a list of all components assigned to entities
-        /// fastest way to iterate all components
-        /// </summary>
-        public static IReadOnlyList<T> AllRef<T>() => Components<T>.components;
-
-        /// <summary>
-        /// returns a list of all types that have been used as a 
-        /// component atleast once during the life time of the program
-        /// </summary>
-        public static IReadOnlyList<Type> AllTypes() => Components.ComponentTypes;
-
-        /// <summary>
-        /// returns all entities with component type
-        /// </summary>
-        public static IReadOnlyList<Entity> AllWithType(Type type)
-            => Components.entity_pools[Components.GetTypeID(type)];
-
-        /// <summary>
-        /// After removing large amounts of components, you can use this
-        /// to resize backing arrays and reclaim memory
-        /// </summary>
-        public static void ResizeBackingArrays()
-        {
-            Components.ResizeBackingArrays();
-            GC.Collect();
-        }
-
-        int index;
-        static int new_id;
-
-        /// <summary>
-        /// Unique Entity Identifier
-        /// </summary>
-        public readonly int ID = new_id++;
-
-        ECSMap component_lookup = new ECSMap();
-        int component_count = 0;
-
-        public Entity() { }
-
-        /// <summary>
-        /// Components supplied are set by their type
+        /// Creates an entity in the deafult world containing supplied components
         /// </summary>
         public Entity(params object[] components)
         {
-            SetByType(components);
-        }
-
-        /// <summary>
-        /// Sets/Adds the component to entity as is
-        /// </summary>
-        public Entity Set<T>(T component)
-        {
-            Components<T>.Set(this, component);
-            return this;
-        }
-
-        public Entity Set<T1, T2>(T1 t1, T2 t2)
-            => Set(t1).Set<T2>(t2);
-
-        public Entity Set<T1, T2, T3>(T1 t1, T2 t2, T3 t3)
-            => Set(t1).Set(t2).Set(t3);
-
-        public Entity Set<T1, T2, T3, T4>(T1 t1, T2 t2, T3 t3, T4 t4)
-            => Set(t1).Set(t2).Set(t3).Set(t4);
-
-        public Entity SetByType(object component)
-        {
-            var id = Components.GetTypeID(component.GetType());
-            Components.component_pools[id].SetComponent(this, component);
-            return this;
-        }
-
-        /// <summary>
-        /// Sets/Adds components to entity by their type
-        /// </summary>
-        public Entity SetByType(params object[] components)
-        {
+            var signature = new World.Type_Signature(components.Length);
+            signature.Add(typeof(Entity));
             foreach (var component in components)
-            {
-                var id = Components.GetTypeID(component.GetType());
-                Components.component_pools[id].SetComponent(this, component);
-            }
-            return this;
+                signature.Add(component?.GetType());
+            var archetype = World.Default.GetArchetype(signature);
+            var entity = World.Default.CreateEntity(archetype);
+            this.index = entity.index;
+            this.version = entity.version;
+            this.world = entity.world;
+
+            foreach (var item in components)
+                if (item != null)
+                    if (archetype.TryGetPool(item.GetType(), out var pool))
+                        pool.SetComponent(pool.Count - 1, item);
         }
 
         /// <summary>
-        /// Removes component of type
+        /// Do Not Use Directly, use Blueprint or the component params constructor instead
         /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public Entity Remove(Type type)
+        public Entity(World world, int id, int version)
         {
-            var id = Components.GetTypeID(type);
-            Components.component_pools[id].RemoveComponent(this);
-            return this;
+            this.index = id; this.version = version; this.world = world;
         }
 
         /// <summary>
-        /// Removes components of types
+        /// Identifier to map entity to components
         /// </summary>
-        public Entity Remove(params Type[] types)
-        {
-            foreach (var type in types)
-            {
-                var id = Components.GetTypeID(type);
-                Components.component_pools[id].RemoveComponent(this);
-            }
-            return this;
-        }
+        public readonly int index;
 
         /// <summary>
-        /// Removes component from entity
+        /// Versioning to verify validity 
         /// </summary>
-        public Entity Remove<T>()
+        public readonly int version;
+
+        /// <summary>
+        /// World entity belongs to
+        /// </summary>
+        public readonly World world;
+
+        /// <summary>
+        /// Gets a reference to component. Automatically adds the component to entity if it does not have one already
+        /// </summary>
+        public ref Component Get<Component>() => ref world.Get<Component>(this);
+
+        /// <summary>
+        /// Automatically adds the component to entity if it does not have one already
+        /// </summary>
+        public Entity Set<Component>(Component component)
         {
-            Components<T>.Remove(this);
+            Get<Component>() = component;
             return this;
         }
-
-        public Entity Remove<T1, T2>()
-            => Remove<T1>().Remove<T2>();
-
-        public Entity Remove<T1, T2, T3>()
-            => Remove<T1>().Remove<T2>().Remove<T3>();
-
-        public Entity Remove<T1, T2, T3, T4>()
-            => Remove<T1>().Remove<T2>().Remove<T3>().Remove<T4>();
 
         /// <summary>
         /// Returns true if entity has component
         /// </summary>
-        public bool Has<T>()
-            => component_lookup[Components<T>.ID] >= 0;
-
-        public bool Has<T1, T2>()
-            => component_lookup[Components<T1>.ID] >= 0 &&
-               component_lookup[Components<T2>.ID] >= 0;
-
-        public bool Has<T1, T2, T3>()
-            => component_lookup[Components<T1>.ID] >= 0 &&
-               component_lookup[Components<T2>.ID] >= 0 &&
-               component_lookup[Components<T3>.ID] >= 0;
-
-        public bool Has<T1, T2, T3, T4>()
-            => component_lookup[Components<T1>.ID] >= 0 &&
-               component_lookup[Components<T2>.ID] >= 0 &&
-               component_lookup[Components<T3>.ID] >= 0 &&
-               component_lookup[Components<T4>.ID] >= 0;
+        public bool Has<Component>() => world.Has<Component>(this);
 
         /// <summary>
-        /// returns true if entity doesn't have component
+        /// Tries to get the component, returns false if entity does not have one
         /// </summary>
-        public bool Not<T>()
-            => component_lookup[Components<T>.ID] < 0;
-
-        public bool Not<T1, T2>()
-            => component_lookup[Components<T1>.ID] < 0 &&
-               component_lookup[Components<T2>.ID] < 0;
-
-        public bool Not<T1, T2, T3>()
-            => component_lookup[Components<T1>.ID] < 0 &&
-               component_lookup[Components<T2>.ID] < 0 &&
-               component_lookup[Components<T3>.ID] < 0;
-
-        public bool Not<T1, T2, T3, T4>()
-            => component_lookup[Components<T1>.ID] < 0 &&
-               component_lookup[Components<T2>.ID] < 0 &&
-               component_lookup[Components<T3>.ID] < 0 &&
-               component_lookup[Components<T4>.ID] < 0;
+        public bool TryGet<Component>(out Component value) => world.TryGet<Component>(this, out value);
 
         /// <summary>
-        /// returns true if component was sucessfully retrived from entity
+        /// Removes the component type from entity if it has one.
+        /// Components implementing IDisposable will have it called when they are removed
         /// </summary>
-        public bool TryGet<T>(out T value)
+        public Entity Remove<Component>() => world.Remove<Component>(this);
+
+        /// <summary>
+        /// Destroys the entity.
+        /// All components implementing IDisposable will have it called.
+        /// Entity is invalid when Dispose() is called
+        /// </summary>
+        public void Destroy() => world.DestroyEntity(this);
+
+        /// <summary>
+        /// Returns false if entity is destroyed or otherwise invalid.
+        /// Alternatively you can use if(entity) to check for validity
+        /// </summary>
+        public bool isValid => world == null ? false : world.IsValid(this);
+
+        /// <summary>
+        /// Moves entity to specified world.
+        /// Return value is the entity's value in that world.
+        /// Current entity will become invalid
+        /// </summary>
+        public Entity MoveTo(World world)
+            => this.world.MoveEntityToWorld(this, world);
+
+        public bool Equals(Entity other)
+            => other.index == index && other.version == version && other.world == world;
+
+        public static bool operator ==(Entity a, Entity b)
+            => a.index == b.index && a.version == b.version && a.world == b.world;
+
+        public static bool operator !=(Entity a, Entity b)
+            => !(a == b);
+
+        public static implicit operator bool(Entity entity)
+            => entity.world == null ? false : entity.world.IsValid(entity);
+
+        public override bool Equals(object obj)
         {
-            var index = component_lookup[Components<T>.ID];
-            if (index >= 0)
+            if (obj is Entity entity)
+                return this == entity;
+            return false;
+        }
+
+        public override int GetHashCode()
+            => index;
+
+        public override string ToString()
+        {
+            if (world == null || !TryGet(out string name) || string.IsNullOrEmpty(name))
+                name = "Entity";
+            return $"{name} [W{(world == null ? " NULL": world.ID.ToString())}: {index} {version}]";
+        }
+    }
+
+    public class World : IEnumerable<World.Archetype>
+    {
+        static int world_ids = 0;
+        public readonly int ID = world_ids++;
+        public static World Default = new World();
+
+        public List<Archetype> archetypes = new List<Archetype>();
+
+        Dictionary<int, Archetype> id_to_archetype = new Dictionary<int, Archetype>();
+        Stack<int> free_entities = new Stack<int>();
+        Entity_Data[] entity_data = new Entity_Data[256];
+        int entity_data_count;
+
+        public int EntityCount => entity_data_count - free_entities.Count;
+        public int ArchetypeCount => archetypes.Count;
+
+        public bool TryGetEntity(int entity_index, out Entity entity)
+        {
+            if (entity_index >= 0 && entity_index < entity_data.Length)
+                entity = new Entity(this, entity_index, entity_data[entity_index].version);
+            else entity = default;
+            return IsValid(entity);
+        }
+
+        Entity CreateEntity()
+        {
+            int entity_index;
+            if (free_entities.Count > 0)
             {
-                value = Components<T>.components.items[index];
+                entity_index = free_entities.Pop();
+            }
+            else
+            {
+                if (entity_data_count == entity_data.Length)
+                    Array.Resize(ref entity_data, entity_data.Length * 2);
+                entity_index = entity_data_count;
+                entity_data_count++;
+            }
+            return new Entity(this, entity_index, entity_data[entity_index].version);
+        }
+
+        public Entity CreateEntity(Archetype archetype)
+        {
+            if (archetype.world != this)
+                throw new Exception($"World {ID} cannot spawn entities with archetypes that don't belong to it: {archetype}");
+            int entity_index;
+            if (free_entities.Count > 0)
+            {
+                entity_index = free_entities.Pop();
+            }
+            else
+            {
+                if (entity_data_count == entity_data.Length)
+                    Array.Resize(ref entity_data, entity_data.Length * 2);
+                entity_index = entity_data_count;
+                entity_data_count++;
+            }
+
+            ref var data = ref entity_data[entity_index];
+            data.archetype = archetype;
+            data.component_index = data.archetype.Count;
+
+            var entity = new Entity(this, entity_index, data.version);
+
+            foreach (var pool in archetype.pools)
+                pool.AddComponents(1);
+            archetype.entity_pool.Values[archetype.Count - 1] = entity;
+            return entity;
+        }
+
+        public Entity[] CreateEntities(Archetype archetype, int count)
+        {
+            if (archetype.world != this)
+                throw new Exception($"Worlds cannot spawn entities with archetypes that don't belong to it: World{ID} {archetype}");
+
+            Entity[] entities = new Entity[count];
+            for (int i = 0; i < count; ++i)
+            {
+                int entity_index;
+                if (free_entities.Count > 0)
+                {
+                    entity_index = free_entities.Pop();
+                }
+                else
+                {
+                    if (entity_data_count == entity_data.Length)
+                        Array.Resize(ref entity_data, entity_data.Length * 2);
+                    entity_index = entity_data_count;
+                    entity_data_count++;
+                }
+                ref var data = ref entity_data[entity_index];
+                data.archetype = archetype;
+                data.component_index = archetype.Count + i;
+
+                entities[i] = new Entity(this, entity_index, data.version);
+            }
+
+            int offset = archetype.Count;
+            foreach (var pool in archetype.pools)
+                pool.AddComponents(entities.Length);
+
+            for (int i = 0; i < entities.Length; ++i)
+                archetype.entity_pool.Values[i + offset] = entities[i];
+            return entities;
+        }
+
+        /// <summary>
+        /// Destroys Entity, any components implementing IDisposable will have it called.
+        /// Entity is invalid before the call to Dispose()
+        /// </summary>
+        public void DestroyEntity(Entity entity)
+        {
+            if (IsValid(entity))
+            {
+                ref var data = ref entity_data[entity.index];
+                free_entities.Push(entity.index);
+                data.version++;
+
+                entity_data[data.archetype.entity_pool.Values[data.archetype.Count - 1].index]
+                                .component_index = data.component_index;
+
+                foreach (var pool in data.archetype.pools)
+                    pool.RemoveComponent(data.component_index);
+
+            }
+        }
+
+        /// <summary>
+        /// Gets a reference to component on entity. Automatically adds component to entity if none found
+        /// </summary>
+        public ref T Get<T>(Entity entity)
+        {
+            if (IsValid(entity))
+            {
+                ref var data = ref entity_data[entity.index];
+                {
+                    if (data.archetype.TryGetPool<T>(out var pool))
+                        return ref pool.Values[data.component_index];
+                }
+                {
+                    var target_arch = GetArchetype(data.archetype.signature.Copy().Add<T>()); // get target archetype
+                    var target_index = target_arch.Count;
+
+                    entity_data[data.archetype.entity_pool.Values[data.archetype.Count - 1].index].component_index = data.component_index;
+                    foreach (var pool in data.archetype.pools)
+                        pool.MoveComponent(data.component_index, target_arch);
+
+                    data.component_index = target_index;
+                    data.archetype = target_arch;
+
+                    if (target_arch.TryGetPool<T>(out var poolT))
+                    {
+                        poolT.AddComponents(1);
+                        return ref poolT.Values[target_index];
+                    }
+                    else
+                        throw new Exception($"Tried adding component to the wrong archetype {typeof(T)} {target_arch}");
+                }
+            }
+            throw new Exception($"{entity} has been destroyed or is not valid, cannot get component");
+        }
+
+        public bool Has<T>(Entity entity)
+        {
+            if (IsValid(entity) && entity_data[entity.index].archetype.Has<T>())
                 return true;
+            return false;
+        }
+
+        public bool TryGet<T>(Entity entity, out T value)
+        {
+            if (IsValid(entity))
+            {
+                var data = entity_data[entity.index];
+                if (data.archetype.TryGetPool<T>(out var pool))
+                {
+                    value = pool.Values[data.component_index];
+                    return true;
+                }
             }
             value = default;
             return false;
         }
 
-        public bool TryGet<T1, T2>(out T1 t1, out T2 t2)
-            => TryGet(out t1) & TryGet(out t2);
+        public bool IsValid(Entity entity)
+            =>  entity.index >= 0 && 
+                entity.index < entity_data.Length && 
+                entity.world == this &&
+                entity.version == entity_data[entity.index].version;
 
-        public bool TryGet<T1, T2, T3>(out T1 t1, out T2 t2, out T3 t3)
-            => TryGet(out t1) & TryGet(out t2) & TryGet(out t3);
 
-        public bool TryGet<T1, T2, T3, T4>(out T1 t1, out T2 t2, out T3 t3, out T4 t4)
-            => TryGet(out t1) & TryGet(out t2) & TryGet(out t3) & TryGet(out t4);
-
-        /// <summary>
-        /// Returns all components associated with entity
-        /// </summary>
-        public List<object> GetAllComponents()
+        public Archetype GetArchetype(Entity entity)
         {
-            var list = new List<object>();
-            foreach (var item in component_lookup.map)
+            if (entity.isValid)
+                return entity_data[entity.index].archetype;
+            return null;
+        }
+
+        public Entity Remove<T>(Entity entity)
+        {
+            if (IsValid(entity))
             {
-                if (item.index > 0)
+                ref var data = ref entity_data[entity.index];
+                if (data.archetype.Has<T>())
                 {
-                    list.Add(Components.component_pools[item.index - 1].GetComponent(item.value));
+                    var target_arch = GetArchetype(data.archetype.signature.Copy().Remove<T>()); // get target archetype
+                    var target_index = target_arch.Count;
+
+                    entity_data[data.archetype.entity_pool.Values[data.archetype.Count - 1].index].component_index = data.component_index;
+                    foreach (var pool in data.archetype.pools)
+                        pool.MoveComponent(data.component_index, target_arch);
+
+                    data.component_index = target_index;
+                    data.archetype = target_arch;
                 }
             }
-            return list;
+            return entity;
+        }
+
+        public Entity MoveEntityToWorld(Entity entity, World world)
+        {
+            if (IsValid(entity))
+            {
+                if (world == this)
+                    return entity;
+                ref var data = ref entity_data[entity.index];
+                var world_archetype = world.GetArchetype(data.archetype.signature);
+                var world_entity = world.CreateEntity();    // create an entity without an archetype
+                ref var world_data = ref world.entity_data[world_entity.index];
+                world_data.archetype = world_archetype;     // then assign it an archetype
+                world_data.component_index = world_archetype.Count;     // moving sets components to last spot in archetype
+
+                entity_data[data.archetype.entity_pool.Values[data.archetype.Count - 1].index]
+                                            .component_index = data.component_index;    // remember to update swapped entity when this entity leaves current world
+
+                foreach (var pool in data.archetype.pools)
+                    pool.MoveComponent(data.component_index, world_archetype);
+
+                world_data.archetype.entity_pool.Values[world_data.component_index] = world_entity; // updating the entity value in entity pool of archetype
+                free_entities.Push(entity.index);   // delete entity from this world
+                data.version++;
+                return world_entity;
+            }
+            throw new Exception($"{entity} has been destroyed or is invalid, cannot move to {world}");
+        }
+
+        public Archetype GetArchetype(Type_Signature signature)
+        {
+            if (!id_to_archetype.TryGetValue(signature.ID, out var archetype))
+            {
+                id_to_archetype[signature.ID] = archetype = new Archetype(this, signature);
+                archetypes.Add(archetype);
+            }
+            else
+            {
+                if (archetype.signature != signature)   //expensive but just in case
+                    throw new Exception($"Archetype Hash Collision : {signature} <--> {archetype.signature}");
+            }
+            return archetype;
         }
 
         /// <summary>
-        /// Removes all components associated with entity
+        /// resizes backing arrays to the minimum power of 2 needed to hold it's components.
+        /// use after deleting large amounts of entities to reclaim memory
         /// </summary>
-        public Entity RemoveAll()
+        public void ShrinkBackingArrays()
         {
-            for (int i = component_lookup.map.Length - 1; i >= 0; --i)
+            foreach (var archetype in archetypes)
             {
-                var cid = component_lookup.map[i].index - 1;
-                if (cid >= 0)
-                    Components.component_pools[cid].RemoveComponent(this);
+                foreach (var pool in archetype.pools)
+                    pool.Resize();
             }
-            return this;
         }
-
-        public override int GetHashCode()
-        => ID;
-
-        bool IEquatable<Entity>.Equals(Entity other) => ID == other.ID;
 
         public override string ToString()
-        => $"{GetType().Name} {ID}";
+            => $"World {ID} [{archetypes.Count}a {EntityCount}e]";
 
-        abstract class Components
+        IEnumerator<Archetype> IEnumerable<Archetype>.GetEnumerator()
         {
-            public readonly static Dictionary<Type, int> IDlookups = new Dictionary<Type, int>();
-
-            public static int GetTypeID(Type type)
-            {
-                if (!IDlookups.TryGetValue(type, out var value))
-                {
-                    ComponentTypes.Add(type);
-                    IDlookups[type] = value = IDlookups.Count;
-                    if (value == component_pools.Length)
-                    {
-                        Array.Resize(ref entity_pools, value * 2);
-                        Array.Resize(ref component_pools, value * 2);
-                    }
-
-                    entity_pools[value] = new ECSCollection<Entity>();
-                    var poolType = typeof(Components<>).MakeGenericType(new Type[] { type });
-                    component_pools[value] = (Activator.CreateInstance(poolType) as Components);
-                }
-                return value;
-            }
-
-            public static ECSCollection<Entity>[] entity_pools = new ECSCollection<Entity>[32];
-            public static Components[] component_pools = new Components[32];
-            public static Action ResizeBackingArrays = delegate { };
-            public static List<Type> ComponentTypes = new List<Type>();
-
-            public abstract object GetComponent(int index);
-            public abstract void RemoveComponent(Entity entity);
-            public abstract void SetComponent(Entity entity, Object component);
+            for(int i = archetypes.Count-1; i >=0; --i)
+                yield return archetypes[i];
         }
 
-        public static class Event<T>
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            public static Action<Entity,T> OnAdd;
-            public static Action<Entity,T> OnSet;
-            public static Action<Entity,T> OnRemove; 
+            for(int i = archetypes.Count-1; i >=0; --i)
+                yield return archetypes[i];
         }
 
-        class Components<T> : Components
+        public struct Entity_Data
         {
-            static Components()
-            {
-                Components.ResizeBackingArrays += () =>
-                {
-                    entities.Resize();
-                    components.Resize();
-                };
-            }
-
-            public readonly static int ID = Components.GetTypeID(typeof(T));
-            public readonly static ECSCollection<Entity> entities = Components.entity_pools[ID];
-            public readonly static ECSCollection<T> components = new ECSCollection<T>();
-
-            public static void Set(Entity entity, T component)
-            {
-                var index = entity.component_lookup[ID];
-                if (index >= 0)
-                    components.items[index] = component;
-                else
-                {
-                    index = entities.Add(entity);
-                    components.Add(component);
-                    entity.component_lookup[ID] = index;
-                    entity.component_count++;
-
-                    if (entity.component_count == 1)
-                    {
-                        entity.index = AllEntities.Add(entity);
-                    }
-                    
-                    Event<T>.OnAdd?.Invoke(entity, component);
-                }
-                Event<T>.OnSet?.Invoke(entity, component);
-            }
-
-            public static void Remove(Entity entity)
-            {
-                var index = entity.component_lookup[ID];
-
-                if (index < 0) return;
-
-                entities.items[entities.count-1].component_lookup[ID] = index;
-                entity.component_lookup.Remove(ID);
-                entity.component_count--;
-                var component = components.items[index];
-
-                entities.RemoveAndSwapLast(index);
-                components.RemoveAndSwapLast(index);
-
-                if (entity.component_count == 0)
-                {
-                    AllEntities.items[AllEntities.count - 1].index = entity.index;
-                    AllEntities.RemoveAndSwapLast(entity.index);
-                }                
-                Event<T>.OnRemove?.Invoke(entity, component);
-            }
-
-            public override object GetComponent(int index)
-                => components.items[index];
-
-            public override void RemoveComponent(Entity entity)
-                => Remove(entity);
-
-            public override void SetComponent(Entity entity, Object component)
-                => Set(entity, (T)component);
+            public int version;
+            public int component_index;
+            public Archetype archetype;
         }
 
-        /// <summary>
-        /// Allows easy filtering of entities based on component composition.
-        /// Iterate matching entities with foreach on query
-        /// Include the most specific case first to improve query times
-        /// </summary>
-        public class Query : IEnumerable<Entity>
+        public static class TypeID
         {
-            List<int> include = new List<int>();
-            List<int> exclude = new List<int>();
-            bool update;
-            int[] include_array;
-            int[] exclude_array;
-
-            /// <summary>
-            /// filters entities to those that have component. 
-            /// Iteration times can be improved by including the component
-            /// with the least entities first
-            /// </summary>
-            public Query Include<T>()
+            static Dictionary<Type, int> newIDs = new Dictionary<Type, int>();
+            public static int Get(Type type)
             {
-                include.Add(Components<T>.ID);
-                update = true;
-                return this;
+                if (!newIDs.TryGetValue(type, out var id))
+                    newIDs[type] = id = newIDs.Count + 1;
+                return id;
             }
 
-            public Query Include<T1, T2>()
-            => Include<T1>().Include<T2>();
-
-            public Query Include<T1, T2, T3>()
-            => Include<T1>().Include<T2>().Include<T3>();
-
-            public Query Include<T1, T2, T3, T4>()
-            => Include<T1>().Include<T2>().Include<T3>().Include<T4>();
-
-            /// <summary>
-            /// filters entities to those that do not have component
-            /// </summary>
-            public Query Exclude<T>()
+            public static class GetID<T>
             {
-                exclude.Add(Components<T>.ID);
-                update = true;
-                return this;
+                public static readonly int Value = Get(typeof(T));
             }
+        }
 
-            public Query Exclude<T1, T2>()
-                => Exclude<T1>().Exclude<T2>();
+        public class Archetype : IEnumerable<Entity>
+        {
+            readonly int ID;
+            public readonly World world;
+            public Type_Signature signature;
+            public override int GetHashCode() => ID;
 
-            public Query Exclude<T1, T2, T3>()
-                => Exclude<T1>().Exclude<T2>().Exclude<T3>();
+            public int Count => entity_pool.Count;
+            public Pool<Entity> entity_pool;
 
-            public Query Exclude<T1, T2, T3, T4>()
-                => Exclude<T1>().Exclude<T2>().Exclude<T3>().Exclude<T4>();
-
-            ECSCollection<Entity> GetEntities()
+            public Archetype(World world, Type_Signature signature)
             {
-                if (update)
+                this.world = world;
+                this.signature = signature;
+                List<IPool> temp = new List<IPool>();
+                foreach (var type in signature)
                 {
-                    include_array = include.ToArray();
-                    exclude_array = exclude.ToArray();
-                    update = false;
+                    IPool pool = Activator.CreateInstance(typeof(Pool<>).MakeGenericType(type)) as IPool;
+                    components.Add(TypeID.Get(type), pool);
+                    temp.Add(pool);
                 }
 
-                if (include_array.Length > 0)   // always iterate shortest entity list
+                pools = temp.ToArray();
+                ID = signature.GetHashCode();
+
+                if (!TryGetPool(out entity_pool))
+                    throw new Exception("Archetypes cannot be created without an entity component");
+            }
+
+            Dictionary<int, IPool> components = new Dictionary<int, IPool>();
+            public IPool[] pools;
+
+            public bool TryGetPool<T>(out Pool<T> pool)
+            {
+                bool success = components.TryGetValue(TypeID.GetID<T>.Value, out var val);
+                pool = (Pool<T>)val;
+                return success;
+            }
+
+            public bool TryGetPool(Type type, out IPool pool)
+                => TryGetPool(TypeID.Get(type), out pool);
+
+            public bool Has<T>()
+                => components.ContainsKey(TypeID.GetID<T>.Value);
+
+            public bool TryGetPool(int type_id, out IPool pool)
+            {
+                bool success = components.TryGetValue(type_id, out pool);
+                return success;
+            }
+
+            string types;
+            public override string ToString()
+            {
+                if (types == null)
                 {
-                    var entities = Components.entity_pools[include_array[0]];
-                    for (int i = 1; i < include_array.Length; ++i)
+                    types = "";
+                    foreach (var type in signature)
                     {
-                        var newpool = Components.entity_pools[include_array[i]];
-                        if (newpool.count < entities.count)
-                        {
-                            entities = newpool;
-                            var current = include_array[0];
-                            include_array[0] = include_array[i];
-                            include_array[i] = current;
-                        }
+                        if (type == typeof(Entity))
+                            continue;
+                        types += $" {type.Name}";
                     }
-                    return entities;
                 }
-                return Entity.AllEntities;
-            }
-
-            /// <summary>
-            /// Clears current filtering
-            /// </summary>
-            public void Clear()
-            {
-                include.Clear();
-                exclude.Clear();
-                update = true;
-            }
-
-            /// <summary>
-            /// Count of entities this query will test for matches
-            /// </summary>
-            public int Count => GetEntities().count;
-
-            /// <summary>
-            /// iterates over matching entities split across multiple threads
-            /// </summary>
-            public void ForeachParallel(Action<Entity> action)
-            {
-                var entities = GetEntities();
-                System.Threading.Tasks.Parallel.For(0, entities.count, (int index) =>
-                {
-                    var entity = entities.items[index];
-
-                    for (int i = 1; i < include_array.Length; ++i)  // 0 is the iterating array so can be skipped
-                        if (entity.component_lookup[i] < 0)
-                            return;
-
-                    for (int i = 0; i < exclude_array.Length; ++i)
-                        if (entity.component_lookup[i] >= 0)
-                            return;
-
-                    action(entity);
-                });
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return iterator.Init(this);
+                return $"Archetype [{types}] [{Count}e]";
             }
 
             IEnumerator<Entity> IEnumerable<Entity>.GetEnumerator()
             {
-                return iterator.Init(this);
+                for (int i = entity_pool.Count - 1; i >= 0; --i)
+                    yield return entity_pool.Values[i];
             }
-            Iterator iterator = new Iterator();
 
-            class Iterator : IEnumerator<Entity>
+            IEnumerator IEnumerable.GetEnumerator()
             {
-                public Iterator Init(Query query)
+                for (int i = entity_pool.Count - 1; i >= 0; --i)
+                    yield return entity_pool.Values[i];
+            }
+
+            public interface IPool
+            {
+                //void AddComponent(object obj);
+
+                void AddComponents(int count);
+
+                void MoveComponent(int index, Archetype to_archetype);
+
+                void RemoveComponent(int index);
+
+                void SetComponent(int index, object obj);
+
+                void Resize();
+
+                int Count { get; }
+            }
+
+            public class Pool<T> : IPool
+            {
+                static bool isDispsable = typeof(IDisposable).IsAssignableFrom(typeof(T));
+
+                public T[] Values = new T[8];
+                public int Count => count;
+                int count;
+
+                public void AddComponents(int new_components)
                 {
-                    this.query = query;
-                    entities = query.GetEntities();
-                    index = entities.count;
-                    return this;
-                }
-
-                public Query query;
-                public ECSCollection<Entity> entities;
-                public int index;
-
-                public Entity Current => entities.items[index];
-
-                object IEnumerator.Current => entities.items[index];
-
-                public void Dispose() { }
-
-                public bool MoveNext()  // we iterate backwards so that we can do 
-                {                       // structural changes without invalidating iterators
-                    while (index > 0)
+                    count += new_components;
+                    if (count > Values.Length)
                     {
-                        index--;
-                        var e = entities.items[index];
-
-                        for (int i = 1; i < query.include_array.Length; ++i)
-                            if (e.component_lookup[i] < 0)
-                                goto Next;
-
-                        for (int i = 0; i < query.exclude_array.Length; ++i)
-                            if (e.component_lookup[i] >= 0)
-                                goto Next;
-
-                        return true;
-
-                    Next:
-                        continue;
+                        int newSize = Values.Length;
+                        while (newSize < count)
+                            newSize *= 2;
+                        if (newSize > Values.Length)
+                            Array.Resize(ref Values, newSize);
                     }
-                    return false;
                 }
 
-                public void Reset()
+                public void AddComponent(T obj)
                 {
-                    index = entities.count;
+                    if (count == Values.Length)
+                        Array.Resize(ref Values, count * 2);
+                    Values[count] = (T)obj;
+                    count++;
+                }
+
+                public void MoveComponent(int index, Archetype to_archetype)
+                {
+                    var component = Values[index];
+                    count--;
+                    Values[index] = Values[count];
+                    Values[count] = default;
+                    if (to_archetype.TryGetPool(out Pool<T> pool))
+                        pool.AddComponent(component);
+                }
+
+                public void RemoveComponent(int index)
+                {
+                    count--;
+                    var component = Values[index];
+                    Values[index] = Values[count];
+                    Values[count] = default;
+                    if (isDispsable)
+                        (component as IDisposable).Dispose();
+                }
+
+                public void SetComponent(int index, object obj)
+                {
+                    Values[index] = (T)obj;
+                }
+
+                void IPool.Resize()
+                {
+                    int new_size = 8;
+                    while (new_size < count)
+                        new_size *= 2;
+                    if (new_size == Values.Length)
+                        return;
+                    Array.Resize(ref Values, new_size);
                 }
             }
         }
 
+        public class Type_Signature : IEnumerable<Type>, IEquatable<Type_Signature>
+        {
+            public Type_Signature(int capacity)
+            {
+                this.ids = new int[capacity];
+                this.types = new Type[capacity];
+            }
+
+            public Type_Signature(List<Type> types)
+            {
+                this.ids = new int[types.Count];
+                this.types = new Type[types.Count];
+                foreach (var type in types)
+                    Add(type);
+            }
+
+            public Type_Signature(params Type[] types)
+            {
+                this.ids = new int[types.Length];
+                this.types = new Type[types.Length];
+                foreach (var type in types)
+                    Add(type);
+            }
+
+            public void Clear()
+            {
+                Count = 0;
+            }
+
+            public int[] ids;
+            public Type[] types;
+            public int Count;
+            public int ID => GetHashCode();
+
+            Type_Signature Add(int type_id, Type type)
+            {
+                if (type == null)
+                    return this;
+                sig = null;
+
+                for (int i = 0; i < Count; ++i)
+                {
+                    if (ids[i] == type_id) // if same exit
+                        return this;
+
+                    if (type_id > ids[i])
+                    {
+                        var stored_id = ids[i];
+                        var stored_type = types[i];
+                        ids[i] = type_id;
+                        types[i] = type;
+                        type_id = stored_id;
+                        type = stored_type;
+                    }
+                }
+
+                if (Count++ == types.Length)
+                {
+                    Array.Resize(ref types, Count + 4);
+                    Array.Resize(ref ids, Count + 4);
+                }
+
+                ids[Count - 1] = type_id;
+                types[Count - 1] = type;
+                return this;
+            }
+
+            Type_Signature Remove(Type type, int type_id)
+            {
+                sig = null;
+                bool swap = ids[0] == type_id;
+                for (int i = 1; i < Count; ++i)
+                {
+                    if (swap)
+                    {
+                        ids[i - 1] = ids[i];
+                        types[i - 1] = types[i];
+                    }
+                    else
+                        swap = ids[i] == type_id;
+                }
+                if (swap)
+                {
+                    Count--;
+                }
+                return this;
+            }
+
+            public Type_Signature Add(Type type)
+                => Add(TypeID.Get(type), type);
+
+            public Type_Signature Add<T>()
+                => Add(TypeID.GetID<T>.Value, typeof(T));
+
+            public Type_Signature Remove(Type type)
+                => Remove(type, TypeID.Get(type));
+
+            public Type_Signature Remove<T>()
+                => Remove(typeof(T), TypeID.GetID<T>.Value);
+
+            public bool Has<T>() => Has(TypeID.GetID<T>.Value);
+
+            public bool Has(Type type) => Has(TypeID.Get(type));
+
+            public bool Has(int typeid)
+            {
+                for (int i = 0; i < Count; ++i)
+                    if (ids[i] == typeid)
+                        return true;
+                return false;
+            }
+
+            public Type_Signature Copy()
+            {
+                var signature = new Type_Signature(Count + 1);
+                signature.Count = Count;
+                for (int i = 0; i < Count; ++i)
+                {
+                    signature.ids[i] = this.ids[i];
+                    signature.types[i] = this.types[i];
+                }
+                return signature;
+            }
+
+            IEnumerator<Type> IEnumerable<Type>.GetEnumerator()
+            {
+                for (int i = 0; i < Count; ++i)
+                {
+                    yield return types[i];
+                }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                foreach (var type in this)
+                    yield return type;
+            }
+
+            public override int GetHashCode()
+            {
+                int p = 53;
+                int power = 1;
+                int hashval = 0;
+
+                unchecked
+                {
+                    for (int i = 0; i < Count; ++i)
+                    {
+                        power *= p;
+                        hashval = (hashval + ids[i] * power);
+                    }
+                }
+                return hashval;
+            }
+
+            public bool Equals(Type_Signature other)
+            {
+                if (Count != other.Count)
+                    return false;
+                for (int i = 0; i < Count; ++i)
+                {
+                    if (ids[i] != other.ids[i])
+                        return false;
+                }
+                return true;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (obj is Type_Signature sig)
+                    return sig.Equals(this);
+                return false;
+            }
+
+            string sig;
+            public override string ToString()
+            {
+                if (sig ==  null)
+                {
+                    foreach (Type type in this)
+                    {
+                        sig += $"{type.Name} ";
+                    }
+                }
+                return sig;
+            }
+
+            public static bool operator ==(Type_Signature a, Type_Signature b)
+            => a.Equals(b);
+
+            public static bool operator !=(Type_Signature a, Type_Signature b)
+            => !a.Equals(b);
+        }
+    }
+
+    public class Blueprint
+    {
+        public Blueprint() { }
 
         /// <summary>
-        /// custom collection built for purpose 
+        /// World the entites are created in
         /// </summary>
-        class ECSCollection<T> : IReadOnlyList<T>
+        public Blueprint(World world)
         {
-            public ECSCollection()
+            this.world = world;
+        }
+
+        World _world = World.Default;
+        public World world
+        {
+            get => _world;
+            set
             {
-                items = new T[8];
+                archetype = null;
+                _world = value;
             }
+        }
+        World.Type_Signature signature = new World.Type_Signature(typeof(Entity));
+        World.Archetype archetype;
+        Action<Entity> set_components = delegate { };
+        Action<Entity> on_complete = delegate {};
 
-            public T[] items;
-            public int count;
+        public Blueprint Set<Component>()
+        {
+            signature.Add<Component>();
+            archetype = null;
+            return this;
+        }
 
-            //public ref T last => ref items[count - 1];
+        public Blueprint Set<Component>(Func<Component> component_creation_function)
+        {
+            signature.Add<Component>();
+            set_components += entity => entity.Get<Component>() = component_creation_function();
+            archetype = null;
+            return this;
+        }
 
-            int IReadOnlyCollection<T>.Count => count;
+        public Blueprint Set<Component>(Func<Entity, Component> component_creation_function)
+        {
+            signature.Add<Component>();
+            set_components += entity => entity.Get<Component>() = component_creation_function(entity);
+            archetype = null;
+            return this;
+        }
 
-            public void Resize()
+        /// <summary>
+        /// Action to perform after all components are set
+        /// </summary>
+        public Blueprint OnComplete(Action<Entity> onComplete)
+        {
+            this.on_complete = onComplete;
+            return this;
+        }
+
+        World.Archetype GetArchetype()
+        {
+            if (archetype == null)
+                archetype = world.GetArchetype(signature);
+            return archetype;
+        }
+
+        public Entity CreateEntity()
+        {
+            var entity = world.CreateEntity(GetArchetype());
+            set_components(entity);
+            on_complete(entity);
+            return entity;
+        }
+
+        public Entity[] CreateEntities(int count)
+        {
+            var entities = world.CreateEntities(GetArchetype(), count);
+            foreach (var entity in entities)
             {
-                var newSize = 8;
-                while (newSize < count)
-                    newSize *= 2;
-                if (items.Length > newSize)
-                    Array.Resize(ref items, newSize);
+                set_components(entity);
+                on_complete(entity);
             }
+            return entities;
+        }
 
-            /// <summary>
-            /// returns index of added item
-            /// </summary>
-            public int Add(T item)
+        public override string ToString()
+        {
+            return $"Blueprint [W{world?.ID}: {signature}]";
+        }
+    }
+
+    public class Query: IEnumerable<World.Archetype>
+    {
+        public Query()
+        {
+            _world = World.Default;
+        }
+
+        /// <summary>
+        /// Specify which wolrd the query should operate on
+        /// </summary>
+        public Query(World world)
+        {
+            _world = world;
+        }
+
+        World.Type_Signature has = new World.Type_Signature();
+        World.Type_Signature not = new World.Type_Signature();
+
+        World.Archetype[] matching_archetypes = new World.Archetype[8];
+        int archetype_count;
+
+        int last_world_count;
+
+        World _world = World.Default;
+
+        /// <summary>
+        /// Current world the query operates on
+        /// </summary>
+        public World world
+        {
+            get => _world;
+            set
             {
-                if (count == items.Length)
-                    Array.Resize(ref items, count * 2);
-                items[count] = item;
-                count++;
-                return count - 1;
+                archetype_count = 0;
+                last_world_count = 0;
+                _world = value;
             }
+        }
 
-            // swapping with back ensures arrays are packed
-            public void RemoveAndSwapLast(int index)
+        /// <summary>
+        /// entities currently matching query
+        /// </summary>
+        public int Entity_Count
+        {
+            get
             {
-                count--;
-                items[index] = items[count];
-                items[count] = default;
+                UpdateQuery();
+                int number = 0;
+                for (int i = 0; i < archetype_count; ++i)
+                    number += matching_archetypes[i].Count;
+                return number;
             }
+        }
 
-            T IReadOnlyList<T>.this[int index] => items[index];
+        /// <summary>
+        /// Filters entities to those that have component
+        /// </summary>
+        public Query Has<T>()
+        {
+            has.Add<T>();
+            last_world_count = 0;
+            archetype_count = 0;
+            name = null;
+            return this;
+        }
 
-            Iterator iterator = new Iterator();
+        /// <summary>
+        /// Filters entities to those without component
+        /// </summary>
+        public Query Not<T>()
+        {
+            not.Add<T>();
+            last_world_count = 0;
+            archetype_count = 0;
+            name = null;
+            return this;
+        }
 
-            IEnumerator IEnumerable.GetEnumerator()
-            => iterator.Init(this);
+        public Query Clear()
+        {
+            has.Clear();
+            not.Clear();
+            last_world_count = 0;
+            archetype_count = 0;
+            name = null;
+            return this;
+        }
 
-            IEnumerator<T> IEnumerable<T>.GetEnumerator()
-            => iterator.Init(this);
-
-            class Iterator : IEnumerator<T>
+        string name;
+        public override string ToString()
+        {
+            if (name == null)
             {
-                public Iterator Init(ECSCollection<T> list)
+                name = "Query ";
+                if (has.Count > 0)
                 {
-                    this.list = list;
-                    position = list.count;
-                    return this;
+                    name += "[HAS: ";
+
+                    foreach (var type in has)
+                        name += type.Name;
+                    name += "] ";
                 }
-                ECSCollection<T> list;
-                int position;
-
-                T IEnumerator<T>.Current => list.items[position];
-
-                object IEnumerator.Current => list.items[position];
-
-                void IDisposable.Dispose() { }
-
-                // iterating backwards means we can remove components without invalidating iterators
-                bool IEnumerator.MoveNext()
+                if (not.Count > 0)
                 {
-                    position--;
-                    return position >= 0;
+                    name += "[NOT: ";
+                    foreach (var type in not)
+                        name += type.Name;
+                    name += "]";
                 }
+            }
 
-                void IEnumerator.Reset()
+            return $"{name} [W{world.ID}: {archetype_count}a {Entity_Count}e]";
+        }
+
+        public delegate void query<C1>(ref C1 c1);
+        public delegate void query<C1, C2>(ref C1 c1, ref C2 c2);
+        public delegate void query<C1, C2, C3>(ref C1 c1, ref C2 c2, ref C3 c3);
+        public delegate void query<C1, C2, C3, C4>(ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4);
+        public delegate void query<C1, C2, C3, C4, C5>(ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5);
+        public delegate void query<C1, C2, C3, C4, C5, C6>(ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6);
+        public delegate void query<C1, C2, C3, C4, C5, C6, C7>(ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6, ref C7 c7);
+        public delegate void query<C1, C2, C3, C4, C5, C6, C7, C8>(ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6, ref C7 c7, ref C8 c8);
+
+        void UpdateQuery() // checks for any new archetypes since last run and updates accordingly
+        {
+            if (last_world_count != _world.archetypes.Count)
+            {
+                for (int i = last_world_count; i < _world.archetypes.Count; ++i)
                 {
-                    position = list.count;
+                    var archetype = _world.archetypes[i];
+                    {
+                        for (int itr = 0; itr < has.Count; ++itr)
+                        {
+                            var type = has.ids[itr];
+                            if (!archetype.signature.Has(type))
+                                goto next_archetype;
+                        }
+                    }
+                    {
+                        for (int itr = 0; itr < not.Count; ++itr)
+                        {
+                            var type = not.ids[itr];
+                            if (archetype.signature.Has(type))
+                                goto next_archetype;
+                        }
+                    }
+
+                    if (archetype_count == matching_archetypes.Length)
+                        Array.Resize(ref matching_archetypes, matching_archetypes.Length * 2);
+                    matching_archetypes[archetype_count] = archetype;
+                    archetype_count++;
+
+                next_archetype:
+                    continue;
+                }
+                last_world_count = _world.archetypes.Count;
+            }
+        }
+
+        /// <summary>
+        /// performs action on all entities matching query and including components in action
+        /// </summary>
+        public void Foreach<C1>(query<C1> action)
+        {
+            UpdateQuery();
+            for (int i = archetype_count - 1; i >= 0; --i)  // go backwards so new archetypes aren't updating
+            {
+                var archetype = matching_archetypes[i];
+                if (archetype.TryGetPool<C1>(out var pool_c1))  // skips archetype if not all components in action are contained in archetype
+                {
+                    for (int itr = archetype.Count - 1; itr >= 0; --itr) // go backwards so entity operations can be performed synchonously
+                        action(ref pool_c1.Values[itr]);
                 }
             }
         }
 
-        class EntityComponentIterator<T> : IReadOnlyList<(Entity, T)>
+        public void Foreach<C1, C2>(query<C1, C2> action)
         {
-            public static EntityComponentIterator<T> instance = new EntityComponentIterator<T>();
-            public (Entity, T) this[int index] => throw new NotImplementedException();
-
-            public int Count => Components<T>.entities.count;
-
-            public IEnumerator<(Entity, T)> GetEnumerator()
+            UpdateQuery();
+            for (int i = archetype_count - 1; i >= 0; --i)
             {
-                return iterator.Init();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return iterator.Init();
-            }
-
-            Iterator iterator = new Iterator();
-
-            class Iterator : IEnumerator<(Entity, T)>
-            {
-                public Iterator()
+                var archetype = matching_archetypes[i];
+                if (archetype.TryGetPool<C1>(out var pool_c1) &&
+                    archetype.TryGetPool<C2>(out var pool_c2))
                 {
-                    index = Components<T>.components.count;
-                }
-
-                public Iterator Init()
-                {
-                    index = Components<T>.components.count;
-                    return this;
-                }
-
-                int index;
-                public (Entity, T) Current => (Components<T>.entities.items[index], Components<T>.components.items[index]);
-
-                object IEnumerator.Current => (Components<T>.entities.items[index], Components<T>.components.items[index]);
-
-                public void Dispose() { }
-
-                public bool MoveNext()
-                {
-                    index--;
-                    return index >= 0;
-                }
-
-                public void Reset()
-                {
-                    index = Components<T>.entities.count;
+                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                        action(ref pool_c1.Values[itr],
+                                ref pool_c2.Values[itr]);
                 }
             }
         }
 
-        //simple openset hashmap for faster lookups than a normal dictionary
-        class ECSMap
+        public void Foreach<C1, C2, C3>(query<C1, C2, C3> action)
         {
-            public (int index, int value)[] map = new (int index, int value)[map_data[0].prime + map_data[0].steps];
-            int factor = map_data[0].prime;
-            int steps = map_data[0].steps;
-            int current_data = 0;
-
-            public int Count
+            UpdateQuery();
+            for (int i = archetype_count - 1; i >= 0; --i)
             {
-                get
+                var archetype = matching_archetypes[i];
+                if (archetype.TryGetPool<C1>(out var pool_c1) &&
+                    archetype.TryGetPool<C2>(out var pool_c2) &&
+                    archetype.TryGetPool<C3>(out var pool_c3))
                 {
-                    var value = 0;
-                    foreach (var item in map)
-                        if (item.index > 0)
-                            value++;
-                    return value;
+                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                        action(ref pool_c1.Values[itr],
+                                ref pool_c2.Values[itr],
+                                ref pool_c3.Values[itr]);
                 }
             }
+        }
 
-            void Resize()
+        public void Foreach<C1, C2, C3, C4>(query<C1, C2, C3, C4> action)
+        {
+            UpdateQuery();
+            for (int i = archetype_count - 1; i >= 0; --i)
             {
-                current_data++;
-                factor = map_data[current_data].prime;
-                steps = map_data[current_data].steps;
-
-                var data = map_data[current_data];
-                (int index, int value)[] newMap = new (int, int)[factor + steps];
-
-                for (int index = 0; index < map.Length; ++index)
+                var archetype = matching_archetypes[i];
+                if (archetype.TryGetPool<C1>(out var pool_c1) &&
+                    archetype.TryGetPool<C2>(out var pool_c2) &&
+                    archetype.TryGetPool<C3>(out var pool_c3) &&
+                    archetype.TryGetPool<C4>(out var pool_c4))
                 {
-                    var item = map[index];
-                    if (item.index == 0)
-                        continue;
-
-                    var pos = item.index % factor;
-
-                    for (int i = 0; i < steps; ++i)
-                    {
-                        if (newMap[pos + i].index == 0)
-                        {
-                            newMap[pos + i] = item;
-                            break;
-                        }
-                    }
-                }
-                map = newMap;
-            }
-
-            public void Remove(int index)
-            {
-                index++;
-                var pos = index % factor;
-                int next = 0;
-                int gap = 0;
-
-                while (next < steps)
-                {
-                    var data = map[pos + next];
-                    if (index == data.index)
-                    {
-                        gap = pos + next;
-                        map[gap] = default;
-                        next++;
-                        break;
-                    }
-                    next++;
-                }
-
-                while (next < steps)
-                {
-                    var data = map[pos + next];
-                    if (data.index % factor == pos)
-                    {
-                        map[gap] = data;
-                        gap = pos + next;
-                        map[gap] = default;
-                    }
-                    next++;
+                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                        action(ref pool_c1.Values[itr],
+                                ref pool_c2.Values[itr],
+                                ref pool_c3.Values[itr],
+                                ref pool_c4.Values[itr]);
                 }
             }
+        }
 
-            public int this[int index]
+        public void Foreach<C1, C2, C3, C4, C5>(query<C1, C2, C3, C4, C5> action)
+        {
+            UpdateQuery();
+            for (int i = archetype_count - 1; i >= 0; --i)
             {
-                get
+                var archetype = matching_archetypes[i];
+                if (archetype.TryGetPool<C1>(out var pool_c1) &&
+                    archetype.TryGetPool<C2>(out var pool_c2) &&
+                    archetype.TryGetPool<C3>(out var pool_c3) &&
+                    archetype.TryGetPool<C4>(out var pool_c4) &&
+                    archetype.TryGetPool<C5>(out var pool_c5))
                 {
-                    index += 1;
-                    var pos = index % factor;
-                    for (int i = 0; i < steps; ++i)
-                    {
-                        var data = map[pos + i];
-                        if (index == data.index)
-                            return data.value;
-                        if (index == 0)
-                            return -1;
-                    }
-                    return -1;
-                }
-
-                set
-                {
-                    index += 1;
-                    var pos = index % factor;
-
-                    for (int i = 0; i < steps; ++i)
-                    {
-                        var data = map[pos + i];
-                        if (data.index == 0 || data.index == index)
-                        {
-                            map[pos + i] = (index, value);
-                            return;
-                        }
-                    }
-
-                    Resize();
-
-                    pos = index % factor;
-
-                    for (int i = 0; i < steps; ++i)
-                    {
-                        var data = map[pos + i];
-                        if (data.index == 0 || data.index == index)
-                        {
-                            map[pos + i] = (index, value);
-                            return;
-                        }
-                    }
+                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                        action(ref pool_c1.Values[itr],
+                                ref pool_c2.Values[itr],
+                                ref pool_c3.Values[itr],
+                                ref pool_c4.Values[itr],
+                                ref pool_c5.Values[itr]);
                 }
             }
+        }
 
-            static (int prime, int steps)[] map_data = new (int, int)[]
+        public void Foreach<C1, C2, C3, C4, C5, C6>(query<C1, C2, C3, C4, C5, C6> action)
+        {
+            UpdateQuery();
+            for (int i = archetype_count - 1; i >= 0; --i)
             {
-                (7, 3),
-                (13, 4),
-                (31, 5),
-                (53, 6),
-                (97, 7),
-                (193, 8),
-                (389, 9),
-                (769, 10),
-                (1543, 11),
-                (3079, 12),
-                (6151, 13),
-                (12289, 14)
-            };
+                var archetype = matching_archetypes[i];
+                if (archetype.TryGetPool<C1>(out var pool_c1) &&
+                    archetype.TryGetPool<C2>(out var pool_c2) &&
+                    archetype.TryGetPool<C3>(out var pool_c3) &&
+                    archetype.TryGetPool<C4>(out var pool_c4) &&
+                    archetype.TryGetPool<C5>(out var pool_c5) &&
+                    archetype.TryGetPool<C6>(out var pool_c6))
+                {
+                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                        action(ref pool_c1.Values[itr],
+                                ref pool_c2.Values[itr],
+                                ref pool_c3.Values[itr],
+                                ref pool_c4.Values[itr],
+                                ref pool_c5.Values[itr],
+                                ref pool_c6.Values[itr]);
+                }
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7>(query<C1, C2, C3, C4, C5, C6, C7> action)
+        {
+            UpdateQuery();
+            for (int i = archetype_count - 1; i >= 0; --i)
+            {
+                var archetype = matching_archetypes[i];
+                if (archetype.TryGetPool<C1>(out var pool_c1) &&
+                    archetype.TryGetPool<C2>(out var pool_c2) &&
+                    archetype.TryGetPool<C3>(out var pool_c3) &&
+                    archetype.TryGetPool<C4>(out var pool_c4) &&
+                    archetype.TryGetPool<C5>(out var pool_c5) &&
+                    archetype.TryGetPool<C6>(out var pool_c6) &&
+                    archetype.TryGetPool<C7>(out var pool_c7))
+                {
+                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                        action(ref pool_c1.Values[itr],
+                                ref pool_c2.Values[itr],
+                                ref pool_c3.Values[itr],
+                                ref pool_c4.Values[itr],
+                                ref pool_c5.Values[itr],
+                                ref pool_c6.Values[itr],
+                                ref pool_c7.Values[itr]);
+                }
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8>(query<C1, C2, C3, C4, C5, C6, C7, C8> action)
+        {
+            UpdateQuery();
+            for (int i = archetype_count - 1; i >= 0; --i)
+            {
+                var archetype = matching_archetypes[i];
+                if (archetype.TryGetPool<C1>(out var pool_c1) &&
+                    archetype.TryGetPool<C2>(out var pool_c2) &&
+                    archetype.TryGetPool<C3>(out var pool_c3) &&
+                    archetype.TryGetPool<C4>(out var pool_c4) &&
+                    archetype.TryGetPool<C5>(out var pool_c5) &&
+                    archetype.TryGetPool<C6>(out var pool_c6) &&
+                    archetype.TryGetPool<C7>(out var pool_c7) &&
+                    archetype.TryGetPool<C8>(out var pool_c8))
+                {
+                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                        action(ref pool_c1.Values[itr],
+                                ref pool_c2.Values[itr],
+                                ref pool_c3.Values[itr],
+                                ref pool_c4.Values[itr],
+                                ref pool_c5.Values[itr],
+                                ref pool_c6.Values[itr],
+                                ref pool_c7.Values[itr],
+                                ref pool_c8.Values[itr]);
+                }
+            }
+        }
+
+        IEnumerator<World.Archetype> IEnumerable<World.Archetype>.GetEnumerator()
+        {
+            for(int i = archetype_count - 1; i>= 0; --i)
+                yield return matching_archetypes[i];
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            for(int i = archetype_count - 1; i>= 0; --i)
+                yield return matching_archetypes[i];
         }
     }
 }

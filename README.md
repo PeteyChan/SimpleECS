@@ -3,163 +3,176 @@ A Simple and easy to use C# Entity Component System.
 Min C# Framework 4.7
 
 
-## Entities and Components
-Creating Entities and Components can't get any easier.
+## Entities
+To create an entity use new with the components as parameters.
+Components can be any class or struct except entity.
+Components are stored as their GetType() function type.
 ```C#
-var entity = new Entity();    // creates a new entity
-
-class Component    // components are just any regular class or struct
-{
-  public int value;
-}
+var entity = new Entity("my entity", 3, 5f);    // creates a new entity with components
 ```
 
-Adding, retrieving and removing components is also dead simple
+Manipulating entities is also pretty simple
 ```C#
-var entity = new Entity(new Component{value = 3}, 4, "Hello");    // you can add components during entity creation
+ref int value = ref entity.Get<int>(); // gets the entity's int component by ref value. int is automatically added with default values if not found.
 
-entity.Set(new Component(value = 4));    // or afterwards with Set
+entity.Get<int>() += 4; // since they are returned by ref, you can assign values directly
 
-//Set functions as both an add component or replace component depending if the entity already has the component
+entity.Set(3).Set("new name"); // sets the entity's components to values. Component is added if not already on entity
+                               // additonally setting an entity's string component sets it's ToString() function
 
-if (entity.TryGet(out Component c, out int i))    // you can retrieve components with TryGet
+if (enity.Has<int>()) // returns true if entity has component
 {
-    c.value++;
-    i++;
-    entity.Set(i);  // structs will need to be set afterwards
+  // do something
 }
 
-entity.Remove<int>(); // you remove components with Remove
-
-entity.RemoveAll(); // or all components at once with RemoveAll
-                    // this effectively 'deletes' the entity for the gc to handle
-                    // unless another component is set
-
-if (entity.Has<int>() && entity.Not<string>())
+if (entity.TryGet<int>(out var value) // gets the component's value on entity, returns false if not found
 {
-  // you can also do basic querying of components with has and not  
+    entity.Set(value + 4); // Value types need to be set afterwards for changes to take place
 }
 
-entity.SetByType(3, "Hello", new Vector3()); // sets component as their type
+entity.Remove<T>(); // removes the component on entity if found.
+                    // if component implements System.IDisposable, Dispose() is called when component is removed
+                    
+entity.Destroy();  // destroys the entity leaving it invalid
+                   // Dispose() is called on all removed components that implement System.IDisposable
+                   // entity is invalid during the dispose call
 
-entity.GetAllComponents();       // returns all components currently on the entity
+if (entity.IsValid) // returns false if entity is destroyed or invalid
+{}
+
+if(entity)  // same as entity.IsValid
+{}
+
+// you can iterate over all the components in an entity using foreach
+foreach(var component in entity)
+{
+  Console.WriteLine(component.GetType().Name);
+}
+
+```
+## Blueprints
+To make creating entities simpler there is the blueprint class
+```C#
+
+class MyComponent // example component
+{
+  public MyComponent(int value)
+  {
+    this.value = value;
+  }
+  int value;
+}
+
+// Creates the blueprint
+Blueprint my_blueprint = new Blueprint().Set<float>()  // use to set a component with default values
+                                        .Set( () => 5) // uses a function that generates a component and sets it on the entity
+                                        .Set( entity => new MyComponent(entity.Get<int>()) // use the entity function to retrieve previously added components
+                                        .OnComplete( entity => Console.Write($"{entity} spawned"); // complete is called after all components have been added
+
+var entity = my_blueprint.CreateEntity(); // creates an entity with components set by blueprint
+
+var entities = my_blueprint.CreateEntities(1000); // creates 1000 entities with components set by blueprint
 ```
 ## Systems
 
-My belief is that systems are best tailored to the specific application your building.
-So keeping that in mind, Simple ECS's Systems can't get any simpler because there isn't any.
-Instead there are Queries.
+There are no systems in simpleECS, instead it uses simple queries to manage entities
+
 
 ## Queries
 
-Queries let you iterate over entities based on specified components you
-include or exclude. Queries are very straight forward to create and use.
+Queries let you iterate over entities based on specified components.
+Queries cache their results and only update their queries when the world changes,
+so makes sure to resuse them and not create them every frame.
 
 ```C#
-// you can chain as many includes and excludes as you want
-// but adding too many can decrease iteration performance
+var query = new Query().Has<int>().Has<float>() // filters entities to those with components
+                       .Not<string>().Not<double>();  // filters remaining to those that do not have components
 
-var query = new Entity.Query().Include<int, string>() // included components
-                              .Exclude<float>();      // excluded components
+query.Foreach( (ref int int_value, ref float float_value) =>  // you then use the foreach function to update your components
+{                                                             // you can use up to 8 components in the query
+    int_value ++; // can manipulate components                
+    float_value = int_value * 100;
+}));
 
-foreach (var entity in query) // you then iterate with foreach
+query.Foreach( (ref Entity entity) => // all entities have themselves as components which can be accessed in queries like any other component
+{                                     // it's for this reason you should not set, remove or otherwise alter an entity's entity component
+  Console.WriteLine(entity);
+});
+```
+
+You manually iteration is possible if you need to
+```C#
+foreach(var archetype in query)
 {
-    if (entity.TryGet(out string str, out int i))
+    if (archetype.TryGetPool<int>(out var int_pool) &&
+        archetype.TryGetPool<Entity>(out var entity_pool)))
     {
-      // do something
+      for(int i = int_pool.Count-1; i >= 0; --i) // if you plan to use get, set, remove, destroy or make new entities
+      {                                          // iterate backwards so the iterators don't become invalidated
+        var count = int_pool.Values[i] ++;
+        if (count > 1000)
+          entity_pool.Values[i].Destroy();
+      }   
     }
 }
 ```
 
-You can also do simple multithreading if you are expecting a large query
+Do not call Get, Set, Remove or Destroy on entities other than the entity supplied by the query so that iterators don't become invalidated
 ```C#
-if (query.Count > 10000) // Count is the number of entities the query will test for matches, not the number of matching entities
-{                             
-    query.ForeachParallel(entity =>     // structural changes such as adding and removing components or entities
-    {                                   // is not safe. Only the modification of components and only 
-        if (entity.TryGet(out int i))   // if they are not shared elsewhere is safe to do
-        {                               
-            // do something
-        }
-    });
-}
-```
-If you just need to iterate over a single component, you can do so directly
-```C#
-foreach(var entity in Entity.AllWith<Component>())  // iteration is faster since there is no filtering
+class MyComponent
 {
-    // iterate over all entities that have component
+  public Entity other_entity;
 }
 
-foreach(var component in Entity.AllRef<Component>()) // fastest way to iterate over components
+List<Entity> ToDestroy = new List<Entity>();
+
+query.Foreach((ref Entity entity, ref MyComponent comp) =>
 {
-    // great if you don't need a reference to an entity
-}
+    entity.Get<float>() = 3f; // these functions can potentially change the underlying archetype
+    entity.Set(3);            // structure. The entity ref provided by the query supports these
+    entity.Remove<float>()    // operations so is fine to call them here
+    entity.Destroy();
+    
+    
+    // DO NOT DO
+    comp.other_entity.Get<int>() = 3; // since the entity can potentially be anything, calling these functions
+    comp.other_entity.Set(4.5f);      // can possibly invalidate the query's iterators and
+    comp.other_entity.Remove<int>();  // lead to undefined behaviour
+    comp.other_entity.Destroy();
+    
+    //INSTEAD
+    if (comp.other_entity.TryGet(out int value)) // instead get information from it with try get first
+    {
+      if (value > 20)                    // then add entities you want to change to a list
+        ToDestroy.Add(entity);
+      else
+        comp.other_entity.Set(value++);  // once you know that the entity has the component, it's safe to call set or get
+    
+    
+      if (value == 5)               // making new entities in queries should be safe, 
+        blueprint.CreateEntity();   // so long as they don't modify or destroy other entities in the process
+    }
+});
 
-foreach(var (entity, component) in Entity.AllWithRef<Component>())
-{
-    // allows iteration of components with their associated entity
-}
-
-foreach(var entity in Entity.All())
-{
-    // iterates over all entities that contain atleast one component
-}
-```
-
-## Events
-Finally there are a few Event callbacks which are useful if you want to make reactive systems
-
-```C#
-// is called at the end of Set if the component was added
-// calling entity.Has<Component>() at this point will return true
-Entity.Event<Component>.OnAdd += (Entity entity, Component addedComponent) => 
-{ 
-    // do something when the component is added
-};
-
-// is called after OnAdd if a component was added
-Entity.Event<Component>.OnSet += (Entity entity, Component setComponent) =>
-{
-    // do something when the component is set
-};
-
-// is called at the end of Remove if the component was removed
-// calling entity.Has<Component>() at this point will return false
-Entity.Event<Component>.OnRemove += (Entity entity, Component removedComponent) =>
-{
-    // do something when the component is removed
-};
+foreach (var entity in ToDestroy) // when the query is complete, it's safe to do to the entities what you wish
+  entity.Destroy();
 ```
 
-## Tips
+## Worlds
 
-Queries match over the smallest entity collection in it's include array, so
-it's always better to have atleast one. Otherwise the query will match over all entities.
-
-entity.Set() and entity.SetByType() work slightly differently. 
-Choose which one works best for your situation 
+Worlds store all entities and archetype information.
+All entities, Blueprints and Queries use World.Default as their world by default.
+Worlds are completely independent of each other so should be safe to use in different threads.
+Using worlds is really simple
 ```C#
-class Component: IInterface
-{}
+var world = new World(); // creates a new World
 
-IInterface component = new Component();
+blueprint.world = world; // to changes the world a blueprint creates entities in
+query.world = world;     // changes the world queries operate on
 
-entity.Set(component);           // set adds the component as the current type
-                                 // which in this case is IInterface 
-                                 // i.e entity.Has<IInterface>() == true
-                                 //     entity.Has<Component>() == false
-                                  
-entity.SetByType(component);     // while SetByType adds objects by it's type
-                                 // which in this case is Component
-                                 // i.e entity.Has<Component>() == true
-
-new Entity(component);           // coincidentally this is equivilant to new Entity().SetByType(component)
-```
-
-Lastly, when removing large amounts of components, the now empty backing arrays may be larger than they need to be.
-To free up space, especially if your changing scenes in a game engine you can resize them simply by calling
-```C#
-// resizes all backing arrays to the minimum power of 2 needed to contain all components
-Entity.ResizeBackingArrays();
+var new_entity = entity.MoveTo(world); // moves entity from it's current world to it's new world and returns the entity's new value in that world
+                                       // the original entity is now invalid
+                                       // this operation is not thread safe, so all worlds should be synced to the main thread before hand
+                                       
+World.Default = world; // changes the default world to the specified world so all new blueprints, queries and entities will now use this world instead
 ```

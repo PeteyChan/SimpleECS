@@ -118,7 +118,7 @@ foreach(var archetype in query)
     if (archetype.TryGetPool<int>(out var int_pool) &&
         archetype.TryGetPool<Entity>(out var entity_pool)))
     {
-      for(int i = int_pool.Count-1; i >= 0; --i) // if you plan to use get, set, remove, destroy or make new entities
+      for(int i = archetype.Count-1; i >= 0; --i) // if you plan to use get, set, remove, destroy or make new entities
       {                                          // iterate backwards so the iterators don't become invalidated
         var count = int_pool.Values[i] ++;
         if (count > 1000)

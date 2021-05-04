@@ -72,9 +72,11 @@ class MyComponent // example component
 
 // Creates the blueprint
 Blueprint my_blueprint = new Blueprint().Set<float>()  // use to set a component with default values
-                                        .Set( () => 5) // uses a function that generates a component and sets it on the entity
-                                        .Set( entity => new MyComponent(entity.Get<int>()) // use the entity function to retrieve previously added components
-                                        .OnComplete( entity => Console.WriteLine($"{entity} spawned"); // complete is called after all components have been added
+                                        .Set( () => 5) // uses a function to generate a component and set it on the entity
+                                                       // use the entity function to retrieve previously added components
+                                        .Set( entity => new MyComponent(entity.Get<int>()) 
+                                                       // OnComplete() is called after all components have been added
+                                        .OnComplete( entity => Console.WriteLine($"{entity} spawned"); 
 
 var entity = my_blueprint.CreateEntity();         // creates an entity with components set by blueprint
 

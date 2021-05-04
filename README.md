@@ -91,8 +91,8 @@ var query = new Query().Has<int>().Has<float>()       // filters entities to tho
 
 query.Foreach( (ref int int_value, ref float float_value) =>  // you then use the foreach function to update your components
 {                                                             // you can use up to 8 components in the query
-    int_value ++; // can manipulate components                
-    float_value = int_value * 100;
+    int_value ++; // can manipulate components                // queries operate only on entities that match both the query and 
+    float_value = int_value * 100;                            // contains all the components in the foreach function
 }));
 
 query.Foreach( (ref Entity entity) => // all entities have themselves as components which can be accessed in queries like any other component

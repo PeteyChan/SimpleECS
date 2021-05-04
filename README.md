@@ -2,7 +2,7 @@
 A Simple and easy to use C# Entity Component System.
 Min C# Framework 4.7
 
-### Pros:
+### Features:
 * 1 File, just copy paste
 * Uses generics so no code generation or any real setup required
 * Archetype based ECS = fast component iteration speeds

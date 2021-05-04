@@ -173,7 +173,7 @@ foreach (var entity in ToDestroy) // when the query is complete, it's safe to do
 ## Worlds
 
 Worlds store all entities and archetype information.
-All entities, Blueprints and Queries use static field World.Default by default.
+All entities, Blueprints and Queries use the static field World.Default by default.
 Worlds are completely independent of each other so should be safe to use in different threads.
 Using worlds is really simple
 ```C#

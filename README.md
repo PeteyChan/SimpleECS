@@ -32,7 +32,7 @@ if (enity.Has<int>())             // returns true if entity has component
   // do something
 }
 
-if (entity.TryGet<int>(out var value) // gets the component's value on entity, returns false if not found
+if (entity.TryGet<int>(out var value)) // gets the component's value on entity, returns false if not found
 {
     entity.Set(value + 4); // Value types need to be set afterwards for changes to take place
 }

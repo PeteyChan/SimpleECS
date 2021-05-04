@@ -92,9 +92,9 @@ Queries cache their results and only update their queries when the world changes
 so make sure to reuse them and not create them every frame.
 
 ```C#
-var query = new Query().Has<int>().Has<float>()       // filters entities to those with components
-                       .Not<string>().Not<double>();  // filters remaining to those that do not have components
-                                                      // theres no limit to the amount of filters you can add,
+var query = new Query().Has<int>().Has<float>()       // Has() filters entities to those with components
+                       .Not<string>().Not<double>();  // Not() filters for those that do not
+                                                      // there's no limit to the amount of filters you can add
                                                       // infact the more specific the better
 
 query.Foreach( (ref int int_value, ref float float_value) =>  // you then use the foreach function to update your components
@@ -103,9 +103,11 @@ query.Foreach( (ref int int_value, ref float float_value) =>  // you then use th
     float_value = int_value * 100;                            // contains all the components in the foreach function
 }));
 
-query.Foreach( (ref Entity entity) => // all entities have themselves as components which can be accessed in queries like any other component
-{                                     // it's for this reason you should not set, remove or otherwise alter an entity's entity component
-  Console.WriteLine(entity);
+var all_entities = new Query();               // a simple way to match all entities is to make a query with no filters
+
+all_entities.Foreach( (ref Entity entity) =>  // all entities have themselves as components which can be accessed in queries
+{                                             // just like a regular component. It's for this reason you should not Set(),
+  Console.WriteLine(entity);                  // Remove() or otherwise alter an entity's entity component
 });
 ```
 
@@ -126,7 +128,7 @@ foreach(var archetype in query)
 }
 ```
 
-Do not call Get, Set, Remove or Destroy on entities other than the entity supplied by the query 
+Do not call Get(), Set(), Remove() or Destroy() on entities other than the entity supplied by the query 
 otherwise iterators can potentially become invalidated.
 ```C#
 class MyComponent
@@ -185,4 +187,6 @@ var new_entity = entity.MoveTo(world); // moves entity from it's current world t
                                        // this operation is not thread safe, so all worlds should be synced to the main thread before hand
                                        
 World.Default = world; // changes the default world, all new blueprints, new queries and new entities will use this world instead
+
+World.Default.Compact();  // after deleting a large amount of entities or components, you can call Compact() to resize the backing arrays
 ```

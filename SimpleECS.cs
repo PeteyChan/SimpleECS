@@ -629,7 +629,7 @@ namespace SimpleECS
                     Values[index] = Values[count];
                     Values[count] = default;
                     if (isDispsable)
-                        (component as IDisposable).Dispose();
+                        (component as IDisposable)?.Dispose();
                 }
 
                 public void SetComponent(int index, object obj)

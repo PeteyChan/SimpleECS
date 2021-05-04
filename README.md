@@ -4,10 +4,10 @@ Min C# Framework 4.7
 
 ### Pros:
 1 File, just copy paste
-*Uses generics so no code generation or any real setup required
-*Archetype based ECS = fast component iteration speeds
-*Very simple query system
-*Multiple worlds
+* Uses generics so no code generation or any real setup required
+* Archetype based ECS = fast component iteration speeds
+* Very simple query system
+* Multiple worlds
 
 ## Entities
 To create an entity use new with the components as parameters.

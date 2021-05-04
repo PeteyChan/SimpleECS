@@ -13,14 +13,15 @@ var entity = new Entity("my entity", 3, 5f);    // creates a new entity with com
 
 Manipulating entities is also pretty simple
 ```C#
-ref int value = ref entity.Get<int>(); // gets the entity's int component by ref value. int is automatically added with default values if not found.
+ref int value = ref entity.Get<int>();  // gets the entity's int component by ref value. 
+                                        //int is automatically added with default values if not found.
 
-entity.Get<int>() += 4; // since they are returned by ref, you can assign values directly
+entity.Get<int>() += 4;        // since they are returned by ref, you can assign values directly
 
 entity.Set(3).Set("new name"); // sets the entity's components to values. Component is added if not already on entity
                                // additonally setting an entity's string component sets it's ToString() function
 
-if (enity.Has<int>()) // returns true if entity has component
+if (enity.Has<int>())          // returns true if entity has component
 {
   // do something
 }
@@ -30,20 +31,20 @@ if (entity.TryGet<int>(out var value) // gets the component's value on entity, r
     entity.Set(value + 4); // Value types need to be set afterwards for changes to take place
 }
 
-entity.Remove<T>(); // removes the component on entity if found.
-                    // if component implements System.IDisposable, Dispose() is called when component is removed
+entity.Remove<T>();   // removes the component on entity if found.
+                      // if component implements System.IDisposable, Dispose() is called when component is removed
                     
-entity.Destroy();  // destroys the entity leaving it invalid
-                   // Dispose() is called on all removed components that implement System.IDisposable
-                   // entity is invalid during the dispose call
+entity.Destroy();     // destroys the entity leaving it invalid
+                      // Dispose() is called on all removed components that implement System.IDisposable
+                      // entity is invalid during the dispose call
 
-if (entity.IsValid) // returns false if entity is destroyed or invalid
+if (entity.IsValid)   // returns false if entity is destroyed or invalid
 {}
 
-if(entity)  // same as entity.IsValid
+if(entity)            // same as entity.IsValid
 {}
 
-// you can iterate over all the components in an entity using foreach
+// you can iterate over all the components on an entity using foreach
 foreach(var component in entity)
 {
   Console.WriteLine(component.GetType().Name);
@@ -69,7 +70,7 @@ Blueprint my_blueprint = new Blueprint().Set<float>()  // use to set a component
                                         .Set( entity => new MyComponent(entity.Get<int>()) // use the entity function to retrieve previously added components
                                         .OnComplete( entity => Console.Write($"{entity} spawned"); // complete is called after all components have been added
 
-var entity = my_blueprint.CreateEntity(); // creates an entity with components set by blueprint
+var entity = my_blueprint.CreateEntity();         // creates an entity with components set by blueprint
 
 var entities = my_blueprint.CreateEntities(1000); // creates 1000 entities with components set by blueprint
 ```
@@ -85,7 +86,7 @@ Queries cache their results and only update their queries when the world changes
 so make sure to reuse them and not create them every frame.
 
 ```C#
-var query = new Query().Has<int>().Has<float>() // filters entities to those with components
+var query = new Query().Has<int>().Has<float>()       // filters entities to those with components
                        .Not<string>().Not<double>();  // filters remaining to those that do not have components
 
 query.Foreach( (ref int int_value, ref float float_value) =>  // you then use the foreach function to update your components
@@ -117,7 +118,8 @@ foreach(var archetype in query)
 }
 ```
 
-Do not call Get, Set, Remove or Destroy on entities other than the entity supplied by the query so that iterators don't become invalidated
+Do not call Get, Set, Remove or Destroy on entities other than the entity supplied by the query 
+otherwise iterators can potentially become invalidated.
 ```C#
 class MyComponent
 {
@@ -135,9 +137,9 @@ query.Foreach((ref Entity entity, ref MyComponent comp) =>
     
     
     // DO NOT DO
-    comp.other_entity.Get<int>() = 3; // since the entity can potentially be anything, calling these functions
-    comp.other_entity.Set(4.5f);      // can possibly invalidate the query's iterators and
-    comp.other_entity.Remove<int>();  // lead to undefined behaviour
+    comp.other_entity.Get<int>() = 3; // since entities from components can potentially be anything,
+    comp.other_entity.Set(4.5f);      // calling these functions can possibly invalidate the query's 
+    comp.other_entity.Remove<int>();  // iterators and lead to undefined behaviour
     comp.other_entity.Destroy();
     
     //INSTEAD
@@ -146,9 +148,8 @@ query.Foreach((ref Entity entity, ref MyComponent comp) =>
       if (value > 20)                    // then add entities you want to change to a list
         ToDestroy.Add(entity);
       else
-        comp.other_entity.Set(value++);  // once you know that the entity has the component, it's safe to call set or get
-    
-    
+        comp.other_entity.Set(value++);  // once you know the component exists, it's safe to call set or get
+        
       if (value == 5)               // making new entities in queries should be safe, 
         blueprint.CreateEntity();   // so long as they don't modify or destroy other entities in the process
     }
@@ -161,18 +162,18 @@ foreach (var entity in ToDestroy) // when the query is complete, it's safe to do
 ## Worlds
 
 Worlds store all entities and archetype information.
-All entities, Blueprints and Queries use World.Default as their world by default.
+All entities, Blueprints and Queries use World.Default by default.
 Worlds are completely independent of each other so should be safe to use in different threads.
 Using worlds is really simple
 ```C#
 var world = new World(); // creates a new World
 
-blueprint.world = world; // changes the world a blueprint creates entities in
-query.world = world;     // changes the world query operate on
+blueprint.world = world; // changes the world the blueprint creates entities in
+query.world = world;     // changes the world the query operates on
 
 var new_entity = entity.MoveTo(world); // moves entity from it's current world to it's new world and returns the entity's new value in that world
                                        // the original entity is now invalid
                                        // this operation is not thread safe, so all worlds should be synced to the main thread before hand
                                        
-World.Default = world; // changes the default world to the specified world so all new blueprints, queries and entities will now use this world instead
+World.Default = world; // changes the default world, all new blueprints, new queries and new entities will use this world instead
 ```

@@ -13,8 +13,11 @@ namespace SimpleECS
         {
             var signature = new World.Type_Signature(components.Length);
             signature.Add(typeof(Entity));
+
             foreach (var component in components)
-                signature.Add(component?.GetType());
+                if (component != null)
+                    signature.Add(component.GetType());
+
             var archetype = World.GetArchetype(World.Default, signature);
             var entity = World.CreateEntity(archetype);
             this.index = entity.index;
@@ -22,7 +25,7 @@ namespace SimpleECS
             this.world = entity.world;
 
             foreach (var item in components)
-                if (item != null || item.GetType() != typeof(Entity))
+                if (item != null && item.GetType() != typeof(Entity))
                     if (archetype.TryGetPool(item.GetType(), out var pool))
                         pool.SetComponent(pool.Count - 1, item);
         }
@@ -54,13 +57,13 @@ namespace SimpleECS
         public readonly World world;
 
         /// <summary>
-        /// Gets a reference to component. Automatically adds the component to entity if it does not have one already
+        /// Gets a reference to component. Adds and retrieves a default component it does not have one already
         /// </summary>
         public ref Component Get<Component>()
             => ref World.Get<Component>(this);
 
         /// <summary>
-        /// Automatically adds the component to entity if it does not have one already
+        /// Sets the component on entity, adds it if it does not have one already
         /// </summary>
         public Entity Set<Component>(Component component)
             => World.Set(this, component);
@@ -78,8 +81,9 @@ namespace SimpleECS
             => World.TryGet(this, out value);
 
         /// <summary>
-        /// Removes the component type from entity if it has one.
-        /// Components implementing IDisposable will have it called when they are removed
+        /// Removes the component from entity if it has one.
+        /// Components implementing IDisposable will have
+        /// Dispose() called after they've been removed
         /// </summary>
         public Entity Remove<Component>()
             => World.Remove<Component>(this);
@@ -156,9 +160,10 @@ namespace SimpleECS
 
     public class World : IEnumerable<World.Archetype>
     {
+        public readonly string Name;
         static int world_ids = 0;
         public readonly int ID = world_ids++;
-        public static World Default = new World();
+        public static World Default = new World("Default World");
 
         public IReadOnlyList<Archetype> Archetypes => archetypes;
 
@@ -171,6 +176,15 @@ namespace SimpleECS
 
         public int EntityCount => entity_data_count - free_entities.Count;
         public int ArchetypeCount => archetypes.Count;
+
+        public World()
+        {
+            this.Name = $"World {ID}";
+        }
+        public World(string name)
+        {
+            this.Name = name;
+        }
 
         public static bool TryGetEntity(World world, int entity_index, out Entity entity)
         {
@@ -369,7 +383,7 @@ namespace SimpleECS
         }
 
         public static bool IsValid(Entity entity)
-            => entity.world != null &&
+            =>  entity.world != null &&
                 entity.index >= 0 &&
                 entity.index < entity.world.entity_data.Length &&
                 entity.version == entity.world.entity_data[entity.index].version;
@@ -380,17 +394,18 @@ namespace SimpleECS
             {
                 var world = entity.world;
                 ref var data = ref world.entity_data[entity.index];
-                if (data.archetype.Has<T>())
+                if (data.archetype.TryGetPool<T>(out var remove_pool))
                 {
-                    var target_arch = GetArchetype(entity.world, data.archetype.signature.Copy().Remove<T>()); // get target archetype
+                    var comp = remove_pool.Values[data.component_index];
+                    var target_arch = GetArchetype(world, data.archetype.signature.Copy().Remove<T>()); // get target archetype
                     var target_index = target_arch.Count;
 
                     world.entity_data[data.archetype.entity_pool.Values[data.archetype.Count - 1].index].component_index = data.component_index;
                     foreach (var pool in data.archetype.pools)
                         pool.MoveComponent(data.component_index, target_arch);
-
                     data.component_index = target_index;
                     data.archetype = target_arch;
+                    (comp as IDisposable)?.Dispose();                
                 }
             }
             return entity;
@@ -442,9 +457,9 @@ namespace SimpleECS
             else
             {
                 if (archetype.signature != signature)   //expensive but just in case
-                    throw new Exception($"Archetype Hash Collision : {signature} <--> {archetype.signature}");
-            }
-            return archetype;
+                    throw new Exception($"Archetype Hash Collision : {signature} <--> {archetype.signature}");  // should never happen 
+            }                                                                                                   // but if it does, fiddle with
+            return archetype;                                                                                   // Type_Signature.GetHashCode
         }
 
         /// <summary>
@@ -461,7 +476,7 @@ namespace SimpleECS
         }
 
         public override string ToString()
-            => $"World {ID} [{archetypes.Count}a {EntityCount}e]";
+            => $"{Name} [{archetypes.Count}a {EntityCount}e]";
 
         IEnumerator<Archetype> IEnumerable<Archetype>.GetEnumerator()
         {
@@ -500,13 +515,15 @@ namespace SimpleECS
 
         public class Archetype : IEnumerable<Entity>
         {
+            Dictionary<int, IPool> components = new Dictionary<int, IPool>();
             readonly int ID;
             public readonly World world;
             public Type_Signature signature;
-            public override int GetHashCode() => ID;
 
+            public override int GetHashCode() => ID;
             public int Count => entity_pool.Count;
             public Pool<Entity> entity_pool;
+            public IPool[] pools;
 
             public Archetype(World world, Type_Signature signature)
             {
@@ -526,9 +543,6 @@ namespace SimpleECS
                 if (!TryGetPool(out entity_pool))
                     throw new Exception("Archetypes cannot be created without an entity component");
             }
-
-            Dictionary<int, IPool> components = new Dictionary<int, IPool>();
-            public IPool[] pools;
 
             public bool TryGetPool<T>(out Pool<T> pool)
             {
@@ -587,7 +601,6 @@ namespace SimpleECS
             public class Pool<T> : IPool
             {
                 static bool isDispsable = typeof(IDisposable).IsAssignableFrom(typeof(T));
-
                 public T[] Values = new T[8];
                 public int Count => count;
                 int count;
@@ -872,6 +885,7 @@ namespace SimpleECS
             get => _world;
             set
             {
+                if (_world.ID == value.ID) return;
                 archetype = null;
                 _world = value;
             }
@@ -970,13 +984,12 @@ namespace SimpleECS
         World.Type_Signature has = new World.Type_Signature();
         World.Type_Signature not = new World.Type_Signature();
 
-
         World.Archetype[] matching_archetypes = new World.Archetype[8];
         int archetype_count;
 
         int last_world_count;
 
-        World _world = World.Default;
+        World _world;
 
         /// <summary>
         /// Current world the query operates on
@@ -986,6 +999,8 @@ namespace SimpleECS
             get => _world;
             set
             {
+                if(_world.ID == value.ID) return;
+                matching_archetypes = new World.Archetype[8];
                 archetype_count = 0;
                 last_world_count = 0;
                 _world = value;
@@ -993,7 +1008,7 @@ namespace SimpleECS
         }
 
         public int Matching_Archetypes => archetype_count;
-
+        
         public int Matching_Entities
         {
             get
@@ -1066,15 +1081,6 @@ namespace SimpleECS
             return $"{name} [W{world.ID}: {archetype_count}a {Matching_Entities}e]";
         }
 
-        public delegate void query<C1>(ref C1 c1);
-        public delegate void query<C1, C2>(ref C1 c1, ref C2 c2);
-        public delegate void query<C1, C2, C3>(ref C1 c1, ref C2 c2, ref C3 c3);
-        public delegate void query<C1, C2, C3, C4>(ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4);
-        public delegate void query<C1, C2, C3, C4, C5>(ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5);
-        public delegate void query<C1, C2, C3, C4, C5, C6>(ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6);
-        public delegate void query<C1, C2, C3, C4, C5, C6, C7>(ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6, ref C7 c7);
-        public delegate void query<C1, C2, C3, C4, C5, C6, C7, C8>(ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6, ref C7 c7, ref C8 c8);
-
         void UpdateQuery() // checks for any new archetypes since last run and updates accordingly
         {
             if (last_world_count != _world.Archetypes.Count)
@@ -1111,6 +1117,40 @@ namespace SimpleECS
             }
         }
 
+        IEnumerator<World.Archetype> IEnumerable<World.Archetype>.GetEnumerator()
+        {
+            for (int i = archetype_count - 1; i >= 0; --i)
+                yield return matching_archetypes[i];
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            for (int i = archetype_count - 1; i >= 0; --i)
+                yield return matching_archetypes[i];
+        }
+
+        /// <summary>
+        /// Destroys all entities that match query
+        /// </summary>
+        public void DestroyMatchingEntities()
+        {
+            for(int i = archetype_count-1; i >= 0; --i)
+            {
+                var archetype = matching_archetypes[i];
+                for(int itr = archetype.Count-1; itr >= 0; --i)
+                    archetype.entity_pool.Values[itr].Destroy();
+            }
+        }
+
+        public delegate void query<C1>(ref C1 c1);
+        public delegate void query<C1, C2>(ref C1 c1, ref C2 c2);
+        public delegate void query<C1, C2, C3>(ref C1 c1, ref C2 c2, ref C3 c3);
+        public delegate void query<C1, C2, C3, C4>(ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4);
+        public delegate void query<C1, C2, C3, C4, C5>(ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5);
+        public delegate void query<C1, C2, C3, C4, C5, C6>(ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6);
+        public delegate void query<C1, C2, C3, C4, C5, C6, C7>(ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6, ref C7 c7);
+        public delegate void query<C1, C2, C3, C4, C5, C6, C7, C8>(ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6, ref C7 c7, ref C8 c8);
+
         /// <summary>
         /// performs action on all entities matching query and including components in action
         /// </summary>
@@ -1120,9 +1160,8 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)  // go backwards so new archetypes aren't updating
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count == 0) continue;
-                
-                if (archetype.TryGetPool<C1>(out var pool_c1))  // skips archetype if not all components in action are contained in archetype
+                if (archetype.Count > 0 &&
+                    archetype.TryGetPool<C1>(out var pool_c1))  // skips archetype if not all components in action are contained in archetype
                 {
                     for (int itr = archetype.Count - 1; itr >= 0; --itr) // go backwards so entity operations can be performed synchonously
                         action(ref pool_c1.Values[itr]);
@@ -1136,9 +1175,8 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count == 0) continue;
-                
-                if (archetype.TryGetPool<C1>(out var pool_c1) &&
+                if (archetype.Count > 0 &&
+                    archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2))
                 {
                     for (int itr = archetype.Count - 1; itr >= 0; --itr)
@@ -1154,9 +1192,8 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count == 0) continue;
-                
-                if (archetype.TryGetPool<C1>(out var pool_c1) &&
+                if (archetype.Count > 0 &&
+                    archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2) &&
                     archetype.TryGetPool<C3>(out var pool_c3))
                 {
@@ -1174,9 +1211,8 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count == 0) continue;
-                
-                if (archetype.TryGetPool<C1>(out var pool_c1) &&
+                if (archetype.Count > 0 &&
+                    archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2) &&
                     archetype.TryGetPool<C3>(out var pool_c3) &&
                     archetype.TryGetPool<C4>(out var pool_c4))
@@ -1196,9 +1232,8 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count == 0) continue;
-
-                if (archetype.TryGetPool<C1>(out var pool_c1) &&
+                if (archetype.Count > 0 &&
+                    archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2) &&
                     archetype.TryGetPool<C3>(out var pool_c3) &&
                     archetype.TryGetPool<C4>(out var pool_c4) &&
@@ -1220,9 +1255,8 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count == 0) continue;
-                
-                if (archetype.TryGetPool<C1>(out var pool_c1) &&
+                if (archetype.Count > 0 &&
+                    archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2) &&
                     archetype.TryGetPool<C3>(out var pool_c3) &&
                     archetype.TryGetPool<C4>(out var pool_c4) &&
@@ -1246,9 +1280,8 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count == 0) continue;
-                
-                if (archetype.TryGetPool<C1>(out var pool_c1) &&
+                if (archetype.Count > 0 &&
+                    archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2) &&
                     archetype.TryGetPool<C3>(out var pool_c3) &&
                     archetype.TryGetPool<C4>(out var pool_c4) &&
@@ -1274,9 +1307,8 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count == 0) continue;
-                
-                if (archetype.TryGetPool<C1>(out var pool_c1) &&
+                if (archetype.Count > 0 &&
+                    archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2) &&
                     archetype.TryGetPool<C3>(out var pool_c3) &&
                     archetype.TryGetPool<C4>(out var pool_c4) &&
@@ -1296,18 +1328,6 @@ namespace SimpleECS
                                 ref pool_c8.Values[itr]);
                 }
             }
-        }
-
-        IEnumerator<World.Archetype> IEnumerable<World.Archetype>.GetEnumerator()
-        {
-            for (int i = archetype_count - 1; i >= 0; --i)
-                yield return matching_archetypes[i];
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            for (int i = archetype_count - 1; i >= 0; --i)
-                yield return matching_archetypes[i];
         }
     }
 }

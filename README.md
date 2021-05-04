@@ -18,7 +18,7 @@ ref int value = ref entity.Get<int>();  // gets the entity's int component by re
 
 entity.Get<int>() += 4;        // since they are returned by ref, you can assign values directly
 
-entity.Set(3).Set("new name"); // sets the entity's components to values. Component is added if not already on entity
+entity.Set(3).Set("my entitiy"); // sets the entity's components to values. Component is added if not already on entity
                                // additonally setting an entity's string component sets it's ToString() function
 
 if (enity.Has<int>())          // returns true if entity has component

@@ -149,7 +149,7 @@ query.Foreach((ref Entity entity, ref MyComponent comp) =>
     comp.other_entity.Set(4.5f);      // calling these functions can possibly invalidate the query's 
     comp.other_entity.Remove<int>();  // iterators and lead to undefined behaviour.
     comp.other_entity.Destroy();      // Only use them when you know for certain that the query archetypes 
-                                      // and the component's entity archetypes do not overlap
+                                      // and the component's entity archetype do not overlap
     
     // INSTEAD
     if (comp.other_entity.TryGet(out int value)) // instead get information from it with try get first

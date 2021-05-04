@@ -16,12 +16,12 @@ Manipulating entities is also pretty simple
 ref int value = ref entity.Get<int>();  // gets the entity's int component by ref value. 
                                         //int is automatically added with default values if not found.
 
-entity.Get<int>() += 4;        // since they are returned by ref, you can assign values directly
+entity.Get<int>() += 4;           // since they are returned by ref, you can assign values directly
 
-entity.Set(3).Set("my entitiy"); // sets the entity's components to values. Component is added if not already on entity
-                               // additonally setting an entity's string component sets it's ToString() function
+entity.Set(3).Set("my entitiy");  // sets the entity's components to values. Component is added if not already on entity
+                                  // additonally setting an entity's string component sets it's ToString() function
 
-if (enity.Has<int>())          // returns true if entity has component
+if (enity.Has<int>())             // returns true if entity has component
 {
   // do something
 }

@@ -138,28 +138,29 @@ List<Entity> ToDestroy = new List<Entity>();
 
 query.Foreach((ref Entity entity, ref MyComponent comp) =>
 {
-    entity.Get<float>() = 3f; // these functions can potentially change the underlying archetype
-    entity.Set(3);            // structure. The entity ref provided by the query supports these
-    entity.Remove<float>()    // operations so is fine to call them here
+    entity.Get<float>() = 3f; // these functions are structure calls that can potentially change
+    entity.Set(3);            // the entity's archetype. The entity ref provided by the query supports
+    entity.Remove<float>()    // structural operations so is fine to call them
     entity.Destroy();
     
     
     // DO NOT DO
-    comp.other_entity.Get<int>() = 3; // since entities from components can potentially be anything,
+    comp.other_entity.Get<int>() = 3; // however since entitiy fields from components can potentially be anything,
     comp.other_entity.Set(4.5f);      // calling these functions can possibly invalidate the query's 
-    comp.other_entity.Remove<int>();  // iterators and lead to undefined behaviour
-    comp.other_entity.Destroy();
+    comp.other_entity.Remove<int>();  // iterators and lead to undefined behaviour.
+    comp.other_entity.Destroy();      // Only use them when you know for certain that the query archetypes 
+                                      // and the component's entity archetypes do not overlap
     
-    //INSTEAD
+    // INSTEAD
     if (comp.other_entity.TryGet(out int value)) // instead get information from it with try get first
     {
-      if (value > 20)                    // then add entities you want to change to a list
-        ToDestroy.Add(entity);
+      if (value > 20)                            // then add entities you want to change to a list
+        ToDestroy.Add(comp.other_entity);
       else
-        comp.other_entity.Set(value++);  // once you know the component exists, it's safe to call set or get
+        comp.other_entity.Set(value++);          // once you know the component exists, it's safe to call set or get
         
-      if (value == 5)               // making new entities in queries should be safe, 
-        blueprint.CreateEntity();   // so long as they don't modify or destroy other entities in the process
+      if (value == 5)               // making new entities in queries should be safe,so long as they
+        blueprint.CreateEntity();   // don't modify the structure of existing entities in the process
     }
 });
 
@@ -170,7 +171,7 @@ foreach (var entity in ToDestroy) // when the query is complete, it's safe to do
 ## Worlds
 
 Worlds store all entities and archetype information.
-All entities, Blueprints and Queries use World.Default by default.
+All entities, Blueprints and Queries use statif field World.Default by default.
 Worlds are completely independent of each other so should be safe to use in different threads.
 Using worlds is really simple
 ```C#

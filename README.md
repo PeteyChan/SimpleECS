@@ -94,7 +94,8 @@ so make sure to reuse them and not create them every frame.
 ```C#
 var query = new Query().Has<int>().Has<float>()       // filters entities to those with components
                        .Not<string>().Not<double>();  // filters remaining to those that do not have components
-                                                      // theres no limit to the amount of filters you can add
+                                                      // theres no limit to the amount of filters you can add,
+                                                      // infact the more specific the better
 
 query.Foreach( (ref int int_value, ref float float_value) =>  // you then use the foreach function to update your components
 {                                                             // you can use up to 8 components in the query

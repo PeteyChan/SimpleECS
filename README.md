@@ -14,7 +14,7 @@ var entity = new Entity("my entity", 3, 5f);    // creates a new entity with com
 Manipulating entities is also pretty simple
 ```C#
 ref int value = ref entity.Get<int>();  // gets the entity's int component by ref value. 
-                                        //int is automatically added with default values if not found.
+                                        // int is automatically added with default values if not found.
 
 entity.Get<int>() += 4;           // since they are returned by ref, you can assign values directly
 

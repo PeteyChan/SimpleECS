@@ -11,7 +11,7 @@ Min C# Framework 4.7
 
 ## Entities
 To create an entity use new with the components as parameters.
-Components can be any class or struct except entity.
+Components can be anything that can be put into an array.
 Components are stored as their GetType().
 ```C#
 var entity = new Entity("my entity", 3, 5f);    // creates a new entity with components
@@ -72,26 +72,31 @@ class MyComponent // example component
 
 // Creates the blueprint
 Blueprint my_blueprint = new Blueprint().Set<float>()  // use to set a component with default values
-                                        .Set( () => 5) // uses a function to generate a component and set it on the entity
-                                                       // use the entity function to retrieve previously added components
-                                        .Set( entity => new MyComponent(entity.Get<int>()) 
-                                                       // OnComplete() is called after all components have been added
+                                        .Set(3.5f)     // use to set component with value. If value is a class, it'll be shared
+                                                       // by all entities made by this blueprint
+                                        .Set( () => new MyComponentA()) 
+                                                       // uses a function to generate a component and set it on the entity
+                                        .Set( entity => new MyComponentB(entity.Get<int>())
+                                                       // use the entity function to retrieve previously added components     
                                         .OnComplete( entity => Console.WriteLine($"{entity} spawned"); 
+                                                       // OnComplete() is called after all components have been added
+                                                       
+                                                       // None of these functions are mandatory, infact you can spawn
+                                                       // entities with no components using an empty blueprint
 
-var entity = my_blueprint.CreateEntity();         // creates an entity with components set by blueprint
+var entity = my_blueprint.CreateEntity();              // creates an entity with components set by blueprint
 
-var entities = my_blueprint.CreateEntities(1000); // creates 1000 entities with components set by blueprint
+var entities = my_blueprint.CreateEntities(1000);      // creates 1000 entities with components set by blueprint
 ```
 ## Systems
 
-There are no systems in simpleECS, instead it uses simple queries to manage entities
+There are no systems in simpleECS, instead it just uses simple queries to manage entities.
 
 
 ## Queries
 
 Queries let you iterate over entities based on specified components.
-Queries cache their results and only update their queries when the world changes,
-so make sure to reuse them and not create them every frame.
+Queries cache their results and only update when the world they observe changes.
 
 ```C#
 var query = new Query().Has<int>().Has<float>()       // Has() filters entities to those with components
@@ -99,39 +104,22 @@ var query = new Query().Has<int>().Has<float>()       // Has() filters entities 
                                                       // there's no limit to the amount of filters you can add
                                                       // infact the more specific the better
 
+var all_entities = new Query();               // a simple way to match against all entities is to make a query with no filters
+
 query.Foreach( (ref int int_value, ref float float_value) =>  // you then use the foreach function to update your components
 {                                                             // you can use up to 8 components in the query
     int_value ++; // can manipulate components                // queries operate only on entities that match both the query and 
     float_value = int_value * 100;                            // contains all the components in the foreach function
 }));
 
-var all_entities = new Query();               // a simple way to match all entities is to make a query with no filters
-
-all_entities.Foreach( (ref Entity entity) =>  // all entities have themselves as components which can be accessed in queries
-{                                             // just like a regular component. It's for this reason you should not Set(),
-  Console.WriteLine(entity);                  // Remove() or otherwise alter an entity's entity component
+all_entities.Foreach( (in Entity entity, ref int value ) =>  // you can access the owner entity by putting it in the first position
+{                                                            // with the in keyword. Followed by any components you want to use
+  Console.WriteLine($"{entity} value is {value}");                  
 });
 ```
 
-Manual iteration is possible if needed
-```C#
-foreach(var archetype in query)
-{
-    if (archetype.TryGetPool<int>(out var int_pool) &&
-        archetype.TryGetPool<Entity>(out var entity_pool)))
-    {
-      for(int i = archetype.Count-1; i >= 0; --i) // if you plan to use get, set, remove, destroy or make new entities
-      {                                          // iterate backwards so the iterators don't become invalidated
-        var count = int_pool.Values[i] ++;
-        if (count > 1000)
-          entity_pool.Values[i].Destroy();
-      }   
-    }
-}
-```
-
-Do not call Get(), Set(), Remove() or Destroy() on entities other than the entity supplied by the query 
-otherwise iterators can potentially become invalidated.
+Do not call Get(), Set(), Remove() or Destroy() on entities other than the owner as they can
+change the structure of the archetypes and potentially invalidate query iterators.
 ```C#
 class MyComponent
 {
@@ -140,20 +128,20 @@ class MyComponent
 
 List<Entity> ToDestroy = new List<Entity>();
 
-query.Foreach((ref Entity entity, ref MyComponent comp) =>
+query.Foreach((in Entity entity, ref MyComponent comp) =>
 {
-    entity.Get<float>() = 3f; // these functions are structure calls that can potentially change
-    entity.Set(3);            // the entity's archetype. The entity ref provided by the query supports
+    entity.Get<float>() = 3f; // these functions are structural functions that can potentially change
+    entity.Set(3);            // the entity's archetype. The owner entity supports
     entity.Remove<float>()    // structural operations so is fine to call them
     entity.Destroy();
     
     
-    // DO NOT DO
+    // BE CAREFUL
     comp.other_entity.Get<int>() = 3; // however since entitiy fields from components can potentially be anything,
     comp.other_entity.Set(4.5f);      // calling these functions can possibly invalidate the query's 
     comp.other_entity.Remove<int>();  // iterators and lead to undefined behaviour.
     comp.other_entity.Destroy();      // Only use them when you know for certain that the query archetypes 
-                                      // and the component's entity archetype do not overlap
+                                      // and the entity's archetype that your changing do not overlap
     
     // INSTEAD
     if (comp.other_entity.TryGet(out int value)) // instead get information from it with try get first
@@ -174,21 +162,24 @@ foreach (var entity in ToDestroy) // when the query is complete, it's safe to do
 
 ## Worlds
 
-Worlds store all entities and archetype information.
-All entities, Blueprints and Queries use the static field World.Default by default.
+Worlds store all entities and archetype information. 
+By default all entities, blueprints and queries operate in Wolrd.Default. 
 Worlds are completely independent of each other so should be safe to use in different threads.
 Using worlds is really simple
+
 ```C#
-var world = new World(); // creates a new World
+var world = new World();  // creates a new World
 
-blueprint.world = world; // changes the world the blueprint creates entities in
-query.world = world;     // changes the world the query operates on
+World.Default = world;    // Changes the default world, all blueprints, queries and new entities will now operate in this world.
+                          // All previously created entities however will remain in their old world.
 
-var new_entity = entity.MoveTo(world); // moves entity from it's current world to it's new world and returns the entity's new value in that world
-                                       // the original entity is now invalid
-                                       // this operation is not thread safe, so all worlds should be synced to the main thread before hand
-                                       
-World.Default = world; // changes the default world, all new blueprints, new queries and new entities will use this world instead
+blueprint.world = world;  // By setting the world of a blueprint or query, they will only operate in that world.
+query.world = world;      // If you want them to return to their default behaviour, change their world value to null.
+new Entity(world, 3f, 2); // You can specify which world to spawn an entity in by passing it as the first parameter.
 
-World.Default.Compact();  // after deleting a large amount of entities or components, you can call Compact() to resize the backing arrays
+var new_entity = old_entity.MoveTo(world);  // moves entity from it's current world to it's new world and returns the  
+                                            // entity's new value in that world the original entity is now invalid
+                                            // this operation is not thread safe, so all worlds should be synced to the main thread beforehand
+
+World.Default.Compact();  // after deleting or moving large amount of entities or components, you can call Compact() to resize the world's backing arrays
 ```

@@ -118,6 +118,22 @@ query.Foreach( (in Entity entity, ref int value ) =>  // you can access the owne
   Console.WriteLine($"{entity} value is {value}");                  
 });
 ```
+Queries are already very fast, but for maximum performance manual iteration is possible
+```C#
+query.Refresh();           // if not using Foreach() this must be called manually to keep the query up-to-date
+foreach(var archetype in query)
+{
+  if (archetype.Count > 0)
+    if (archetype.TryGetPool<int>(out var pool))
+      for(int i = archetype.Count - 1; i >= 0; --i)   // iterate backwards to prevent iterator invalidation if 
+      {                                               // performing structural changes on entities
+          var value = pool.Values[i]++;
+          if (value > 20)
+            archetype.entity_pool.Values[i].Destroy();
+      }  
+}
+```
+
 
 Do not call Get(), Set(), Remove() or Destroy() on entities other than the owner as they can
 change the structure of the archetypes and potentially invalidate query iterators.

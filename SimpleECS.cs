@@ -11,12 +11,9 @@ namespace SimpleECS
         /// </summary>
         public Entity(params object[] components)
         {
-            var signature = new World.Type_Signature(components.Length);
-            signature.Add(typeof(Entity));
-
+            var signature = new World.TypeSignature();
             foreach (var component in components)
-                if (component != null)
-                    signature.Add(component.GetType());
+                signature.Add(component?.GetType());
 
             var archetype = World.GetArchetype(World.Default, signature);
             var entity = World.CreateEntity(archetype);
@@ -25,9 +22,30 @@ namespace SimpleECS
             this.world = entity.world;
 
             foreach (var item in components)
-                if (item != null && item.GetType() != typeof(Entity))
+                if (item != null)
                     if (archetype.TryGetPool(item.GetType(), out var pool))
-                        pool.SetComponent(pool.Count - 1, item);
+                        pool.Set(pool.Count - 1, item);
+        }
+
+        /// <summary>
+        /// Creates an entity in the world provided containing supplied components
+        /// </summary>
+        public Entity(World world, params object[] components)
+        {
+            var signature = new World.TypeSignature();
+            foreach (var component in components)
+                signature.Add(component?.GetType());
+
+            var archetype = World.GetArchetype(world, signature);
+            var entity = World.CreateEntity(archetype);
+            this.index = entity.index;
+            this.version = entity.version;
+            this.world = entity.world;
+
+            foreach (var item in components)
+                if (item != null)
+                    if (archetype.TryGetPool(item.GetType(), out var pool))
+                        pool.Set(pool.Count - 1, item);
         }
 
         /// <summary>
@@ -55,6 +73,9 @@ namespace SimpleECS
         /// World entity belongs to
         /// </summary>
         public readonly World world;
+
+        public int component_count
+            => World.GetComponentCount(this);
 
         /// <summary>
         /// Gets a reference to component. Adds and retrieves a default component it does not have one already
@@ -186,10 +207,12 @@ namespace SimpleECS
             this.Name = name;
         }
 
-        public static bool TryGetEntity(World world, int entity_index, out Entity entity)
+        public static bool TryGetEntity(World world, int index, out Entity entity)
         {
-            if (entity_index >= 0 && entity_index < world.entity_data.Length)
-                entity = Entity.Create(world, entity_index, world.entity_data[entity_index].version);
+            if (world != null && index >= 0 && index < world.entity_data.Length)
+            {
+                entity = Entity.Create(world, index, world.entity_data[index].version);
+            }
             else entity = default;
             return IsValid(entity);
         }
@@ -236,9 +259,9 @@ namespace SimpleECS
 
             var entity = Entity.Create(world, entity_index, data.version);
 
+            archetype.entity_pool.Add(entity);
             foreach (var pool in archetype.pools)
-                pool.AddComponents(1);
-            archetype.entity_pool.Values[archetype.Count - 1] = entity;
+                pool.Add(1);
             return entity;
         }
 
@@ -272,52 +295,18 @@ namespace SimpleECS
 
             int offset = archetype.Count;
             foreach (var pool in archetype.pools)
-                pool.AddComponents(entities.Length);
+                pool.Add(entities.Length);
 
+            archetype.entity_pool.Add(entities.Length);
             for (int i = 0; i < entities.Length; ++i)
                 archetype.entity_pool.Values[i + offset] = entities[i];
             return entities;
         }
-
-        /// <summary>
-        /// Destroys Entity, any components implementing IDisposable will have it called.
-        /// Entity is invalid before the call to Dispose()
-        /// </summary>
-        public static void DestroyEntity(Entity entity)
-        {
-            if (IsValid(entity))
-            {
-                var world = entity.world;
-                ref var data = ref world.entity_data[entity.index];
-                world.free_entities.Push(entity.index);
-                data.version++;
-
-                world.entity_data[data.archetype.entity_pool.Values[data.archetype.Count - 1].index]
-                                .component_index = data.component_index;
-
-                foreach (var pool in data.archetype.pools)
-                    pool.RemoveComponent(data.component_index);
-
-            }
-        }
-
-        public static List<object> GetAllComponents(Entity entity)
-        {
-            var components = new List<object>();
-            if (IsValid(entity))
-            {
-                var data = entity.world.entity_data[entity.index];
-
-                foreach (var pool in data.archetype.pools)
-                {
-                    var obj = pool.GetComponent(data.component_index);
-                    if (obj is Entity) continue;
-                    components.Add(obj);
-                }
-                return components;
-            }
-            return components;
-        }
+        public static bool IsValid(Entity entity)
+            => entity.world != null &&
+                //entity.index >= 0 &&          // there is no real way to have wrong indices under normal operations
+                //entity.index < entity.world.entity_data.Length &&
+                entity.version == entity.world.entity_data[entity.index].version;
 
         /// <summary>
         /// Gets a reference to component on entity. Automatically adds component to entity if none found
@@ -328,37 +317,152 @@ namespace SimpleECS
             {
                 var world = entity.world;
                 ref var data = ref world.entity_data[entity.index];
-                {
+                {// if component exists return it
                     if (data.archetype.TryGetPool<T>(out var pool))
                         return ref pool.Values[data.component_index];
                 }
-                {
-                    var target_arch = GetArchetype(world, data.archetype.signature.Copy().Add<T>()); // get target archetype
+                {// otherwise create and return one
+                    var target_arch = GetArchetype(world, new TypeSignature().Copy(data.archetype.signature).Add<T>());
                     var target_index = target_arch.Count;
-                    // this gnarly line simply updates the soon-to-be swapped entity with it's new component index
-                    world.entity_data[data.archetype.entity_pool.Values[data.archetype.Count - 1].index].component_index = data.component_index;
 
+                    // updating archetype entities
+                    world.entity_data[data.archetype.entity_pool.Values[data.archetype.Count - 1].index].component_index = data.component_index;
+                    data.archetype.entity_pool.Remove(data.component_index);
+                    target_arch.entity_pool.Add(entity);
+                    
+                    // move the components over
                     foreach (var pool in data.archetype.pools)
-                        pool.MoveComponent(data.component_index, target_arch);
+                    {
+                        if (target_arch.TryGetPool(pool.ID, out var target_pool))
+                            target_pool.Add(pool.Remove(data.component_index));
+                        else // should never happen as the new archetype should have all types of the previous one by definition
+                            throw new Exception($"Not all components where moved to new archetype, {entity}, {data.archetype} -> {target_arch}");
+                    }
 
                     data.component_index = target_index;
                     data.archetype = target_arch;
 
+                    // add the new component
                     if (target_arch.TryGetPool<T>(out var poolT))
                     {
-                        poolT.AddComponents(1);
+                        poolT.Add(1);
                         return ref poolT.Values[target_index];
                     }
-                    else
+                    else    // should never happen since the archetype should have the component by definition
                         throw new Exception($"Tried adding component to the wrong archetype {typeof(T)} {target_arch}");
                 }
             }
             throw new Exception($"{entity} has been destroyed or is not valid, cannot get component");
         }
 
+        public static Entity Remove<T>(Entity entity)
+        {
+            if (IsValid(entity))
+            {
+                var world = entity.world;
+                ref var data = ref world.entity_data[entity.index];
+                if (data.archetype.TryGetPool<T>(out var remove_pool))
+                {
+                    var comp = remove_pool.Values[data.component_index];
+                    var target_arch = GetArchetype(world, new TypeSignature().Copy(data.archetype.signature).Remove<T>()); // get target archetype
+                    var target_index = target_arch.Count;
+
+                    // updating entity
+                    world.entity_data[data.archetype.entity_pool.Values[data.archetype.Count - 1].index].component_index = data.component_index;
+                    data.archetype.entity_pool.Remove(data.component_index);
+                    target_arch.entity_pool.Add(entity);
+
+                    foreach (var pool in data.archetype.pools)
+                    {
+                        var to_move = pool.Remove(data.component_index);
+                        if (target_arch.TryGetPool(pool.ID, out var target_pool))
+                            target_pool.Add(to_move);
+                    }
+                    data.component_index = target_index;
+                    data.archetype = target_arch;
+                    (comp as IDisposable)?.Dispose();
+                }
+            }
+            return entity;
+        }
+
+        public static void DestroyEntity(Entity entity)
+        {
+            if (IsValid(entity))
+            {
+                var world = entity.world;
+                ref var data = ref world.entity_data[entity.index];
+
+                data.version++;                         
+                world.free_entities.Push(entity.index);
+                world.entity_data[data.archetype.entity_pool.Values[data.archetype.Count - 1].index]
+                                .component_index = data.component_index;
+
+                data.archetype.entity_pool.Remove(data.component_index);
+                var stack = new Stack<IDisposable>();
+                foreach (var pool in data.archetype.pools)
+                {
+                    var removed = pool.Remove(data.component_index);
+                    if (removed is IDisposable disposable)
+                        stack.Push(disposable);
+                }
+                while (stack.Count > 0)      // don't want to call dispose until after all the structure changes are done
+                    stack.Pop()?.Dispose();  // though this is annoying, maybe a better way?
+            }
+        }
+
+        public static Entity MoveEntityToWorld(Entity entity, World world)
+        {
+            if (IsValid(entity) && world != null)
+            {
+                if (entity.world == world)
+                    return entity;
+
+                ref var data = ref entity.world.entity_data[entity.index];
+
+                var world_archetype = World.GetArchetype(world, data.archetype.signature);
+                var world_entity = world.CreateEntity();    // create an entity without an archetype
+                ref var world_data = ref world.entity_data[world_entity.index];
+                world_data.archetype = world_archetype;     // then assign it an archetype
+                world_data.component_index = world_archetype.Count;     // moving sets components to last spot in archetype
+
+                entity.world.entity_data[data.archetype.entity_pool.Values[data.archetype.Count - 1].index]
+                                            .component_index = data.component_index;    // remember to update swapped entity when this entity leaves current world
+
+                data.archetype.entity_pool.Remove(data.component_index);
+                world_archetype.entity_pool.Add(world_entity);
+
+                foreach (var pool in data.archetype.pools)
+                    if (world_archetype.TryGetPool(pool.ID, out var target_pool))
+                        target_pool.Add(pool.Remove(data.component_index));
+                    else    // should never be thrown since they should have the same type signature 
+                        throw new Exception($"{entity} Failed to move all components to {world}: {data.archetype} -> {world_archetype}");
+
+                world_data.archetype.entity_pool.Values[world_data.component_index] = world_entity; // updating the entity value in entity pool of archetype
+                entity.world.free_entities.Push(entity.index);   // delete entity from this world
+                data.version++;
+                return world_entity;
+            }
+            if (world == null) throw new Exception($"Cannot move {entity} to NULL world");
+            throw new Exception($"{entity} has been destroyed or is invalid, cannot move to {world}");
+        }
+
+        public static List<object> GetAllComponents(Entity entity)
+        {
+            var components = new List<object>();
+            if (IsValid(entity))
+            {
+                var data = entity.world.entity_data[entity.index];
+
+                foreach (var pool in data.archetype.pools)
+                    components.Add(pool.Get(data.component_index));
+                return components;
+            }
+            return components;
+        }
+
         public static Entity Set<T>(Entity entity, T component)
         {
-            if (component is Entity) throw new Exception("Cannot set Entity as a Component");
             Get<T>(entity) = component;
             return entity;
         }
@@ -382,64 +486,6 @@ namespace SimpleECS
             return false;
         }
 
-        public static bool IsValid(Entity entity)
-            =>  entity.world != null &&
-                entity.index >= 0 &&
-                entity.index < entity.world.entity_data.Length &&
-                entity.version == entity.world.entity_data[entity.index].version;
-
-        public static Entity Remove<T>(Entity entity)
-        {
-            if (IsValid(entity))
-            {
-                var world = entity.world;
-                ref var data = ref world.entity_data[entity.index];
-                if (data.archetype.TryGetPool<T>(out var remove_pool))
-                {
-                    var comp = remove_pool.Values[data.component_index];
-                    var target_arch = GetArchetype(world, data.archetype.signature.Copy().Remove<T>()); // get target archetype
-                    var target_index = target_arch.Count;
-
-                    world.entity_data[data.archetype.entity_pool.Values[data.archetype.Count - 1].index].component_index = data.component_index;
-                    foreach (var pool in data.archetype.pools)
-                        pool.MoveComponent(data.component_index, target_arch);
-                    data.component_index = target_index;
-                    data.archetype = target_arch;
-                    (comp as IDisposable)?.Dispose();                
-                }
-            }
-            return entity;
-        }
-
-        public static Entity MoveEntityToWorld(Entity entity, World world)
-        {
-            if (IsValid(entity) && world != null)
-            {
-                if (entity.world == world)
-                    return entity;
-
-                ref var data = ref entity.world.entity_data[entity.index];
-                var world_archetype = World.GetArchetype(world, data.archetype.signature);
-                var world_entity = world.CreateEntity();    // create an entity without an archetype
-                ref var world_data = ref world.entity_data[world_entity.index];
-                world_data.archetype = world_archetype;     // then assign it an archetype
-                world_data.component_index = world_archetype.Count;     // moving sets components to last spot in archetype
-
-                entity.world.entity_data[data.archetype.entity_pool.Values[data.archetype.Count - 1].index]
-                                            .component_index = data.component_index;    // remember to update swapped entity when this entity leaves current world
-
-                foreach (var pool in data.archetype.pools)
-                    pool.MoveComponent(data.component_index, world_archetype);
-
-                world_data.archetype.entity_pool.Values[world_data.component_index] = world_entity; // updating the entity value in entity pool of archetype
-                entity.world.free_entities.Push(entity.index);   // delete entity from this world
-                data.version++;
-                return world_entity;
-            }
-
-            if (world == null) throw new Exception($"Cannot move {entity} to NULL world");
-            throw new Exception($"{entity} has been destroyed or is invalid, cannot move to {world}");
-        }
         public static Archetype GetArchetype(Entity entity)
         {
             if (IsValid(entity))
@@ -447,20 +493,25 @@ namespace SimpleECS
             throw new Exception($"{entity} is invalid. Cannot retrieve archetype");
         }
 
-        public static Archetype GetArchetype(World world, Type_Signature signature)
+        public static Archetype GetArchetype(World world, IReadOnly_TypeSignature signature)
         {
-            if (!world.id_to_archetype.TryGetValue(signature.ID, out var archetype))
+            if (world.id_to_archetype.TryGetValue(signature.ID, out var archetype))
             {
-                world.id_to_archetype[signature.ID] = archetype = new Archetype(world, signature);
-                world.archetypes.Add(archetype);
+                if (signature.Equals(archetype.signature))
+                    return archetype;
+                throw new Exception($"Archetype Hash Collision : {signature} <--> {archetype.signature}");
             }
-            else
-            {
-                if (archetype.signature != signature)   //expensive but just in case
-                    throw new Exception($"Archetype Hash Collision : {signature} <--> {archetype.signature}");  // should never happen 
-            }                                                                                                   // but if it does, fiddle with
-            return archetype;                                                                                   // Type_Signature.GetHashCode
+
+            world.id_to_archetype[signature.ID] = archetype = new Archetype(world, signature);
+            world.archetypes.Add(archetype);
+            return archetype;
         }
+
+        public static bool TryGetArchetype(World world, int archetype_ID, out Archetype archetype)
+            => world.id_to_archetype.TryGetValue(archetype_ID, out archetype);
+
+        public static int GetComponentCount(Entity entity)
+            => IsValid(entity) ? entity.world.entity_data[entity.index].archetype.pools.Length : 0;
 
         /// <summary>
         /// resizes backing arrays to the minimum power of 2 needed to hold it's components.
@@ -474,6 +525,7 @@ namespace SimpleECS
                     pool.Resize();
             }
         }
+
 
         public override string ToString()
             => $"{Name} [{archetypes.Count}a {EntityCount}e]";
@@ -518,30 +570,27 @@ namespace SimpleECS
             Dictionary<int, IPool> components = new Dictionary<int, IPool>();
             readonly int ID;
             public readonly World world;
-            public Type_Signature signature;
+            public IReadOnly_TypeSignature signature;
 
             public override int GetHashCode() => ID;
             public int Count => entity_pool.Count;
-            public Pool<Entity> entity_pool;
-            public IPool[] pools;
+            public readonly Pool<Entity> entity_pool;
+            public readonly IPool[] pools;
 
-            public Archetype(World world, Type_Signature signature)
+            public Archetype(World world, IReadOnly_TypeSignature signature)
             {
                 this.world = world;
-                this.signature = signature;
-                List<IPool> temp = new List<IPool>();
-                foreach (var type in signature)
+                this.signature = new TypeSignature().Copy(signature);
+                pools = new IPool[this.signature.Count];
+                for (int i = 0; i < signature.Count; ++i)
                 {
+                    var type = signature.Types[i];
                     IPool pool = Activator.CreateInstance(typeof(Pool<>).MakeGenericType(type)) as IPool;
                     components.Add(TypeID.Get(type), pool);
-                    temp.Add(pool);
+                    pools[i] = pool;
                 }
-
-                pools = temp.ToArray();
-                ID = signature.GetHashCode();
-
-                if (!TryGetPool(out entity_pool))
-                    throw new Exception("Archetypes cannot be created without an entity component");
+                ID = signature.ID;
+                entity_pool = new Pool<Entity>();
             }
 
             public bool TryGetPool<T>(out Pool<T> pool)
@@ -581,32 +630,37 @@ namespace SimpleECS
 
             public interface IPool
             {
-                //void AddComponent(object obj);
+                void Add(object obj);
 
-                void AddComponents(int count);
+                void Add(int count);
 
-                void MoveComponent(int index, Archetype to_archetype);
+                /// <summary>
+                /// removes component at index, returns removed component
+                /// </summary>
+                object Remove(int index);
 
-                void RemoveComponent(int index);
+                void Set(int index, object obj);
 
-                void SetComponent(int index, object obj);
-
-                object GetComponent(int index);
+                object Get(int index);
 
                 void Resize();
 
                 int Count { get; }
+
+                int ID { get; }
             }
 
-            public class Pool<T> : IPool
+            public class Pool<T> : IPool, IReadOnlyList<T>
             {
-                static bool isDispsable = typeof(IDisposable).IsAssignableFrom(typeof(T));
+                T IReadOnlyList<T>.this[int index] => Values[index];
                 public T[] Values = new T[8];
                 public int Count => count;
+                int IPool.ID => TypeID.GetID<T>.Value;
                 int count;
-                public void AddComponents(int new_components)
+
+                public void Add(int amount)
                 {
-                    count += new_components;
+                    count += amount;
                     if (count > Values.Length)
                     {
                         int newSize = Values.Length;
@@ -616,36 +670,27 @@ namespace SimpleECS
                             Array.Resize(ref Values, newSize);
                     }
                 }
+                void IPool.Add(object obj)
+                    => Add((T)obj);
 
-                public void AddComponent(T obj)
+                public void Add(T obj)
                 {
                     if (count == Values.Length)
                         Array.Resize(ref Values, count * 2);
-                    Values[count] = (T)obj;
+                    Values[count] = obj;
                     count++;
                 }
 
-                public void MoveComponent(int index, Archetype to_archetype)
-                {
-                    var component = Values[index];
-                    count--;
-                    Values[index] = Values[count];
-                    Values[count] = default;
-                    if (to_archetype.TryGetPool(out Pool<T> pool))
-                        pool.AddComponent(component);
-                }
-
-                public void RemoveComponent(int index)
+                public object Remove(int index)
                 {
                     count--;
                     var component = Values[index];
                     Values[index] = Values[count];
                     Values[count] = default;
-                    if (isDispsable)
-                        (component as IDisposable)?.Dispose();
+                    return component;
                 }
 
-                public void SetComponent(int index, object obj)
+                public void Set(int index, object obj)
                 {
                     Values[index] = (T)obj;
                 }
@@ -660,109 +705,123 @@ namespace SimpleECS
                     Array.Resize(ref Values, new_size);
                 }
 
-                public object GetComponent(int index)
+                public object Get(int index)
                     => Values[index];
+
+                IEnumerator<T> IEnumerable<T>.GetEnumerator()
+                {
+                    for (int i = count - 1; i >= 0; --i)
+                        yield return Values[i];
+                }
+
+                IEnumerator IEnumerable.GetEnumerator()
+                {
+                    for (int i = count - 1; i >= 0; --i)
+                        yield return Values[i];
+                }
             }
         }
 
-        public class Type_Signature : IEnumerable<Type>, IEquatable<Type_Signature>
+        public interface IReadOnly_TypeSignature
         {
-            public Type_Signature(int capacity)
-            {
-                this.ids = new int[capacity];
-                this.types = new Type[capacity];
-            }
+            IReadOnlyList<Type> Types { get; }
+            IReadOnlyList<int> TypeIds { get; }
+            bool HasAny(TypeSignature signature);
+            bool HasAll(TypeSignature signature);
+            bool Has<T>();
+            int Count { get; }
+            int ID { get; }
+        }
 
-            public Type_Signature(List<Type> types)
-            {
-                this.ids = new int[types.Count];
-                this.types = new Type[types.Count];
-                foreach (var type in types)
-                    Add(type);
-            }
-
-            public Type_Signature(params Type[] types)
-            {
-                this.ids = new int[types.Length];
-                this.types = new Type[types.Length];
-                foreach (var type in types)
-                    Add(type);
-            }
-
-            public void Clear()
-            {
-                Count = 0;
-            }
-
-            public int[] ids;
-            public Type[] types;
-            public int Count;
+        public class TypeSignature : IEquatable<TypeSignature>,
+                                        IReadOnlyList<Type>,
+                                        IReadOnlyList<int>,
+                                        IReadOnly_TypeSignature
+        {
+            int[] type_ids = new int[4];
+            Type[] types = new Type[4];
+            int type_count;
             public int ID => GetHashCode();
+            /// <summary>
+            /// Number of types that make up the signature
+            /// </summary>
+            public int Count => type_count;
+            public IReadOnlyList<int> TypeIds => this;  // neat trick to save me having to make another class
+            public IReadOnlyList<Type> Types => this;
 
-            Type_Signature Add(int type_id, Type type)
+            public TypeSignature(params Type[] types)
+            {
+                this.type_ids = new int[types.Length + 4];
+                this.types = new Type[types.Length + 4];
+                foreach (var type in types)
+                    Add(type);
+            }
+            public void Clear()
+               => type_count = 0;
+            TypeSignature Add(int type_id, Type type)
             {
                 if (type == null)
                     return this;
                 sig = null;
 
-                for (int i = 0; i < Count; ++i)
+                for (int i = 0; i < type_count; ++i)
                 {
-                    if (ids[i] == type_id) // if same exit
+                    if (type_ids[i] == type_id) // if same exit
                         return this;
 
-                    if (type_id > ids[i])
+                    if (type_id > type_ids[i])  // since the hash is generated from this, ordering is important
                     {
-                        var stored_id = ids[i];
+                        var stored_id = type_ids[i];
                         var stored_type = types[i];
-                        ids[i] = type_id;
+                        type_ids[i] = type_id;
                         types[i] = type;
                         type_id = stored_id;
                         type = stored_type;
                     }
                 }
 
-                if (Count++ == types.Length)
+                if (type_count++ == types.Length)
                 {
-                    Array.Resize(ref types, Count + 4);
-                    Array.Resize(ref ids, Count + 4);
+                    Array.Resize(ref types, type_count + 8);
+                    Array.Resize(ref type_ids, type_count + 8);
                 }
 
-                ids[Count - 1] = type_id;
-                types[Count - 1] = type;
+                type_ids[type_count - 1] = type_id;
+                types[type_count - 1] = type;
                 return this;
             }
 
-            Type_Signature Remove(Type type, int type_id)
+            TypeSignature Remove(Type type, int type_id)
             {
                 sig = null;
-                bool swap = ids[0] == type_id;
-                for (int i = 1; i < Count; ++i)
+                bool swap = type_ids[0] == type_id;
+                for (int i = 1; i < type_count; ++i)
                 {
                     if (swap)
                     {
-                        ids[i - 1] = ids[i];
+                        type_ids[i - 1] = type_ids[i];
                         types[i - 1] = types[i];
                     }
                     else
-                        swap = ids[i] == type_id;
+                        swap = type_ids[i] == type_id;
                 }
                 if (swap)
                 {
-                    Count--;
+                    type_count--;
                 }
                 return this;
             }
 
-            public Type_Signature Add(Type type)
+            public TypeSignature Add(Type type)
                 => Add(TypeID.Get(type), type);
 
-            public Type_Signature Add<T>()
+            public TypeSignature Add<T>()
                 => Add(TypeID.GetID<T>.Value, typeof(T));
 
-            public Type_Signature Remove(Type type)
+            public TypeSignature Remove(Type type)
                 => Remove(type, TypeID.Get(type));
 
-            public Type_Signature Remove<T>()
+            public TypeSignature Remove<T>()
                 => Remove(typeof(T), TypeID.GetID<T>.Value);
 
             public bool Has<T>() => Has(TypeID.GetID<T>.Value);
@@ -771,36 +830,66 @@ namespace SimpleECS
 
             public bool Has(int typeid)
             {
-                for (int i = 0; i < Count; ++i)
-                    if (ids[i] == typeid)
+                for (int i = 0; i < type_count; ++i)
+                    if (type_ids[i] == typeid)
                         return true;
                 return false;
             }
 
-            public Type_Signature Copy()
+            /// <summary>
+            /// returns true if signatures share any types
+            /// </summary>
+            public bool HasAny(TypeSignature other)
             {
-                var signature = new Type_Signature(Count + 1);
-                signature.Count = Count;
-                for (int i = 0; i < Count; ++i)
+                for (int a = 0; a < type_count; ++a)
                 {
-                    signature.ids[i] = this.ids[i];
-                    signature.types[i] = this.types[i];
+                    for (int b = 0; b < other.type_count; ++b)
+                    {
+                        if (type_ids[a] == other.type_ids[b])
+                            return true;
+                    }
                 }
-                return signature;
+                return false;
             }
 
-            IEnumerator<Type> IEnumerable<Type>.GetEnumerator()
+            /// <summary>
+            /// returns true if this signature has all the other signature's types
+            /// </summary>
+            /// <returns></returns>
+            public bool HasAll(TypeSignature other)
             {
-                for (int i = 0; i < Count; ++i)
+                for (int a = 0; a < other.type_count; ++a)
                 {
-                    yield return types[i];
+                    for (int b = 0; b < type_count; ++b)
+                    {
+                        if (other.type_ids[a] == type_ids[b])
+                            goto next;
+                    }
+                    return false;
+                next:
+                    continue;
                 }
+                return true;
             }
 
-            IEnumerator IEnumerable.GetEnumerator()
+            /// <summary>
+            /// Copies other signature to this signature
+            /// </summary>
+            public TypeSignature Copy(IReadOnly_TypeSignature other)
             {
-                foreach (var type in this)
-                    yield return type;
+                var count = other.TypeIds.Count;
+                if (type_count < count)
+                {
+                    type_ids = new int[count + 1];
+                    types = new Type[count + 1];
+                }
+                type_count = count;
+                for (int i = 0; i < count; ++i)
+                {
+                    type_ids[i] = other.TypeIds[i];
+                    types[i] = other.Types[i];
+                }
+                return this;
             }
 
             public override int GetHashCode()
@@ -811,33 +900,29 @@ namespace SimpleECS
 
                 unchecked
                 {
-                    for (int i = 0; i < Count; ++i)
+                    for (int i = 0; i < type_count; ++i)
                     {
                         power *= p;
-                        hashval = (hashval + ids[i] * power);
+                        hashval = (hashval + type_ids[i] * power);
                     }
                 }
                 return hashval;
             }
 
-            public bool Equals(Type_Signature other)
+            public bool Equals(TypeSignature other)
             {
-                if (Count != other.Count)
+                if (type_count != other.type_count)
                     return false;
-                for (int i = 0; i < Count; ++i)
+                for (int i = 0; i < type_count; ++i)
                 {
-                    if (ids[i] != other.ids[i])
+                    if (type_ids[i] != other.type_ids[i])
                         return false;
                 }
                 return true;
             }
 
             public override bool Equals(object obj)
-            {
-                if (obj is Type_Signature sig)
-                    return sig.Equals(this);
-                return false;
-            }
+            => obj is TypeSignature sig ? sig.Equals(this) : false;
 
             string sig;
             public override string ToString()
@@ -845,13 +930,13 @@ namespace SimpleECS
                 if (sig == null)
                 {
                     int count = 0;
-                    foreach (Type type in this)
+                    for (int i = 0; i < type_count; ++i)
                     {
-                        sig += $"{type.Name} ";
+                        sig += $"{types[i].Name} ";
                         count++;
                         if (count > 4)
                         {
-                            sig += $"...+{Count - 4} more";
+                            sig += $"...+{type_count - 4} more";
                             return sig;
                         }
                     }
@@ -859,68 +944,97 @@ namespace SimpleECS
                 return sig;
             }
 
-            public static bool operator ==(Type_Signature a, Type_Signature b)
-            => a.Equals(b);
+            // Interface methods
 
-            public static bool operator !=(Type_Signature a, Type_Signature b)
-            => !a.Equals(b);
+            Type IReadOnlyList<Type>.this[int index] => types[index];
+            int IReadOnlyList<int>.this[int index] => type_ids[index];
+
+            IEnumerator<Type> IEnumerable<Type>.GetEnumerator()
+            {
+                for (int i = 0; i < type_count; ++i)
+                    yield return types[i];
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                foreach (var type in Types)
+                    yield return type;
+            }
+
+            IEnumerator<int> IEnumerable<int>.GetEnumerator()
+            {
+                foreach (var id in type_ids)
+                    yield return id;
+            }
         }
     }
 
+    /// <summary>
+    /// By Default Blueprints spawn entities in World.Default.
+    /// 
+    /// </summary>
     public class Blueprint
     {
         public Blueprint() { }
 
         /// <summary>
-        /// World the entites are created in
+        /// World this blueprint creates entities in
         /// </summary>
         public Blueprint(World world)
         {
             this.world = world;
         }
-
-        World _world = World.Default;
-        public World world
+        public Blueprint(string name, World world = null)
         {
-            get => _world;
-            set
-            {
-                if (_world.ID == value.ID) return;
-                archetype = null;
-                _world = value;
-            }
+            this.name = name;
+            this.world = world;
         }
-        World.Type_Signature signature = new World.Type_Signature(typeof(Entity));
+
+        public World world;
+        World.TypeSignature signature = new World.TypeSignature();
         World.Archetype archetype;
         Action<Entity> set_components = delegate { };
         Action<Entity> on_complete = delegate { };
 
+        /// <summary>
+        /// Adds a defaulted value to entity
+        /// </summary>
         public Blueprint Set<Component>()
         {
-            if (typeof(Component) == typeof(Entity))
-                throw new Exception("Cannot Set Entity as a Component");
-
             signature.Add<Component>();
             archetype = null;
             return this;
         }
 
+        /// <summary>
+        /// If component is a class, all entities made by the blueprint will
+        /// share the component
+        /// </summary>
+        public Blueprint Set<Component>(Component component)
+        {
+            signature.Add<Component>();
+            set_components += entity => entity.Get<Component>() = component;
+            archetype = null;
+            return this;
+        }
+
+        /// <summary>
+        /// The result of the component created by the function will added to the entity
+        /// </summary>
         public Blueprint Set<Component>(Func<Component> component_creation_function)
         {
-            if (typeof(Component) == typeof(Entity))
-                throw new Exception("Cannot Set Entity as a Component");
-
             signature.Add<Component>();
             set_components += entity => entity.Get<Component>() = component_creation_function();
             archetype = null;
             return this;
         }
 
+        /// <summary>
+        /// the entity provided by the function will have all previous components set,
+        /// use this if you need information from previous components to make this component
+        /// </summary>
         public Blueprint Set<Component>(Func<Entity, Component> component_creation_function)
         {
-            if (typeof(Component) == typeof(Entity))
-                throw new Exception("Cannot Set Entity as a Component");
-
             signature.Add<Component>();
             set_components += entity => entity.Get<Component>() = component_creation_function(entity);
             archetype = null;
@@ -928,7 +1042,8 @@ namespace SimpleECS
         }
 
         /// <summary>
-        /// Action to perform after all components are set
+        /// Action to be performed when all components are set,
+        /// subsequent calls will replace previous calls
         /// </summary>
         public Blueprint OnComplete(Action<Entity> onComplete)
         {
@@ -936,16 +1051,23 @@ namespace SimpleECS
             return this;
         }
 
-        World.Archetype GetArchetype()
+        int last_world_id;
+        void UpdateBlueprint()
         {
+            var current_world = world == null ? World.Default : world;
+            if (last_world_id != current_world.ID)
+            {
+                archetype = null;
+                last_world_id = current_world.ID;
+            }
             if (archetype == null)
-                archetype = World.GetArchetype(world, signature);
-            return archetype;
+                archetype = World.GetArchetype(current_world, signature);
         }
 
         public Entity CreateEntity()
         {
-            var entity = World.CreateEntity(GetArchetype());
+            UpdateBlueprint();
+            var entity = World.CreateEntity(archetype);
             set_components(entity);
             on_complete(entity);
             return entity;
@@ -953,169 +1075,55 @@ namespace SimpleECS
 
         public Entity[] CreateEntities(int count)
         {
-            var entities = World.CreateEntities(GetArchetype(), count);
-            foreach (var entity in entities)
+            UpdateBlueprint();
+            var entities = World.CreateEntities(archetype, count);
+            for (int i = 0; i < entities.Length; ++i)
             {
+                var entity = entities[i];
                 set_components(entity);
                 on_complete(entity);
             }
             return entities;
         }
 
+        string name;
         public override string ToString()
-            => $"Blueprint [W{world?.ID}: {signature}]";
-
+        {
+            UpdateBlueprint();
+            if (name == null)
+                name = "Blueprint";
+            return $"{name} : {signature}]";
+        }
     }
 
-    public class Query : IEnumerable<World.Archetype>
+    public class Query : IReadOnlyList<World.Archetype>
     {
-        public Query()
-        {
-            _world = World.Default;
-        }
-
-        /// <summary>
-        /// Specify which wolrd the query should operate on
-        /// </summary>
-        public Query(World world)
-        {
-            _world = world;
-        }
-        World.Type_Signature has = new World.Type_Signature();
-        World.Type_Signature not = new World.Type_Signature();
-
-        World.Archetype[] matching_archetypes = new World.Archetype[8];
+        public IReadOnlyList<Type> IncludesTypes => has;
+        public IReadOnlyList<Type> ExcludesTypes => not;
+        World.TypeSignature has = new World.TypeSignature();
+        World.TypeSignature not = new World.TypeSignature();
         int archetype_count;
-
-        int last_world_count;
-
-        World _world;
-
+        World.Archetype[] matching_archetypes = new World.Archetype[8];
+        public IReadOnlyList<World.Archetype> MatchingArchetypes => this;
+        int current_archetype_index;
         /// <summary>
-        /// Current world the query operates on
+        /// Current world the query operates on, if null will query World.Default
         /// </summary>
-        public World world
-        {
-            get => _world;
-            set
-            {
-                if(_world.ID == value.ID) return;
-                matching_archetypes = new World.Archetype[8];
-                archetype_count = 0;
-                last_world_count = 0;
-                _world = value;
-            }
-        }
-
-        public int Matching_Archetypes => archetype_count;
-        
-        public int Matching_Entities
+        public World world;
+        public int MatchingEntities
         {
             get
             {
                 UpdateQuery();
-                int number = 0;
+                int count = 0;
                 for (int i = 0; i < archetype_count; ++i)
-                    number += matching_archetypes[i].Count;
-                return number;
+                    count += matching_archetypes[i].Count;
+                return count;
             }
         }
 
-        /// <summary>
-        /// Filters entities to those that have component
-        /// </summary>
-        public Query Has<T>()
-        {
-            has.Add<T>();
-            last_world_count = 0;
-            archetype_count = 0;
-            name = null;
-            return this;
-        }
-
-        /// <summary>
-        /// Filters entities to those without component
-        /// </summary>
-        public Query Not<T>()
-        {
-            not.Add<T>();
-            last_world_count = 0;
-            archetype_count = 0;
-            name = null;
-            return this;
-        }
-
-        public Query Clear()
-        {
-            has.Clear();
-            not.Clear();
-            last_world_count = 0;
-            archetype_count = 0;
-            name = null;
-            return this;
-        }
-
-        string name;
-        public override string ToString()
-        {
-            if (name == null)
-            {
-                name = "Query ";
-                if (has.Count > 0)
-                {
-                    name += "[HAS: ";
-
-                    foreach (var type in has)
-                        name += type.Name;
-                    name += "] ";
-                }
-                if (not.Count > 0)
-                {
-                    name += "[NOT: ";
-                    foreach (var type in not)
-                        name += type.Name;
-                    name += "]";
-                }
-            }
-
-            return $"{name} [W{world.ID}: {archetype_count}a {Matching_Entities}e]";
-        }
-
-        void UpdateQuery() // checks for any new archetypes since last run and updates accordingly
-        {
-            if (last_world_count != _world.Archetypes.Count)
-            {
-                for (int i = last_world_count; i < _world.Archetypes.Count; ++i)
-                {
-                    var archetype = _world.Archetypes[i];
-                    {
-                        for (int itr = 0; itr < has.Count; ++itr)
-                        {
-                            var type = has.ids[itr];
-                            if (!archetype.signature.Has(type))
-                                goto next_archetype;
-                        }
-                    }
-                    {
-                        for (int itr = 0; itr < not.Count; ++itr)
-                        {
-                            var type = not.ids[itr];
-                            if (archetype.signature.Has(type))
-                                goto next_archetype;
-                        }
-                    }
-
-                    if (archetype_count == matching_archetypes.Length)
-                        Array.Resize(ref matching_archetypes, matching_archetypes.Length * 2);
-                    matching_archetypes[archetype_count] = archetype;
-                    archetype_count++;
-
-                next_archetype:
-                    continue;
-                }
-                last_world_count = _world.Archetypes.Count;
-            }
-        }
+        int IReadOnlyCollection<World.Archetype>.Count => archetype_count;
+        World.Archetype IReadOnlyList<World.Archetype>.this[int index] => matching_archetypes[index];
 
         IEnumerator<World.Archetype> IEnumerable<World.Archetype>.GetEnumerator()
         {
@@ -1129,15 +1137,131 @@ namespace SimpleECS
                 yield return matching_archetypes[i];
         }
 
+        public Query() { }
+
+        /// <summary>
+        /// Specify which wolrd the query should operate on
+        /// </summary>
+        public Query(World world)
+        {
+            this.world = world;
+        }
+
+        /// <summary>
+        /// Filters entities to those that have component
+        /// </summary>
+        public Query Has<T>()
+        {
+            has.Add<T>();
+            return this;
+        }
+
+        /// <summary>
+        /// Filters entities to those without component
+        /// </summary>
+        public Query Not<T>()
+        {
+            not.Add<T>();
+            return this;
+        }
+
+        public Query Clear()
+        {
+            has.Clear();
+            not.Clear();
+            matching_archetypes = new World.Archetype[8];
+            current_archetype_index = 0;
+            archetype_count = 0;
+            name = null;
+            return this;
+        }
+
+        string name;
+        public override string ToString()
+        {
+            UpdateQuery();
+            if (name == null)
+            {
+                name = "Query ";
+                if (has.Count > 0)
+                {
+                    name += "[HAS: ";
+
+                    foreach (var type in has.Types)
+                        name += type.Name;
+                    name += "] ";
+                }
+                if (not.Count > 0)
+                {
+                    name += "[NOT: ";
+                    foreach (var type in not.Types)
+                        name += type.Name;
+                    name += "]";
+                }
+            }
+
+            return $"{name} [{archetype_count}a {MatchingEntities}e]";
+        }
+
+        int lastWorldID;
+        void UpdateQuery() // checks for any new archetypes since last run and updates accordingly
+        {
+            var current_world = world == null ? World.Default : world;
+            if (lastWorldID != current_world.ID)                // if the world changed redo the query
+            {
+                current_archetype_index = 0;
+                archetype_count = 0;
+                name = null;
+                matching_archetypes = new World.Archetype[8];   // new array so the old archetypes can be garbaged collected
+                lastWorldID = current_world.ID;
+            }
+
+            if (current_archetype_index != current_world.Archetypes.Count)  // check for any new archetypes
+            {
+                for (int i = current_archetype_index; i < current_world.Archetypes.Count; ++i)
+                {
+                    var archetype = current_world.Archetypes[i];
+
+                    if (!archetype.signature.HasAll(has))
+                        goto next_archetype;
+
+                    if (archetype.signature.HasAny(not))
+                        goto next_archetype;
+
+                    if (archetype_count == matching_archetypes.Length)
+                        Array.Resize(ref matching_archetypes, matching_archetypes.Length * 2);
+                    matching_archetypes[archetype_count] = archetype;
+                    archetype_count++;
+
+                next_archetype:
+                    continue;
+                }
+                current_archetype_index = current_world.Archetypes.Count;
+            }
+        }
+
+        /// <summary>
+        /// Moves all matching entities to world
+        /// </summary>
+        public void MoveMatchesTo(World world)  // could potenially make this extremely efficient by moving the
+        {                                       // archetypes to the other world instead, but good enough for now
+            for (int i = archetype_count - 1; i >= 0; --i)
+            {
+                var archetype = matching_archetypes[i];
+                for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                    archetype.entity_pool.Values[itr].MoveTo(world);
+            }
+        }
+
         /// <summary>
         /// Destroys all entities that match query
         /// </summary>
-        public void DestroyMatchingEntities()
-        {
-            for(int i = archetype_count-1; i >= 0; --i)
+        public void DestroyMatches()    // this could potentially be really efficient by destroying the archetype in bulk
+        {                               // but good enough for now
+            for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                for(int itr = archetype.Count-1; itr >= 0; --i)
+                for (int itr = archetype.Count - 1; itr >= 0; --itr)
                     archetype.entity_pool.Values[itr].Destroy();
             }
         }
@@ -1152,7 +1276,7 @@ namespace SimpleECS
         public delegate void query<C1, C2, C3, C4, C5, C6, C7, C8>(ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6, ref C7 c7, ref C8 c8);
 
         /// <summary>
-        /// performs action on all entities matching query and including components in action
+        /// performs action on all entities matching the query and all components in action
         /// </summary>
         public void Foreach<C1>(query<C1> action)
         {
@@ -1319,6 +1443,217 @@ namespace SimpleECS
                 {
                     for (int itr = archetype.Count - 1; itr >= 0; --itr)
                         action(ref pool_c1.Values[itr],
+                                ref pool_c2.Values[itr],
+                                ref pool_c3.Values[itr],
+                                ref pool_c4.Values[itr],
+                                ref pool_c5.Values[itr],
+                                ref pool_c6.Values[itr],
+                                ref pool_c7.Values[itr],
+                                ref pool_c8.Values[itr]);
+                }
+            }
+        }
+
+        public delegate void entity_query(in Entity entity);
+        public delegate void entity_query<C1>(in Entity entity, ref C1 c1);
+        public delegate void entity_query<C1, C2>(in Entity entity, ref C1 c1, ref C2 c2);
+        public delegate void entity_query<C1, C2, C3>(in Entity entity, ref C1 c1, ref C2 c2, ref C3 c3);
+        public delegate void entity_query<C1, C2, C3, C4>(in Entity entity, ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4);
+        public delegate void entity_query<C1, C2, C3, C4, C5>(in Entity entity, ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5);
+        public delegate void entity_query<C1, C2, C3, C4, C5, C6>(in Entity entity, ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6);
+        public delegate void entity_query<C1, C2, C3, C4, C5, C6, C7>(in Entity entity, ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6, ref C7 c7);
+        public delegate void entity_query<C1, C2, C3, C4, C5, C6, C7, C8>(in Entity entity, ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6, ref C7 c7, ref C8 c8);
+
+
+        public void Foreach(entity_query action)
+        {
+            UpdateQuery();
+            for (int i = archetype_count - 1; i >= 0; --i)
+            {
+                var archetype = matching_archetypes[i];
+                if (archetype.Count > 0)
+                {
+                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                        action(archetype.entity_pool.Values[itr]);
+                }
+            }
+        }
+
+        /// <summary>
+        /// performs action on all entities matching the query and all components in action
+        /// </summary>
+        public void Foreach<C1>(entity_query<C1> action)
+        {
+            UpdateQuery();
+            for (int i = archetype_count - 1; i >= 0; --i)  // go backwards so new archetypes aren't updating
+            {
+                var archetype = matching_archetypes[i];
+                if (archetype.Count > 0 &&
+                    archetype.TryGetPool<C1>(out var pool_c1))  // skips archetype if not all components in action are contained in archetype
+                {
+                    for (int itr = archetype.Count - 1; itr >= 0; --itr) // go backwards so entity operations can be performed synchonously
+                        action(archetype.entity_pool.Values[itr], ref pool_c1.Values[itr]);
+                }
+            }
+        }
+
+        public void Foreach<C1, C2>(entity_query<C1, C2> action)
+        {
+            UpdateQuery();
+            for (int i = archetype_count - 1; i >= 0; --i)
+            {
+                var archetype = matching_archetypes[i];
+                if (archetype.Count > 0 &&
+                    archetype.TryGetPool<C1>(out var pool_c1) &&
+                    archetype.TryGetPool<C2>(out var pool_c2))
+                {
+                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                        action(archetype.entity_pool.Values[itr],
+                                ref pool_c1.Values[itr],
+                                ref pool_c2.Values[itr]);
+                }
+            }
+        }
+
+        public void Foreach<C1, C2, C3>(entity_query<C1, C2, C3> action)
+        {
+            UpdateQuery();
+            for (int i = archetype_count - 1; i >= 0; --i)
+            {
+                var archetype = matching_archetypes[i];
+                if (archetype.Count > 0 &&
+                    archetype.TryGetPool<C1>(out var pool_c1) &&
+                    archetype.TryGetPool<C2>(out var pool_c2) &&
+                    archetype.TryGetPool<C3>(out var pool_c3))
+                {
+                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                        action(archetype.entity_pool.Values[itr],
+                                ref pool_c1.Values[itr],
+                                ref pool_c2.Values[itr],
+                                ref pool_c3.Values[itr]);
+                }
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4>(entity_query<C1, C2, C3, C4> action)
+        {
+            UpdateQuery();
+            for (int i = archetype_count - 1; i >= 0; --i)
+            {
+                var archetype = matching_archetypes[i];
+                if (archetype.Count > 0 &&
+                    archetype.TryGetPool<C1>(out var pool_c1) &&
+                    archetype.TryGetPool<C2>(out var pool_c2) &&
+                    archetype.TryGetPool<C3>(out var pool_c3) &&
+                    archetype.TryGetPool<C4>(out var pool_c4))
+                {
+                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                        action(archetype.entity_pool.Values[itr],
+                                ref pool_c1.Values[itr],
+                                ref pool_c2.Values[itr],
+                                ref pool_c3.Values[itr],
+                                ref pool_c4.Values[itr]);
+                }
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5>(entity_query<C1, C2, C3, C4, C5> action)
+        {
+            UpdateQuery();
+            for (int i = archetype_count - 1; i >= 0; --i)
+            {
+                var archetype = matching_archetypes[i];
+                if (archetype.Count > 0 &&
+                    archetype.TryGetPool<C1>(out var pool_c1) &&
+                    archetype.TryGetPool<C2>(out var pool_c2) &&
+                    archetype.TryGetPool<C3>(out var pool_c3) &&
+                    archetype.TryGetPool<C4>(out var pool_c4) &&
+                    archetype.TryGetPool<C5>(out var pool_c5))
+                {
+                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                        action(archetype.entity_pool.Values[itr],
+                                ref pool_c1.Values[itr],
+                                ref pool_c2.Values[itr],
+                                ref pool_c3.Values[itr],
+                                ref pool_c4.Values[itr],
+                                ref pool_c5.Values[itr]);
+                }
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6>(entity_query<C1, C2, C3, C4, C5, C6> action)
+        {
+            UpdateQuery();
+            for (int i = archetype_count - 1; i >= 0; --i)
+            {
+                var archetype = matching_archetypes[i];
+                if (archetype.Count > 0 &&
+                    archetype.TryGetPool<C1>(out var pool_c1) &&
+                    archetype.TryGetPool<C2>(out var pool_c2) &&
+                    archetype.TryGetPool<C3>(out var pool_c3) &&
+                    archetype.TryGetPool<C4>(out var pool_c4) &&
+                    archetype.TryGetPool<C5>(out var pool_c5) &&
+                    archetype.TryGetPool<C6>(out var pool_c6))
+                {
+                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                        action(archetype.entity_pool.Values[itr],
+                                ref pool_c1.Values[itr],
+                                ref pool_c2.Values[itr],
+                                ref pool_c3.Values[itr],
+                                ref pool_c4.Values[itr],
+                                ref pool_c5.Values[itr],
+                                ref pool_c6.Values[itr]);
+                }
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7>(entity_query<C1, C2, C3, C4, C5, C6, C7> action)
+        {
+            UpdateQuery();
+            for (int i = archetype_count - 1; i >= 0; --i)
+            {
+                var archetype = matching_archetypes[i];
+                if (archetype.Count > 0 &&
+                    archetype.TryGetPool<C1>(out var pool_c1) &&
+                    archetype.TryGetPool<C2>(out var pool_c2) &&
+                    archetype.TryGetPool<C3>(out var pool_c3) &&
+                    archetype.TryGetPool<C4>(out var pool_c4) &&
+                    archetype.TryGetPool<C5>(out var pool_c5) &&
+                    archetype.TryGetPool<C6>(out var pool_c6) &&
+                    archetype.TryGetPool<C7>(out var pool_c7))
+                {
+                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                        action(archetype.entity_pool.Values[itr],
+                                ref pool_c1.Values[itr],
+                                ref pool_c2.Values[itr],
+                                ref pool_c3.Values[itr],
+                                ref pool_c4.Values[itr],
+                                ref pool_c5.Values[itr],
+                                ref pool_c6.Values[itr],
+                                ref pool_c7.Values[itr]);
+                }
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8>(entity_query<C1, C2, C3, C4, C5, C6, C7, C8> action)
+        {
+            UpdateQuery();
+            for (int i = archetype_count - 1; i >= 0; --i)
+            {
+                var archetype = matching_archetypes[i];
+                if (archetype.Count > 0 &&
+                    archetype.TryGetPool<C1>(out var pool_c1) &&
+                    archetype.TryGetPool<C2>(out var pool_c2) &&
+                    archetype.TryGetPool<C3>(out var pool_c3) &&
+                    archetype.TryGetPool<C4>(out var pool_c4) &&
+                    archetype.TryGetPool<C5>(out var pool_c5) &&
+                    archetype.TryGetPool<C6>(out var pool_c6) &&
+                    archetype.TryGetPool<C7>(out var pool_c7) &&
+                    archetype.TryGetPool<C8>(out var pool_c8))
+                {
+                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                        action(archetype.entity_pool.Values[itr],
+                                ref pool_c1.Values[itr],
                                 ref pool_c2.Values[itr],
                                 ref pool_c3.Values[itr],
                                 ref pool_c4.Values[itr],

@@ -78,13 +78,13 @@ namespace SimpleECS
             => World.GetComponentCount(this);
 
         /// <summary>
-        /// Gets a reference to component. Adds and retrieves a default component it does not have one already
+        /// Gets a reference to component. Throws exception if not found or entity is invalid
         /// </summary>
         public ref Component Get<Component>()
             => ref World.Get<Component>(this);
 
         /// <summary>
-        /// Sets the component on entity, adds it if it does not have one already
+        /// Sets the component on entity, adds it if entity is valid and it does not have one already
         /// </summary>
         public Entity Set<Component>(Component component)
             => World.Set(this, component);
@@ -96,7 +96,7 @@ namespace SimpleECS
             => World.Has<Component>(this);
 
         /// <summary>
-        /// Tries to get the component, returns false if entity does not have one
+        /// Tries to get the component, returns false if entity does not have one or is invalid
         /// </summary>
         public bool TryGet<Component>(out Component value)
             => World.TryGet(this, out value);
@@ -308,18 +308,32 @@ namespace SimpleECS
                 //entity.index < entity.world.entity_data.Length &&
                 entity.version == entity.world.entity_data[entity.index].version;
 
-        /// <summary>
-        /// Gets a reference to component on entity. Automatically adds component to entity if none found
-        /// </summary>
         public static ref T Get<T>(Entity entity)
         {
             if (IsValid(entity))
             {
                 var world = entity.world;
                 ref var data = ref world.entity_data[entity.index];
-                {// if component exists return it
+                if (data.archetype.TryGetPool<T>(out var pool))
+                    return ref pool.Values[data.component_index];
+                else throw new Exception($"{entity} does not have [{typeof(T).FullName}], cannot get component");
+            }
+            throw new Exception($"{entity} has been destroyed or is not valid, cannot get component");
+        }
+
+        public static Entity Set<T>(Entity entity, T component)
+        {
+            if (IsValid(entity))
+            {
+                var world = entity.world;
+                ref var data = ref world.entity_data[entity.index];
+                {// if component exists set it
                     if (data.archetype.TryGetPool<T>(out var pool))
-                        return ref pool.Values[data.component_index];
+                    {
+                        pool.Values[data.component_index] = component;
+                        return entity;
+                    }
+
                 }
                 {// otherwise create and return one
                     var target_arch = GetArchetype(world, new TypeSignature().Copy(data.archetype.signature).Add<T>());
@@ -345,14 +359,14 @@ namespace SimpleECS
                     // add the new component
                     if (target_arch.TryGetPool<T>(out var poolT))
                     {
-                        poolT.Add(1);
-                        return ref poolT.Values[target_index];
+                        poolT.Add(component);
+                        return entity;
                     }
                     else    // should never happen since the archetype should have the component by definition
                         throw new Exception($"Tried adding component to the wrong archetype {typeof(T)} {target_arch}");
                 }
             }
-            throw new Exception($"{entity} has been destroyed or is not valid, cannot get component");
+            return entity;
         }
 
         public static Entity Remove<T>(Entity entity)
@@ -459,12 +473,6 @@ namespace SimpleECS
                 return components;
             }
             return components;
-        }
-
-        public static Entity Set<T>(Entity entity, T component)
-        {
-            Get<T>(entity) = component;
-            return entity;
         }
 
         public static bool Has<T>(Entity entity)

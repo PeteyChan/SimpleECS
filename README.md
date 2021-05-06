@@ -135,7 +135,7 @@ foreach(var archetype in query)
 ```
 
 
-Do not call Get(), Set(), Remove() or Destroy() on entities other than the owner as they can
+Do not call Set(), Remove() or Destroy() on entities other than the owner as they can
 change the structure of the archetypes and potentially invalidate query iterators.
 ```C#
 class MyComponent

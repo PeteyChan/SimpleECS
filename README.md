@@ -4,10 +4,10 @@ Min C# Framework 4.7
 
 ### Features:
 * 1 File, just copy paste
-* Uses generics so no code generation or any real setup required
-* Archetype based ECS = fast component iteration speeds
+* No setup like marking components or code generators
+* Archetype based = fast component iteration
 * Very simple query system
-* Multiple worlds
+* Optional multiple entity worlds
 
 ## Entities
 To create an entity use new with the components as parameters.
@@ -113,7 +113,7 @@ query.Foreach( (ref int int_value, ref float float_value) =>  // you then use th
 }));
 
 all_entities.Foreach( (in Entity entity, ref int value ) =>  // you can access the owner entity by putting it in the first position
-{                                                            // with the in keyword. Followed by any components you want to use
+{                                                            // with the in keyword followed by any components you want to use
   Console.WriteLine($"{entity} value is {value}");                  
 });
 ```
@@ -137,7 +137,7 @@ query.Foreach((in Entity entity, ref MyComponent comp) =>
     
     
     // BE CAREFUL
-    comp.other_entity.Get<int>() = 3; // however since entitiy fields from components can potentially be anything,
+    comp.other_entity.Get<int>() = 3; // however since entity fields from components can potentially be anything,
     comp.other_entity.Set(4.5f);      // calling these functions can possibly invalidate the query's 
     comp.other_entity.Remove<int>();  // iterators and lead to undefined behaviour.
     comp.other_entity.Destroy();      // Only use them when you know for certain that the query archetypes 

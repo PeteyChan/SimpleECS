@@ -161,7 +161,7 @@ query.Foreach((in Entity entity, ref MyComponent comp) =>
                                       // and the entity's archetype that your changing do not overlap
     
     // INSTEAD
-    if (comp.other_entity.TryGet(out int value)) // instead get information from it with try get first
+    if (comp.other_entity.TryGet(out int value)) // instead get information from it with TryGet() first
     {
       if (value > 20)                            // then add entities you want to change to a list
         ToDestroy.Add(comp.other_entity);

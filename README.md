@@ -112,7 +112,7 @@ query.Foreach( (ref int int_value, ref float float_value) =>  // you then use th
     float_value = int_value * 100;                            // contains all the components in the foreach function
 }));
 
-all_entities.Foreach( (in Entity entity, ref int value ) =>  // you can access the owner entity by putting it in the first position
+query.Foreach( (in Entity entity, ref int value ) =>  // you can access the owner entity by putting it in the first position
 {                                                            // with the in keyword followed by any components you want to use
   Console.WriteLine($"{entity} value is {value}");                  
 });

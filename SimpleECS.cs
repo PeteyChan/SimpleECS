@@ -173,7 +173,7 @@ namespace SimpleECS
 
         public override string ToString()
         {
-            if (TryGet(out string name) || string.IsNullOrEmpty(name))
+            if (!TryGet(out string name) || string.IsNullOrEmpty(name))
                 name = "Entity";
             return $"{name} {index}.{version}";
         }
@@ -329,7 +329,7 @@ namespace SimpleECS
                     world.entity_data[data.archetype.entity_pool.Values[data.archetype.Count - 1].index].component_index = data.component_index;
                     data.archetype.entity_pool.Remove(data.component_index);
                     target_arch.entity_pool.Add(entity);
-                    
+
                     // move the components over
                     foreach (var pool in data.archetype.pools)
                     {
@@ -393,7 +393,7 @@ namespace SimpleECS
                 var world = entity.world;
                 ref var data = ref world.entity_data[entity.index];
 
-                data.version++;                         
+                data.version++;
                 world.free_entities.Push(entity.index);
                 world.entity_data[data.archetype.entity_pool.Values[data.archetype.Count - 1].index]
                                 .component_index = data.component_index;
@@ -499,6 +499,8 @@ namespace SimpleECS
             {
                 if (signature.Equals(archetype.signature))
                     return archetype;
+                // this exception hopefully never gets thrown, but if it does just change the prime used in 
+                // the TypeSignature.GetHashCode function to a bigger one
                 throw new Exception($"Archetype Hash Collision : {signature} <--> {archetype.signature}");
             }
 
@@ -892,9 +894,9 @@ namespace SimpleECS
                 return this;
             }
 
-            public override int GetHashCode()
-            {
-                int p = 53;
+            public override int GetHashCode()   // there's only around 4 billion or so possiblities
+            {                                   // so on the off chance it does fail
+                int prime = 53;                 // just change the prime to a bigger one
                 int power = 1;
                 int hashval = 0;
 
@@ -902,7 +904,7 @@ namespace SimpleECS
                 {
                     for (int i = 0; i < type_count; ++i)
                     {
-                        power *= p;
+                        power *= prime;
                         hashval = (hashval + type_ids[i] * power);
                     }
                 }
@@ -1464,7 +1466,6 @@ namespace SimpleECS
         public delegate void entity_query<C1, C2, C3, C4, C5, C6, C7>(in Entity entity, ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6, ref C7 c7);
         public delegate void entity_query<C1, C2, C3, C4, C5, C6, C7, C8>(in Entity entity, ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6, ref C7 c7, ref C8 c8);
 
-
         public void Foreach(entity_query action)
         {
             UpdateQuery();
@@ -1492,7 +1493,8 @@ namespace SimpleECS
                     archetype.TryGetPool<C1>(out var pool_c1))  // skips archetype if not all components in action are contained in archetype
                 {
                     for (int itr = archetype.Count - 1; itr >= 0; --itr) // go backwards so entity operations can be performed synchonously
-                        action(archetype.entity_pool.Values[itr], ref pool_c1.Values[itr]);
+                        action(archetype.entity_pool.Values[itr],
+                                ref pool_c1.Values[itr]);
                 }
             }
         }

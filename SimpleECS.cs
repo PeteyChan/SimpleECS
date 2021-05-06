@@ -1116,7 +1116,7 @@ namespace SimpleECS
         {
             get
             {
-                UpdateQuery();
+                Refresh();
                 int count = 0;
                 for (int i = 0; i < archetype_count; ++i)
                     count += matching_archetypes[i].Count;
@@ -1181,7 +1181,7 @@ namespace SimpleECS
         string name;
         public override string ToString()
         {
-            UpdateQuery();
+            Refresh();
             if (name == null)
             {
                 name = "Query ";
@@ -1206,14 +1206,19 @@ namespace SimpleECS
         }
 
         int lastWorldID;
-        void UpdateQuery() // checks for any new archetypes since last run and updates accordingly
+
+        /// <summary>
+        /// Only needs to be called during manual iteration.
+        /// Checks to see if the world has changed, and if so
+        /// updates the query as necessary
+        /// </summary>
+        public void Refresh() // checks for any new archetypes since last run and updates accordingly
         {
             var current_world = world == null ? World.Default : world;
             if (lastWorldID != current_world.ID)                // if the world changed redo the query
             {
                 current_archetype_index = 0;
                 archetype_count = 0;
-                name = null;
                 matching_archetypes = new World.Archetype[8];   // new array so the old archetypes can be garbaged collected
                 lastWorldID = current_world.ID;
             }
@@ -1282,7 +1287,7 @@ namespace SimpleECS
         /// </summary>
         public void Foreach<C1>(query<C1> action)
         {
-            UpdateQuery();
+            Refresh();
             for (int i = archetype_count - 1; i >= 0; --i)  // go backwards so new archetypes aren't updating
             {
                 var archetype = matching_archetypes[i];
@@ -1297,7 +1302,7 @@ namespace SimpleECS
 
         public void Foreach<C1, C2>(query<C1, C2> action)
         {
-            UpdateQuery();
+            Refresh();
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
@@ -1314,7 +1319,7 @@ namespace SimpleECS
 
         public void Foreach<C1, C2, C3>(query<C1, C2, C3> action)
         {
-            UpdateQuery();
+            Refresh();
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
@@ -1333,7 +1338,7 @@ namespace SimpleECS
 
         public void Foreach<C1, C2, C3, C4>(query<C1, C2, C3, C4> action)
         {
-            UpdateQuery();
+            Refresh();
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
@@ -1354,7 +1359,7 @@ namespace SimpleECS
 
         public void Foreach<C1, C2, C3, C4, C5>(query<C1, C2, C3, C4, C5> action)
         {
-            UpdateQuery();
+            Refresh();
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
@@ -1377,7 +1382,7 @@ namespace SimpleECS
 
         public void Foreach<C1, C2, C3, C4, C5, C6>(query<C1, C2, C3, C4, C5, C6> action)
         {
-            UpdateQuery();
+            Refresh();
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
@@ -1402,7 +1407,7 @@ namespace SimpleECS
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7>(query<C1, C2, C3, C4, C5, C6, C7> action)
         {
-            UpdateQuery();
+            Refresh();
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
@@ -1429,7 +1434,7 @@ namespace SimpleECS
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8>(query<C1, C2, C3, C4, C5, C6, C7, C8> action)
         {
-            UpdateQuery();
+            Refresh();
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
@@ -1468,7 +1473,7 @@ namespace SimpleECS
 
         public void Foreach(entity_query action)
         {
-            UpdateQuery();
+            Refresh();
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
@@ -1485,7 +1490,7 @@ namespace SimpleECS
         /// </summary>
         public void Foreach<C1>(entity_query<C1> action)
         {
-            UpdateQuery();
+            Refresh();
             for (int i = archetype_count - 1; i >= 0; --i)  // go backwards so new archetypes aren't updating
             {
                 var archetype = matching_archetypes[i];
@@ -1501,7 +1506,7 @@ namespace SimpleECS
 
         public void Foreach<C1, C2>(entity_query<C1, C2> action)
         {
-            UpdateQuery();
+            Refresh();
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
@@ -1519,7 +1524,7 @@ namespace SimpleECS
 
         public void Foreach<C1, C2, C3>(entity_query<C1, C2, C3> action)
         {
-            UpdateQuery();
+            Refresh();
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
@@ -1539,7 +1544,7 @@ namespace SimpleECS
 
         public void Foreach<C1, C2, C3, C4>(entity_query<C1, C2, C3, C4> action)
         {
-            UpdateQuery();
+            Refresh();
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
@@ -1561,7 +1566,7 @@ namespace SimpleECS
 
         public void Foreach<C1, C2, C3, C4, C5>(entity_query<C1, C2, C3, C4, C5> action)
         {
-            UpdateQuery();
+            Refresh();
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
@@ -1585,7 +1590,7 @@ namespace SimpleECS
 
         public void Foreach<C1, C2, C3, C4, C5, C6>(entity_query<C1, C2, C3, C4, C5, C6> action)
         {
-            UpdateQuery();
+            Refresh();
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
@@ -1611,7 +1616,7 @@ namespace SimpleECS
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7>(entity_query<C1, C2, C3, C4, C5, C6, C7> action)
         {
-            UpdateQuery();
+            Refresh();
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
@@ -1639,7 +1644,7 @@ namespace SimpleECS
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8>(entity_query<C1, C2, C3, C4, C5, C6, C7, C8> action)
         {
-            UpdateQuery();
+            Refresh();
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];

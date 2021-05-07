@@ -73,7 +73,7 @@ class MyComponent // example component
 
 // Creates the blueprint
 Blueprint my_blueprint = new Blueprint().Set<float>()  // use to set a component with default values
-                                        .Set(3.5f)     // use to set component with value. If value is a class, it'll be shared
+                                        .Set(3)     // use to set component with value. If value is a class, it'll be shared
                                                        // by all entities made by this blueprint
                                         .Set( () => new MyComponentA()) 
                                                        // uses a function to generate a component and set it on the entity

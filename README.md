@@ -125,7 +125,7 @@ foreach(var archetype in query)
 {
   if (archetype.Count > 0)
     if (archetype.TryGetPool<int>(out var pool))
-      for(int i = archetype.Count - 1; i >= 0; --i)   // iterate backwards to prevent iterator invalidation if 
+      for(int i = archetype.entity_count - 1; i >= 0; --i)   // iterate backwards to prevent iterator invalidation if 
       {                                               // performing structural changes on entities
           var value = pool.Values[i]++;
           if (value > 20)

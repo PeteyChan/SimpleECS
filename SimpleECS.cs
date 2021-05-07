@@ -255,7 +255,7 @@ namespace SimpleECS
 
             ref var data = ref world.entity_data[entity_index];
             data.archetype = archetype;
-            data.component_index = data.archetype.Count;
+            data.component_index = data.archetype.entity_count;
 
             var entity = Entity.Create(world, entity_index, data.version);
 
@@ -288,12 +288,12 @@ namespace SimpleECS
                 }
                 ref var data = ref world.entity_data[entity_index];
                 data.archetype = archetype;
-                data.component_index = archetype.Count + i;
+                data.component_index = archetype.entity_count + i;
 
                 entities[i] = Entity.Create(world, entity_index, data.version);
             }
 
-            int offset = archetype.Count;
+            int offset = archetype.entity_count;
             foreach (var pool in archetype.pools)
                 pool.Add(entities.Length);
 
@@ -316,7 +316,7 @@ namespace SimpleECS
                 ref var data = ref world.entity_data[entity.index];
                 if (data.archetype.TryGetPool<T>(out var pool))
                     return ref pool.Values[data.component_index];
-                else throw new Exception($"{entity} does not have [{typeof(T).FullName}], cannot get component");
+                else throw new Exception($"{entity} does not have [{typeof(T).FullName}] cannot get component");
             }
             throw new Exception($"{entity} has been destroyed or is not valid, cannot get component");
         }
@@ -336,11 +336,11 @@ namespace SimpleECS
 
                 }
                 {// otherwise create and return one
-                    var target_arch = GetArchetype(world, new TypeSignature().Copy(data.archetype.signature).Add<T>());
-                    var target_index = target_arch.Count;
+                    var target_arch = GetArchetype(world, new TypeSignature(data.archetype.signature).Add<T>());
+                    var target_index = target_arch.entity_count;
 
                     // updating archetype entities
-                    world.entity_data[data.archetype.entity_pool.Values[data.archetype.Count - 1].index].component_index = data.component_index;
+                    world.entity_data[data.archetype.entity_pool.Values[data.archetype.entity_count - 1].index].component_index = data.component_index;
                     data.archetype.entity_pool.Remove(data.component_index);
                     target_arch.entity_pool.Add(entity);
 
@@ -378,11 +378,11 @@ namespace SimpleECS
                 if (data.archetype.TryGetPool<T>(out var remove_pool))
                 {
                     var comp = remove_pool.Values[data.component_index];
-                    var target_arch = GetArchetype(world, new TypeSignature().Copy(data.archetype.signature).Remove<T>()); // get target archetype
-                    var target_index = target_arch.Count;
+                    var target_arch = GetArchetype(world, new TypeSignature(data.archetype.signature).Remove<T>()); // get target archetype
+                    var target_index = target_arch.entity_count;
 
                     // updating entity
-                    world.entity_data[data.archetype.entity_pool.Values[data.archetype.Count - 1].index].component_index = data.component_index;
+                    world.entity_data[data.archetype.entity_pool.Values[data.archetype.entity_count - 1].index].component_index = data.component_index;
                     data.archetype.entity_pool.Remove(data.component_index);
                     target_arch.entity_pool.Add(entity);
 
@@ -409,7 +409,7 @@ namespace SimpleECS
 
                 data.version++;
                 world.free_entities.Push(entity.index);
-                world.entity_data[data.archetype.entity_pool.Values[data.archetype.Count - 1].index]
+                world.entity_data[data.archetype.entity_pool.Values[data.archetype.entity_count - 1].index]
                                 .component_index = data.component_index;
 
                 data.archetype.entity_pool.Remove(data.component_index);
@@ -438,9 +438,9 @@ namespace SimpleECS
                 var world_entity = world.CreateEntity();    // create an entity without an archetype
                 ref var world_data = ref world.entity_data[world_entity.index];
                 world_data.archetype = world_archetype;     // then assign it an archetype
-                world_data.component_index = world_archetype.Count;     // moving sets components to last spot in archetype
+                world_data.component_index = world_archetype.entity_count;     // moving sets components to last spot in archetype
 
-                entity.world.entity_data[data.archetype.entity_pool.Values[data.archetype.Count - 1].index]
+                entity.world.entity_data[data.archetype.entity_pool.Values[data.archetype.entity_count - 1].index]
                                             .component_index = data.component_index;    // remember to update swapped entity when this entity leaves current world
 
                 data.archetype.entity_pool.Remove(data.component_index);
@@ -501,7 +501,7 @@ namespace SimpleECS
             throw new Exception($"{entity} is invalid. Cannot retrieve archetype");
         }
 
-        public static Archetype GetArchetype(World world, IReadOnly_TypeSignature signature)
+        public static Archetype GetArchetype(World world, TypeSignature.IReadOnly signature)
         {
             if (world.id_to_archetype.TryGetValue(signature.ID, out var archetype))
             {
@@ -521,7 +521,7 @@ namespace SimpleECS
             => world.id_to_archetype.TryGetValue(archetype_ID, out archetype);
 
         public static int GetComponentCount(Entity entity)
-            => IsValid(entity) ? entity.world.entity_data[entity.index].archetype.pools.Length : 0;
+            => IsValid(entity) ? entity.world.entity_data[entity.index].archetype.component_count : 0;
 
         /// <summary>
         /// resizes backing arrays to the minimum power of 2 needed to hold it's components.
@@ -575,56 +575,118 @@ namespace SimpleECS
             }
         }
 
-        public class Archetype : IEnumerable<Entity>
+        public class Archetype : IReadOnlyList<Entity>, IReadOnlyList<IPool>
         {
-            Dictionary<int, IPool> components = new Dictionary<int, IPool>();
-            readonly int ID;
             public readonly World world;
-            public IReadOnly_TypeSignature signature;
-
-            public override int GetHashCode() => ID;
-            public int Count => entity_pool.Count;
+            public TypeSignature.IReadOnly signature;
             public readonly Pool<Entity> entity_pool;
-            public readonly IPool[] pools;
+            int ID;
+            public override int GetHashCode() => ID;
+            public int entity_count => entity_pool.Count;
+            public readonly int component_count;
 
-            public Archetype(World world, IReadOnly_TypeSignature signature)
+            public IReadOnlyList<IPool> pools => this;
+            public Archetype(World world, TypeSignature.IReadOnly signature)
             {
                 this.world = world;
-                this.signature = new TypeSignature().Copy(signature);
-                pools = new IPool[this.signature.Count];
-                for (int i = 0; i < signature.Count; ++i)
-                {
-                    var type = signature.Types[i];
-                    IPool pool = Activator.CreateInstance(typeof(Pool<>).MakeGenericType(type)) as IPool;
-                    components.Add(TypeID.Get(type), pool);
-                    pools[i] = pool;
-                }
-                ID = signature.ID;
-                entity_pool = new Pool<Entity>();
-            }
+                this.signature = new TypeSignature(signature);
+                this.entity_pool = new Pool<Entity>();
+                ID = signature.GetHashCode();
 
-            public bool TryGetPool<T>(out Pool<T> pool)
-            {
-                bool success = components.TryGetValue(TypeID.GetID<T>.Value, out var val);
-                pool = (Pool<T>)val;
-                return success;
+                Stack<(int id, System.Type type)> to_allocate = new Stack<(int, System.Type)>();
+                component_count = signature.Count;
+                DataMap = new Data[component_count + 1];
+                for (int i = 0; i < component_count; ++i)
+                {
+                    var value = signature.TypeIds[i];
+                    var type = signature.Types[i];
+                    var index = (value % component_count) + 1;
+                    ref var pool = ref DataMap[index];
+                    if (pool.ID > 0)
+                        to_allocate.Push((value, type));
+                    else
+                    {
+                        pool.ID = value;
+                        pool.pool = System.Activator.CreateInstance(typeof(Pool<>).MakeGenericType(type)) as IPool;
+                    }
+                }
+                for (int index = 1; index < DataMap.Length; ++index)
+                {
+                    ref var data = ref DataMap[index];
+                    if (data.ID > 0)
+                        continue;
+                    var values = to_allocate.Pop();
+                    data.ID = values.id;
+                    data.pool = System.Activator.CreateInstance(typeof(Pool<>).MakeGenericType(values.type)) as IPool;
+                    var goalIndex = (data.ID % component_count) + 1;
+                    while (DataMap[goalIndex].next != 0)
+                        goalIndex = DataMap[goalIndex].next;
+                    DataMap[goalIndex].next = index;
+                    if (to_allocate.Count == 0)
+                        return;
+                }
             }
 
             public bool TryGetPool(Type type, out IPool pool)
                 => TryGetPool(TypeID.Get(type), out pool);
 
-            public bool Has<T>()
-                => components.ContainsKey(TypeID.GetID<T>.Value);
-
-            public bool TryGetPool(int type_id, out IPool pool)
+            public bool TryGetPool<T>(out Pool<T> pool)
             {
-                bool success = components.TryGetValue(type_id, out pool);
+                var success = TryGetPool(TypeID.GetID<T>.Value, out var val);
+                pool = (Pool<T>)val;
                 return success;
             }
 
-            string types;
+            public bool TryGetPool(int type_id, out IPool pool)
+            {
+                var data = DataMap[type_id % component_count + 1];
+                if (data.ID == type_id)
+                {
+                    pool = data.pool;
+                    return true;
+                }
+                while (data.next != 0)
+                {
+                    data = DataMap[data.next];
+                    if (data.ID == type_id)
+                    {
+                        pool = data.pool;
+                        return true;
+                    }
+                }
+                pool = default;
+                return false;
+            }
+
+            public bool Has<T>()
+            {
+                var type_id = TypeID.GetID<T>.Value;
+                var data = DataMap[type_id % component_count + 1];
+                if (data.ID == type_id)
+                    return true;
+
+                while (data.next != 0)
+                {
+                    data = DataMap[data.next];
+                    if (data.ID == type_id)
+                        return true;
+                }
+                return false;
+            }
+            Data[] DataMap;
+
+            struct Data
+            {
+                public int next;
+                public int ID;
+                public IPool pool;
+            }
+
             public override string ToString()
-                => $"Archetype [{signature}] [{Count}e]";
+                => $"Archetype [{signature}] [{entity_pool.Count}e]";
+
+            // entity readonly interface
+            Entity IReadOnlyList<Entity>.this[int index] => entity_pool.Values[index];
 
             IEnumerator<Entity> IEnumerable<Entity>.GetEnumerator()
             {
@@ -638,116 +700,132 @@ namespace SimpleECS
                     yield return entity_pool.Values[i];
             }
 
-            public interface IPool
+            // pool readonly interface
+
+            IEnumerator<IPool> IEnumerable<IPool>.GetEnumerator()
             {
-                void Add(object obj);
-
-                void Add(int count);
-
-                /// <summary>
-                /// removes component at index, returns removed component
-                /// </summary>
-                object Remove(int index);
-
-                void Set(int index, object obj);
-
-                object Get(int index);
-
-                void Resize();
-
-                int Count { get; }
-
-                int ID { get; }
+                for (int i = 1; i < DataMap.Length; ++i)
+                    yield return DataMap[i].pool;
             }
 
-            public class Pool<T> : IPool, IReadOnlyList<T>
-            {
-                T IReadOnlyList<T>.this[int index] => Values[index];
-                public T[] Values = new T[8];
-                public int Count => count;
-                int IPool.ID => TypeID.GetID<T>.Value;
-                int count;
 
-                public void Add(int amount)
-                {
-                    count += amount;
-                    if (count > Values.Length)
-                    {
-                        int newSize = Values.Length;
-                        while (newSize < count)
-                            newSize *= 2;
-                        if (newSize > Values.Length)
-                            Array.Resize(ref Values, newSize);
-                    }
-                }
-                void IPool.Add(object obj)
-                    => Add((T)obj);
+            int IReadOnlyCollection<IPool>.Count => DataMap.Length - 1;
 
-                public void Add(T obj)
-                {
-                    if (count == Values.Length)
-                        Array.Resize(ref Values, count * 2);
-                    Values[count] = obj;
-                    count++;
-                }
+            int IReadOnlyCollection<Entity>.Count => entity_pool.Count;
 
-                public object Remove(int index)
-                {
-                    count--;
-                    var component = Values[index];
-                    Values[index] = Values[count];
-                    Values[count] = default;
-                    return component;
-                }
-
-                public void Set(int index, object obj)
-                {
-                    Values[index] = (T)obj;
-                }
-
-                void IPool.Resize()
-                {
-                    int new_size = 8;
-                    while (new_size < count)
-                        new_size *= 2;
-                    if (new_size == Values.Length)
-                        return;
-                    Array.Resize(ref Values, new_size);
-                }
-
-                public object Get(int index)
-                    => Values[index];
-
-                IEnumerator<T> IEnumerable<T>.GetEnumerator()
-                {
-                    for (int i = count - 1; i >= 0; --i)
-                        yield return Values[i];
-                }
-
-                IEnumerator IEnumerable.GetEnumerator()
-                {
-                    for (int i = count - 1; i >= 0; --i)
-                        yield return Values[i];
-                }
-            }
+            IPool IReadOnlyList<IPool>.this[int index] => DataMap[index + 1].pool;
         }
 
-        public interface IReadOnly_TypeSignature
+        public interface IPool
         {
-            IReadOnlyList<Type> Types { get; }
-            IReadOnlyList<int> TypeIds { get; }
-            bool HasAny(TypeSignature signature);
-            bool HasAll(TypeSignature signature);
-            bool Has<T>();
+            void Add(object obj);
+
+            void Add(int count);
+
+            /// <summary>
+            /// removes component at index, returns removed component
+            /// </summary>
+            object Remove(int index);
+
+            void Set(int index, object obj);
+
+            object Get(int index);
+
+            void Resize();
+
             int Count { get; }
+
             int ID { get; }
         }
+
+        public class Pool<T> : IPool, IReadOnlyList<T>
+        {
+            T IReadOnlyList<T>.this[int index] => Values[index];
+            public T[] Values = new T[8];
+            public int Count => count;
+            int IPool.ID => TypeID.GetID<T>.Value;
+            int count;
+
+            public void Add(int amount)
+            {
+                count += amount;
+                if (count > Values.Length)
+                {
+                    int newSize = Values.Length;
+                    while (newSize < count)
+                        newSize *= 2;
+                    if (newSize > Values.Length)
+                        Array.Resize(ref Values, newSize);
+                }
+            }
+            void IPool.Add(object obj)
+                => Add((T)obj);
+
+            public void Add(T obj)
+            {
+                if (count == Values.Length)
+                    Array.Resize(ref Values, count * 2);
+                Values[count] = obj;
+                count++;
+            }
+
+            public object Remove(int index)
+            {
+                count--;
+                var component = Values[index];
+                Values[index] = Values[count];
+                Values[count] = default;
+                return component;
+            }
+
+            public void Set(int index, object obj)
+            {
+                Values[index] = (T)obj;
+            }
+
+            void IPool.Resize()
+            {
+                int new_size = 8;
+                while (new_size < count)
+                    new_size *= 2;
+                if (new_size == Values.Length)
+                    return;
+                Array.Resize(ref Values, new_size);
+            }
+
+            public object Get(int index)
+                => Values[index];
+
+            IEnumerator<T> IEnumerable<T>.GetEnumerator()
+            {
+                for (int i = count - 1; i >= 0; --i)
+                    yield return Values[i];
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                for (int i = count - 1; i >= 0; --i)
+                    yield return Values[i];
+            }
+        }
+
 
         public class TypeSignature : IEquatable<TypeSignature>,
                                         IReadOnlyList<Type>,
                                         IReadOnlyList<int>,
-                                        IReadOnly_TypeSignature
+                                        TypeSignature.IReadOnly
         {
+            public interface IReadOnly
+            {
+                IReadOnlyList<Type> Types { get; }
+                IReadOnlyList<int> TypeIds { get; }
+                bool HasAny(TypeSignature signature);
+                bool HasAll(TypeSignature signature);
+                bool Has<T>();
+                int Count { get; }
+                int ID { get; }
+            }
+
             int[] type_ids = new int[4];
             Type[] types = new Type[4];
             int type_count;
@@ -758,6 +836,19 @@ namespace SimpleECS
             public int Count => type_count;
             public IReadOnlyList<int> TypeIds => this;  // neat trick to save me having to make another class
             public IReadOnlyList<Type> Types => this;
+
+            public TypeSignature(IReadOnly signature)
+            {
+                type_count = signature.Count;
+                type_ids = new int[type_count + 1];
+                types = new Type[type_count + 1];
+
+                for (int i = 0; i < type_count; ++i)
+                {
+                    type_ids[i] = signature.TypeIds[i];
+                    types[i] = signature.Types[i];
+                }
+            }
 
             public TypeSignature(params Type[] types)
             {
@@ -880,26 +971,6 @@ namespace SimpleECS
                     continue;
                 }
                 return true;
-            }
-
-            /// <summary>
-            /// Copies other signature to this signature
-            /// </summary>
-            public TypeSignature Copy(IReadOnly_TypeSignature other)
-            {
-                var count = other.TypeIds.Count;
-                if (type_count < count)
-                {
-                    type_ids = new int[count + 1];
-                    types = new Type[count + 1];
-                }
-                type_count = count;
-                for (int i = 0; i < count; ++i)
-                {
-                    type_ids[i] = other.TypeIds[i];
-                    types[i] = other.Types[i];
-                }
-                return this;
             }
 
             public override int GetHashCode()   // there's only around 4 billion or so possiblities
@@ -1071,7 +1142,9 @@ namespace SimpleECS
                 last_world_id = current_world.ID;
             }
             if (archetype == null)
+            {
                 archetype = World.GetArchetype(current_world, signature);
+            }
         }
 
         public Entity CreateEntity()
@@ -1127,7 +1200,7 @@ namespace SimpleECS
                 Refresh();
                 int count = 0;
                 for (int i = 0; i < archetype_count; ++i)
-                    count += matching_archetypes[i].Count;
+                    count += matching_archetypes[i].entity_count;
                 return count;
             }
         }
@@ -1263,7 +1336,7 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
                     archetype.entity_pool.Values[itr].MoveTo(world);
             }
         }
@@ -1276,7 +1349,7 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
                     archetype.entity_pool.Values[itr].Destroy();
             }
         }
@@ -1299,10 +1372,10 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)  // go backwards so new archetypes aren't updating
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count > 0 &&
+                if (archetype.entity_count > 0 &&
                     archetype.TryGetPool<C1>(out var pool_c1))  // skips archetype if not all components in action are contained in archetype
                 {
-                    for (int itr = archetype.Count - 1; itr >= 0; --itr) // go backwards so entity operations can be performed synchonously
+                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr) // go backwards so entity operations can be performed synchonously
                         action(ref pool_c1.Values[itr]);
                 }
             }
@@ -1314,11 +1387,11 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count > 0 &&
+                if (archetype.entity_count > 0 &&
                     archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2))
                 {
-                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
                         action(ref pool_c1.Values[itr],
                                 ref pool_c2.Values[itr]);
                 }
@@ -1331,12 +1404,12 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count > 0 &&
+                if (archetype.entity_count > 0 &&
                     archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2) &&
                     archetype.TryGetPool<C3>(out var pool_c3))
                 {
-                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
                         action(ref pool_c1.Values[itr],
                                 ref pool_c2.Values[itr],
                                 ref pool_c3.Values[itr]);
@@ -1350,13 +1423,13 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count > 0 &&
+                if (archetype.entity_count > 0 &&
                     archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2) &&
                     archetype.TryGetPool<C3>(out var pool_c3) &&
                     archetype.TryGetPool<C4>(out var pool_c4))
                 {
-                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
                         action(ref pool_c1.Values[itr],
                                 ref pool_c2.Values[itr],
                                 ref pool_c3.Values[itr],
@@ -1371,14 +1444,14 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count > 0 &&
+                if (archetype.entity_count > 0 &&
                     archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2) &&
                     archetype.TryGetPool<C3>(out var pool_c3) &&
                     archetype.TryGetPool<C4>(out var pool_c4) &&
                     archetype.TryGetPool<C5>(out var pool_c5))
                 {
-                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
                         action(ref pool_c1.Values[itr],
                                 ref pool_c2.Values[itr],
                                 ref pool_c3.Values[itr],
@@ -1394,7 +1467,7 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count > 0 &&
+                if (archetype.entity_count > 0 &&
                     archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2) &&
                     archetype.TryGetPool<C3>(out var pool_c3) &&
@@ -1402,7 +1475,7 @@ namespace SimpleECS
                     archetype.TryGetPool<C5>(out var pool_c5) &&
                     archetype.TryGetPool<C6>(out var pool_c6))
                 {
-                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
                         action(ref pool_c1.Values[itr],
                                 ref pool_c2.Values[itr],
                                 ref pool_c3.Values[itr],
@@ -1419,7 +1492,7 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count > 0 &&
+                if (archetype.entity_count > 0 &&
                     archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2) &&
                     archetype.TryGetPool<C3>(out var pool_c3) &&
@@ -1428,7 +1501,7 @@ namespace SimpleECS
                     archetype.TryGetPool<C6>(out var pool_c6) &&
                     archetype.TryGetPool<C7>(out var pool_c7))
                 {
-                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
                         action(ref pool_c1.Values[itr],
                                 ref pool_c2.Values[itr],
                                 ref pool_c3.Values[itr],
@@ -1446,7 +1519,7 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count > 0 &&
+                if (archetype.entity_count > 0 &&
                     archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2) &&
                     archetype.TryGetPool<C3>(out var pool_c3) &&
@@ -1456,7 +1529,7 @@ namespace SimpleECS
                     archetype.TryGetPool<C7>(out var pool_c7) &&
                     archetype.TryGetPool<C8>(out var pool_c8))
                 {
-                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
                         action(ref pool_c1.Values[itr],
                                 ref pool_c2.Values[itr],
                                 ref pool_c3.Values[itr],
@@ -1485,9 +1558,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count > 0)
+                if (archetype.entity_count > 0)
                 {
-                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
                         action(archetype.entity_pool.Values[itr]);
                 }
             }
@@ -1502,10 +1575,10 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)  // go backwards so new archetypes aren't updating
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count > 0 &&
+                if (archetype.entity_count > 0 &&
                     archetype.TryGetPool<C1>(out var pool_c1))  // skips archetype if not all components in action are contained in archetype
                 {
-                    for (int itr = archetype.Count - 1; itr >= 0; --itr) // go backwards so entity operations can be performed synchonously
+                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr) // go backwards so entity operations can be performed synchonously
                         action(archetype.entity_pool.Values[itr],
                                 ref pool_c1.Values[itr]);
                 }
@@ -1518,11 +1591,11 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count > 0 &&
+                if (archetype.entity_count > 0 &&
                     archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2))
                 {
-                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
                         action(archetype.entity_pool.Values[itr],
                                 ref pool_c1.Values[itr],
                                 ref pool_c2.Values[itr]);
@@ -1536,12 +1609,12 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count > 0 &&
+                if (archetype.entity_count > 0 &&
                     archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2) &&
                     archetype.TryGetPool<C3>(out var pool_c3))
                 {
-                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
                         action(archetype.entity_pool.Values[itr],
                                 ref pool_c1.Values[itr],
                                 ref pool_c2.Values[itr],
@@ -1556,13 +1629,13 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count > 0 &&
+                if (archetype.entity_count > 0 &&
                     archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2) &&
                     archetype.TryGetPool<C3>(out var pool_c3) &&
                     archetype.TryGetPool<C4>(out var pool_c4))
                 {
-                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
                         action(archetype.entity_pool.Values[itr],
                                 ref pool_c1.Values[itr],
                                 ref pool_c2.Values[itr],
@@ -1578,14 +1651,14 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count > 0 &&
+                if (archetype.entity_count > 0 &&
                     archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2) &&
                     archetype.TryGetPool<C3>(out var pool_c3) &&
                     archetype.TryGetPool<C4>(out var pool_c4) &&
                     archetype.TryGetPool<C5>(out var pool_c5))
                 {
-                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
                         action(archetype.entity_pool.Values[itr],
                                 ref pool_c1.Values[itr],
                                 ref pool_c2.Values[itr],
@@ -1602,7 +1675,7 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count > 0 &&
+                if (archetype.entity_count > 0 &&
                     archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2) &&
                     archetype.TryGetPool<C3>(out var pool_c3) &&
@@ -1610,7 +1683,7 @@ namespace SimpleECS
                     archetype.TryGetPool<C5>(out var pool_c5) &&
                     archetype.TryGetPool<C6>(out var pool_c6))
                 {
-                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
                         action(archetype.entity_pool.Values[itr],
                                 ref pool_c1.Values[itr],
                                 ref pool_c2.Values[itr],
@@ -1628,7 +1701,7 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count > 0 &&
+                if (archetype.entity_count > 0 &&
                     archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2) &&
                     archetype.TryGetPool<C3>(out var pool_c3) &&
@@ -1637,7 +1710,7 @@ namespace SimpleECS
                     archetype.TryGetPool<C6>(out var pool_c6) &&
                     archetype.TryGetPool<C7>(out var pool_c7))
                 {
-                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
                         action(archetype.entity_pool.Values[itr],
                                 ref pool_c1.Values[itr],
                                 ref pool_c2.Values[itr],
@@ -1656,7 +1729,7 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.Count > 0 &&
+                if (archetype.entity_count > 0 &&
                     archetype.TryGetPool<C1>(out var pool_c1) &&
                     archetype.TryGetPool<C2>(out var pool_c2) &&
                     archetype.TryGetPool<C3>(out var pool_c3) &&
@@ -1666,7 +1739,7 @@ namespace SimpleECS
                     archetype.TryGetPool<C7>(out var pool_c7) &&
                     archetype.TryGetPool<C8>(out var pool_c8))
                 {
-                    for (int itr = archetype.Count - 1; itr >= 0; --itr)
+                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
                         action(archetype.entity_pool.Values[itr],
                                 ref pool_c1.Values[itr],
                                 ref pool_c2.Values[itr],

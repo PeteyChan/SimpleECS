@@ -192,7 +192,7 @@ query.world = world;      // If you want them to return to their default behavio
 new Entity(world, 3f, 2); // You can specify which world to spawn an entity in by passing it as the first parameter.
 
 var new_entity = old_entity.MoveTo(world);  // moves entity from it's current world to it's new world and returns the  
-                                            // entity's new value in that world. The original entity is now invalid.
+                                            // entity's entity in that world. The original entity is now invalid.
                                             // This operation is not thread safe, so all worlds should be synced to the main thread beforehand
 
 World.Default.Compact();  // after deleting or moving large amount of entities or components, you can call Compact() to resize the world's backing arrays

@@ -84,7 +84,7 @@ namespace SimpleECS
             => ref World.Get<Component>(this);
 
         /// <summary>
-        /// Sets the component on entity, adds it if entity is valid and it does not have one already
+        /// Sets the component on entity to value, adds it if entity is valid and it does not have one already
         /// </summary>
         public Entity Set<Component>(Component component)
             => World.Set(this, component);
@@ -96,7 +96,7 @@ namespace SimpleECS
             => World.Has<Component>(this);
 
         /// <summary>
-        /// Tries to get the component, returns false if entity does not have one or is invalid
+        /// Tries to get the component, returns false if it fails
         /// </summary>
         public bool TryGet<Component>(out Component value)
             => World.TryGet(this, out value);
@@ -112,7 +112,7 @@ namespace SimpleECS
         /// <summary>
         /// Destroys the entity.
         /// All components implementing IDisposable will have it called.
-        /// Entity is invalid when Dispose() is called
+        /// Entity is invalid during the Dispose() call
         /// </summary>
         public void Destroy()
             => World.DestroyEntity(this);
@@ -158,17 +158,15 @@ namespace SimpleECS
         IEnumerator<object> IEnumerable<object>.GetEnumerator()
         {
             foreach (var obj in World.GetAllComponents(this))
-            {
                 yield return obj;
-            }
+            
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
             foreach (var obj in World.GetAllComponents(this))
-            {
                 yield return obj;
-            }
+            
         }
 
         public override string ToString()
@@ -190,7 +188,7 @@ namespace SimpleECS
 
         List<Archetype> archetypes = new List<Archetype>();
 
-        Dictionary<int, Archetype> id_to_archetype = new Dictionary<int, Archetype>();
+        Dictionary<int, List<Archetype>> id_to_archetype = new Dictionary<int, List<Archetype>>();
         Stack<int> free_entities = new Stack<int>();
         Entity_Data[] entity_data = new Entity_Data[256];
         int entity_data_count;
@@ -400,6 +398,7 @@ namespace SimpleECS
             return entity;
         }
 
+        Stack<IDisposable> disposables= new Stack<IDisposable>();
         public static void DestroyEntity(Entity entity)
         {
             if (IsValid(entity))
@@ -413,15 +412,15 @@ namespace SimpleECS
                                 .component_index = data.component_index;
 
                 data.archetype.entity_pool.Remove(data.component_index);
-                var stack = new Stack<IDisposable>();
+                
                 foreach (var pool in data.archetype.pools)
                 {
                     var removed = pool.Remove(data.component_index);
                     if (removed is IDisposable disposable)
-                        stack.Push(disposable);
+                        world.disposables.Push(disposable);
                 }
-                while (stack.Count > 0)      // don't want to call dispose until after all the structure changes are done
-                    stack.Pop()?.Dispose();  // though this is annoying, maybe a better way?
+                while (world.disposables.Count > 0)     // calling Dispose() after all structural changes are complete
+                    world.disposables.Pop()?.Dispose(); // just in case Dispose() causes more structural changes
             }
         }
 
@@ -498,27 +497,32 @@ namespace SimpleECS
         {
             if (IsValid(entity))
                 return entity.world.entity_data[entity.index].archetype;
-            throw new Exception($"{entity} is invalid. Cannot retrieve archetype");
+            throw new Exception($"{entity} is invalid. Cannot get archetype");
+        }
+
+        class arcehetype_node
+        {
+            public Archetype archtype;
+            public arcehetype_node next;
         }
 
         public static Archetype GetArchetype(World world, TypeSignature.IReadOnly signature)
         {
-            if (world.id_to_archetype.TryGetValue(signature.ID, out var archetype))
-            {
-                if (signature.Equals(archetype.signature))
+            if (!world.id_to_archetype.TryGetValue(signature.ID, out var archtypes))
+                world.id_to_archetype[signature.ID] = archtypes = new List<Archetype>();
+            
+            Archetype archetype;
+            for(int i= 0; i< archtypes.Count; ++ i) // although the hash is good, there is always a slim chance for
+            {                                       // collisions. Although this is slower, it'll never fail
+                archetype = archtypes[i];
+                if (archetype.signature.Equals(signature))
                     return archetype;
-                // this exception hopefully never gets thrown, but if it does just change the prime used in 
-                // the TypeSignature.GetHashCode function to a bigger one
-                throw new Exception($"Archetype Hash Collision : {signature} <--> {archetype.signature}");
             }
-
-            world.id_to_archetype[signature.ID] = archetype = new Archetype(world, signature);
+            archetype = new Archetype(world, signature);            
+            archtypes.Add(archetype);
             world.archetypes.Add(archetype);
-            return archetype;
+            return archetype;            
         }
-
-        public static bool TryGetArchetype(World world, int archetype_ID, out Archetype archetype)
-            => world.id_to_archetype.TryGetValue(archetype_ID, out archetype);
 
         public static int GetComponentCount(Entity entity)
             => IsValid(entity) ? entity.world.entity_data[entity.index].archetype.component_count : 0;
@@ -740,10 +744,13 @@ namespace SimpleECS
 
         public class Pool<T> : IPool, IReadOnlyList<T>
         {
+            
+
             T IReadOnlyList<T>.this[int index] => Values[index];
             public T[] Values = new T[8];
             public int Count => count;
             int IPool.ID => TypeID.GetID<T>.Value;
+            readonly static bool disposable = typeof(IDisposable).IsAssignableFrom(typeof(T));
             int count;
 
             public void Add(int amount)
@@ -973,9 +980,9 @@ namespace SimpleECS
                 return true;
             }
 
-            public override int GetHashCode()   // there's only around 4 billion or so possiblities
-            {                                   // so on the off chance it does fail
-                int prime = 53;                 // just change the prime to a bigger one
+            public override int GetHashCode()   
+            {                                   
+                int prime = 53;                 
                 int power = 1;
                 int hashval = 0;
 
@@ -1073,7 +1080,6 @@ namespace SimpleECS
 
         public World world;
         World.TypeSignature signature = new World.TypeSignature();
-        World.Archetype archetype;
         Action<Entity> set_components = delegate { };
         Action<Entity> on_complete = delegate { };
 
@@ -1083,7 +1089,6 @@ namespace SimpleECS
         public Blueprint Set<Component>()
         {
             signature.Add<Component>();
-            archetype = null;
             return this;
         }
 
@@ -1095,7 +1100,6 @@ namespace SimpleECS
         {
             signature.Add<Component>();
             set_components += entity => entity.Get<Component>() = component;
-            archetype = null;
             return this;
         }
 
@@ -1106,7 +1110,6 @@ namespace SimpleECS
         {
             signature.Add<Component>();
             set_components += entity => entity.Get<Component>() = component_creation_function();
-            archetype = null;
             return this;
         }
 
@@ -1118,7 +1121,6 @@ namespace SimpleECS
         {
             signature.Add<Component>();
             set_components += entity => entity.Get<Component>() = component_creation_function(entity);
-            archetype = null;
             return this;
         }
 
@@ -1131,25 +1133,10 @@ namespace SimpleECS
             this.on_complete = onComplete;
             return this;
         }
-
-        int last_world_id;
-        void UpdateBlueprint()
-        {
-            var current_world = world == null ? World.Default : world;
-            if (last_world_id != current_world.ID)
-            {
-                archetype = null;
-                last_world_id = current_world.ID;
-            }
-            if (archetype == null)
-            {
-                archetype = World.GetArchetype(current_world, signature);
-            }
-        }
-
         public Entity CreateEntity()
         {
-            UpdateBlueprint();
+            var current_world = world == null ? World.Default : world;
+            var archetype = World.GetArchetype(current_world, signature);
             var entity = World.CreateEntity(archetype);
             set_components(entity);
             on_complete(entity);
@@ -1158,7 +1145,8 @@ namespace SimpleECS
 
         public Entity[] CreateEntities(int count)
         {
-            UpdateBlueprint();
+            var current_world = world == null ? World.Default : world;
+            var archetype = World.GetArchetype(current_world, signature);
             var entities = World.CreateEntities(archetype, count);
             for (int i = 0; i < entities.Length; ++i)
             {
@@ -1172,7 +1160,6 @@ namespace SimpleECS
         string name;
         public override string ToString()
         {
-            UpdateBlueprint();
             if (name == null)
                 name = "Blueprint";
             return $"{name} : {signature}]";

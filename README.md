@@ -20,7 +20,7 @@ var entity = new Entity("my entity", 3, 5f);    // creates a new entity with com
 Manipulating entities is also pretty simple
 ```C#
 ref int value = ref entity.Get<int>();  // gets the entity's int component by ref value. 
-                                        // throws an exception if component is not found.
+                                        // creates a default component on entity if none found
 
 entity.Get<int>() += 4;           // since they are returned by ref, you can assign values directly
 
@@ -135,7 +135,7 @@ foreach(var archetype in query)
 ```
 
 
-Do not call Set(), Remove() or Destroy() on entities other than the owner as they can
+Do not call Get(), Set(), Remove() or Destroy() on entities other than the owner as they can
 change the structure of the archetypes and potentially invalidate query iterators.
 ```C#
 class MyComponent
@@ -147,11 +147,13 @@ List<Entity> ToDestroy = new List<Entity>();
 
 query.Foreach((in Entity entity, ref MyComponent comp) =>
 {
+    entity.Get<float>() += 3f;
     entity.Set(3);                    // these functions are structural functions that can potentially change
     entity.Remove<float>()            // the entity's archetype. The owner entity supports
     entity.Destroy();                 // structural operations so is fine to call them
     
     // BE CAREFUL
+    comp.other_entity.Get<float>() += 3f;
     comp.other_entity.Remove<int>();  // however since entity fields from components can potentially be anything,
     comp.other_entity.Set(4.5f);      // calling these functions can possibly invalidate the query's 
     comp.other_entity.Destroy();      // iterators and lead to undefined behaviour.
@@ -163,7 +165,7 @@ query.Foreach((in Entity entity, ref MyComponent comp) =>
       if (value > 20)                            // then add entities you want to change to a list
         ToDestroy.Add(comp.other_entity);
       else
-        comp.other_entity.Set(value++);          // once you know the component exists, it's safe to call set
+        comp.other_entity.Set(value++);          // once you know the component exists, it's safe to call get/set
         
       if (value == 5)               // making new entities in queries should be safe,so long as they
         blueprint.CreateEntity();   // don't modify the structure of existing entities in the process

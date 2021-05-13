@@ -74,9 +74,6 @@ namespace SimpleECS
         /// </summary>
         public readonly World world;
 
-        public int component_count
-            => World.GetComponentCount(this);
-
         /// <summary>
         /// Gets a reference to component. Throws exception if not found or entity is invalid
         /// </summary>
@@ -159,14 +156,14 @@ namespace SimpleECS
         {
             foreach (var obj in World.GetAllComponents(this))
                 yield return obj;
-            
+
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
             foreach (var obj in World.GetAllComponents(this))
                 yield return obj;
-            
+
         }
 
         public override string ToString()
@@ -183,19 +180,14 @@ namespace SimpleECS
         static int world_ids = 0;
         public readonly int ID = world_ids++;
         public static World Default = new World("Default World");
-
         public IReadOnlyList<Archetype> Archetypes => archetypes;
-
         List<Archetype> archetypes = new List<Archetype>();
-
         Dictionary<int, List<Archetype>> id_to_archetype = new Dictionary<int, List<Archetype>>();
         Stack<int> free_entities = new Stack<int>();
         Entity_Data[] entity_data = new Entity_Data[256];
         int entity_data_count;
-
         public int EntityCount => entity_data_count - free_entities.Count;
         public int ArchetypeCount => archetypes.Count;
-
         public World()
         {
             this.Name = $"World {ID}";
@@ -204,7 +196,6 @@ namespace SimpleECS
         {
             this.Name = name;
         }
-
         public static bool TryGetEntity(World world, int index, out Entity entity)
         {
             if (world != null && index >= 0 && index < world.entity_data.Length)
@@ -267,6 +258,7 @@ namespace SimpleECS
         {
             if (archetype?.world == null)
                 throw new Exception("Archetype is invalid, cannot create Entities");
+
             var world = archetype.world;
 
             Entity[] entities = new Entity[count];
@@ -314,7 +306,10 @@ namespace SimpleECS
                 ref var data = ref world.entity_data[entity.index];
                 if (data.archetype.TryGetPool<T>(out var pool))
                     return ref pool.Values[data.component_index];
-                else throw new Exception($"{entity} does not have [{typeof(T).FullName}] cannot get component");
+                Set<T>(entity, default);
+                if (data.archetype.TryGetPool<T>(out var new_pool))
+                    return ref new_pool.Values[data.component_index];
+                else throw new Exception($"{entity} failed to get new component from {data.archetype}, Framework Bug");
             }
             throw new Exception($"{entity} has been destroyed or is not valid, cannot get component");
         }
@@ -398,7 +393,7 @@ namespace SimpleECS
             return entity;
         }
 
-        Stack<IDisposable> disposables= new Stack<IDisposable>();
+        Stack<IDisposable> disposables = new Stack<IDisposable>();
         public static void DestroyEntity(Entity entity)
         {
             if (IsValid(entity))
@@ -412,7 +407,7 @@ namespace SimpleECS
                                 .component_index = data.component_index;
 
                 data.archetype.entity_pool.Remove(data.component_index);
-                
+
                 foreach (var pool in data.archetype.pools)
                 {
                     var removed = pool.Remove(data.component_index);
@@ -500,28 +495,22 @@ namespace SimpleECS
             throw new Exception($"{entity} is invalid. Cannot get archetype");
         }
 
-        class arcehetype_node
-        {
-            public Archetype archtype;
-            public arcehetype_node next;
-        }
-
         public static Archetype GetArchetype(World world, TypeSignature.IReadOnly signature)
         {
             if (!world.id_to_archetype.TryGetValue(signature.ID, out var archtypes))
                 world.id_to_archetype[signature.ID] = archtypes = new List<Archetype>();
-            
+
             Archetype archetype;
-            for(int i= 0; i< archtypes.Count; ++ i) // although the hash is good, there is always a slim chance for
+            for (int i = 0; i < archtypes.Count; ++i) // although the hash is good, there is always a slim chance for
             {                                       // collisions. Although this is slower, it'll never fail
                 archetype = archtypes[i];
                 if (archetype.signature.Equals(signature))
                     return archetype;
             }
-            archetype = new Archetype(world, signature);            
+            archetype = new Archetype(world, signature);
             archtypes.Add(archetype);
             world.archetypes.Add(archetype);
-            return archetype;            
+            return archetype;
         }
 
         public static int GetComponentCount(Entity entity)
@@ -649,7 +638,7 @@ namespace SimpleECS
                     pool = data.pool;
                     return true;
                 }
-                while (data.next != 0)
+                while (data.next > 0)
                 {
                     data = DataMap[data.next];
                     if (data.ID == type_id)
@@ -669,7 +658,7 @@ namespace SimpleECS
                 if (data.ID == type_id)
                     return true;
 
-                while (data.next != 0)
+                while (data.next > 0)
                 {
                     data = DataMap[data.next];
                     if (data.ID == type_id)
@@ -744,8 +733,6 @@ namespace SimpleECS
 
         public class Pool<T> : IPool, IReadOnlyList<T>
         {
-            
-
             T IReadOnlyList<T>.this[int index] => Values[index];
             public T[] Values = new T[8];
             public int Count => count;
@@ -980,9 +967,9 @@ namespace SimpleECS
                 return true;
             }
 
-            public override int GetHashCode()   
-            {                                   
-                int prime = 53;                 
+            public override int GetHashCode()
+            {
+                int prime = 53;
                 int power = 1;
                 int hashval = 0;
 
@@ -1166,21 +1153,110 @@ namespace SimpleECS
         }
     }
 
+    /// <summary>
+    /// Blueprint that allows the intake of an arguement when creating entities.
+    /// Makes it easier to use blueprints with unity or godot
+    /// </summary>
+    public class Blueprint<Args>
+    {
+        World.TypeSignature signature = new World.TypeSignature();
+        Action<Entity, Args> set_components = delegate {};
+        Action<Entity, Args> on_complete = delegate {};
+
+        public World world;
+
+        public Blueprint<Args> Set<Comp>()
+        {
+            signature.Add<Comp>();
+            return this;
+        }
+        public Blueprint<Args> Set<Comp>(Func<Args, Comp> comp_func)
+        {
+            signature.Add<Comp>();
+            set_components += (Entity e, Args args) => e.Set(comp_func(args));
+            return this;
+        }
+        public Blueprint<Args> Set<Comp>(Func<Entity, Comp> comp_func)
+        {
+            signature.Add<Comp>();
+            set_components += (Entity e, Args args) => e.Set(comp_func(e));
+            return this;
+        }
+
+        public Blueprint<Args> Set<Comp>(Func<Entity, Args, Comp> comp_func)
+        {
+            signature.Add<Comp>();
+            set_components += (Entity e, Args args) => e.Set(comp_func(e, args));
+            return this;
+        }
+
+        public Blueprint<Args> Set<Comp>(Func<Args, Entity, Comp> comp_func)
+        {
+            signature.Add<Comp>();
+            set_components += (Entity e, Args args) => e.Set(comp_func(args, e));
+            return this;
+        }
+
+        public Blueprint<Args> OnComplete(Action<Entity, Args> on_complete)
+        {
+            this.on_complete = on_complete;
+            return this;
+        }
+        public Blueprint<Args> OnComplete(Action<Entity> on_complete)
+        {
+            this.on_complete = (entity, args) => on_complete(entity);
+            return this;
+        }
+
+        public Blueprint<Args> OnComplete(Action<Args> on_complete)
+        {
+            this.on_complete = (entity, args) => on_complete(args);
+            return this;
+        }
+
+        public Blueprint<Args> OnComplete(Action<Args, Entity> on_complete)
+        {
+            this.on_complete = (entity, args) => on_complete(args, entity);
+            return this;
+        }
+
+
+        public Entity CreateEntity(Args args)
+        {
+            var current = world == null ? World.Default : world;
+            var entity = World.CreateEntity(World.GetArchetype(current, signature));
+            set_components(entity, args);
+            on_complete(entity, args);
+            return entity;
+        }
+        public Entity[] CreateEnttiies(Args args, int count)
+        {
+            var current = world == null ? World.Default : world;
+            var entities = World.CreateEntities(World.GetArchetype(current, signature), count);
+            for (int i = 0; i < entities.Length; ++i)
+            {
+                set_components(entities[i], args);
+                on_complete(entities[i], args);
+            }
+            return entities;
+        }
+    }
+
     public class Query : IReadOnlyList<World.Archetype>
     {
-        public IReadOnlyList<Type> IncludesTypes => has;
-        public IReadOnlyList<Type> ExcludesTypes => not;
+        public IReadOnlyList<Type> HasTypes => has;
+        public IReadOnlyList<Type> NotTypes => not;
         World.TypeSignature has = new World.TypeSignature();
         World.TypeSignature not = new World.TypeSignature();
-        int archetype_count;
+        int archetype_count;    // number of matching archetypes
         World.Archetype[] matching_archetypes = new World.Archetype[8];
         public IReadOnlyList<World.Archetype> MatchingArchetypes => this;
-        int current_archetype_index;
+        int current_archetype_index; // index of last archetype in world that we checked for a match
         /// <summary>
         /// Current world the query operates on, if null will query World.Default
         /// </summary>
         public World world;
-        public int MatchingEntities
+        public int EntityCount  // count of matching entities
         {
             get
             {
@@ -1269,8 +1345,7 @@ namespace SimpleECS
                     name += "]";
                 }
             }
-
-            return $"{name} [{archetype_count}a {MatchingEntities}e]";
+            return $"{name}";
         }
 
         int lastWorldID;
@@ -1340,7 +1415,10 @@ namespace SimpleECS
                     archetype.entity_pool.Values[itr].Destroy();
             }
         }
+    }
 
+    public static class Extensions
+    {
         public delegate void query<C1>(ref C1 c1);
         public delegate void query<C1, C2>(ref C1 c1, ref C2 c2);
         public delegate void query<C1, C2, C3>(ref C1 c1, ref C2 c2, ref C3 c3);
@@ -1349,185 +1427,6 @@ namespace SimpleECS
         public delegate void query<C1, C2, C3, C4, C5, C6>(ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6);
         public delegate void query<C1, C2, C3, C4, C5, C6, C7>(ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6, ref C7 c7);
         public delegate void query<C1, C2, C3, C4, C5, C6, C7, C8>(ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6, ref C7 c7, ref C8 c8);
-
-        /// <summary>
-        /// performs action on all entities matching the query and all components in action
-        /// </summary>
-        public void Foreach<C1>(query<C1> action)
-        {
-            Refresh();
-            for (int i = archetype_count - 1; i >= 0; --i)  // go backwards so new archetypes aren't updating
-            {
-                var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 &&
-                    archetype.TryGetPool<C1>(out var pool_c1))  // skips archetype if not all components in action are contained in archetype
-                {
-                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr) // go backwards so entity operations can be performed synchonously
-                        action(ref pool_c1.Values[itr]);
-                }
-            }
-        }
-
-        public void Foreach<C1, C2>(query<C1, C2> action)
-        {
-            Refresh();
-            for (int i = archetype_count - 1; i >= 0; --i)
-            {
-                var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 &&
-                    archetype.TryGetPool<C1>(out var pool_c1) &&
-                    archetype.TryGetPool<C2>(out var pool_c2))
-                {
-                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                        action(ref pool_c1.Values[itr],
-                                ref pool_c2.Values[itr]);
-                }
-            }
-        }
-
-        public void Foreach<C1, C2, C3>(query<C1, C2, C3> action)
-        {
-            Refresh();
-            for (int i = archetype_count - 1; i >= 0; --i)
-            {
-                var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 &&
-                    archetype.TryGetPool<C1>(out var pool_c1) &&
-                    archetype.TryGetPool<C2>(out var pool_c2) &&
-                    archetype.TryGetPool<C3>(out var pool_c3))
-                {
-                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                        action(ref pool_c1.Values[itr],
-                                ref pool_c2.Values[itr],
-                                ref pool_c3.Values[itr]);
-                }
-            }
-        }
-
-        public void Foreach<C1, C2, C3, C4>(query<C1, C2, C3, C4> action)
-        {
-            Refresh();
-            for (int i = archetype_count - 1; i >= 0; --i)
-            {
-                var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 &&
-                    archetype.TryGetPool<C1>(out var pool_c1) &&
-                    archetype.TryGetPool<C2>(out var pool_c2) &&
-                    archetype.TryGetPool<C3>(out var pool_c3) &&
-                    archetype.TryGetPool<C4>(out var pool_c4))
-                {
-                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                        action(ref pool_c1.Values[itr],
-                                ref pool_c2.Values[itr],
-                                ref pool_c3.Values[itr],
-                                ref pool_c4.Values[itr]);
-                }
-            }
-        }
-
-        public void Foreach<C1, C2, C3, C4, C5>(query<C1, C2, C3, C4, C5> action)
-        {
-            Refresh();
-            for (int i = archetype_count - 1; i >= 0; --i)
-            {
-                var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 &&
-                    archetype.TryGetPool<C1>(out var pool_c1) &&
-                    archetype.TryGetPool<C2>(out var pool_c2) &&
-                    archetype.TryGetPool<C3>(out var pool_c3) &&
-                    archetype.TryGetPool<C4>(out var pool_c4) &&
-                    archetype.TryGetPool<C5>(out var pool_c5))
-                {
-                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                        action(ref pool_c1.Values[itr],
-                                ref pool_c2.Values[itr],
-                                ref pool_c3.Values[itr],
-                                ref pool_c4.Values[itr],
-                                ref pool_c5.Values[itr]);
-                }
-            }
-        }
-
-        public void Foreach<C1, C2, C3, C4, C5, C6>(query<C1, C2, C3, C4, C5, C6> action)
-        {
-            Refresh();
-            for (int i = archetype_count - 1; i >= 0; --i)
-            {
-                var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 &&
-                    archetype.TryGetPool<C1>(out var pool_c1) &&
-                    archetype.TryGetPool<C2>(out var pool_c2) &&
-                    archetype.TryGetPool<C3>(out var pool_c3) &&
-                    archetype.TryGetPool<C4>(out var pool_c4) &&
-                    archetype.TryGetPool<C5>(out var pool_c5) &&
-                    archetype.TryGetPool<C6>(out var pool_c6))
-                {
-                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                        action(ref pool_c1.Values[itr],
-                                ref pool_c2.Values[itr],
-                                ref pool_c3.Values[itr],
-                                ref pool_c4.Values[itr],
-                                ref pool_c5.Values[itr],
-                                ref pool_c6.Values[itr]);
-                }
-            }
-        }
-
-        public void Foreach<C1, C2, C3, C4, C5, C6, C7>(query<C1, C2, C3, C4, C5, C6, C7> action)
-        {
-            Refresh();
-            for (int i = archetype_count - 1; i >= 0; --i)
-            {
-                var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 &&
-                    archetype.TryGetPool<C1>(out var pool_c1) &&
-                    archetype.TryGetPool<C2>(out var pool_c2) &&
-                    archetype.TryGetPool<C3>(out var pool_c3) &&
-                    archetype.TryGetPool<C4>(out var pool_c4) &&
-                    archetype.TryGetPool<C5>(out var pool_c5) &&
-                    archetype.TryGetPool<C6>(out var pool_c6) &&
-                    archetype.TryGetPool<C7>(out var pool_c7))
-                {
-                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                        action(ref pool_c1.Values[itr],
-                                ref pool_c2.Values[itr],
-                                ref pool_c3.Values[itr],
-                                ref pool_c4.Values[itr],
-                                ref pool_c5.Values[itr],
-                                ref pool_c6.Values[itr],
-                                ref pool_c7.Values[itr]);
-                }
-            }
-        }
-
-        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8>(query<C1, C2, C3, C4, C5, C6, C7, C8> action)
-        {
-            Refresh();
-            for (int i = archetype_count - 1; i >= 0; --i)
-            {
-                var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 &&
-                    archetype.TryGetPool<C1>(out var pool_c1) &&
-                    archetype.TryGetPool<C2>(out var pool_c2) &&
-                    archetype.TryGetPool<C3>(out var pool_c3) &&
-                    archetype.TryGetPool<C4>(out var pool_c4) &&
-                    archetype.TryGetPool<C5>(out var pool_c5) &&
-                    archetype.TryGetPool<C6>(out var pool_c6) &&
-                    archetype.TryGetPool<C7>(out var pool_c7) &&
-                    archetype.TryGetPool<C8>(out var pool_c8))
-                {
-                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                        action(ref pool_c1.Values[itr],
-                                ref pool_c2.Values[itr],
-                                ref pool_c3.Values[itr],
-                                ref pool_c4.Values[itr],
-                                ref pool_c5.Values[itr],
-                                ref pool_c6.Values[itr],
-                                ref pool_c7.Values[itr],
-                                ref pool_c8.Values[itr]);
-                }
-            }
-        }
 
         public delegate void entity_query(in Entity entity);
         public delegate void entity_query<C1>(in Entity entity, ref C1 c1);
@@ -1539,204 +1438,443 @@ namespace SimpleECS
         public delegate void entity_query<C1, C2, C3, C4, C5, C6, C7>(in Entity entity, ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6, ref C7 c7);
         public delegate void entity_query<C1, C2, C3, C4, C5, C6, C7, C8>(in Entity entity, ref C1 c1, ref C2 c2, ref C3 c3, ref C4 c4, ref C5 c5, ref C6 c6, ref C7 c7, ref C8 c8);
 
-        public void Foreach(entity_query action)
+
+        /// QUERY EXTENSIONS ///
+
+        public static void Foreach<C1>(this Query query, in query<C1> action)
         {
-            Refresh();
-            for (int i = archetype_count - 1; i >= 0; --i)
+            query.Refresh();
+            for (int i = query.MatchingArchetypes.Count - 1; i >= 0; --i)
+                query.MatchingArchetypes[i].Foreach(action);
+        }
+
+        public static void Foreach<C1, C2>(this Query query, in query<C1, C2> action)
+        {
+            query.Refresh();
+            for (int i = query.MatchingArchetypes.Count - 1; i >= 0; --i)
+                query.MatchingArchetypes[i].Foreach(action);
+        }
+
+        public static void Foreach<C1, C2, C3>(this Query query, in query<C1, C2, C3> action)
+        {
+            query.Refresh();
+            for (int i = query.MatchingArchetypes.Count - 1; i >= 0; --i)
+                query.MatchingArchetypes[i].Foreach(action);
+        }
+
+        public static void Foreach<C1, C2, C3, C4>(this Query query, in query<C1, C2, C3, C4> action)
+        {
+            query.Refresh();
+            for (int i = query.MatchingArchetypes.Count - 1; i >= 0; --i)
+                query.MatchingArchetypes[i].Foreach(action);
+        }
+
+        public static void Foreach<C1, C2, C3, C4, C5>(this Query query, in query<C1, C2, C3, C4, C5> action)
+        {
+            query.Refresh();
+            for (int i = query.MatchingArchetypes.Count - 1; i >= 0; --i)
+                query.MatchingArchetypes[i].Foreach(action);
+        }
+
+        public static void Foreach<C1, C2, C3, C4, C5, C6>(this Query query, in query<C1, C2, C3, C4, C5, C6> action)
+        {
+            query.Refresh();
+            for (int i = query.MatchingArchetypes.Count - 1; i >= 0; --i)
+                query.MatchingArchetypes[i].Foreach(action);
+        }
+
+        public static void Foreach<C1, C2, C3, C4, C5, C6, C7>(this Query query, in query<C1, C2, C3, C4, C5, C6, C7> action)
+        {
+            query.Refresh();
+            for (int i = query.MatchingArchetypes.Count - 1; i >= 0; --i)
+                query.MatchingArchetypes[i].Foreach(action);
+        }
+
+        public static void Foreach<C1, C2, C3, C4, C5, C6, C7, C8>(this Query query, in query<C1, C2, C3, C4, C5, C6, C7, C8> action)
+        {
+            query.Refresh();
+            for (int i = query.MatchingArchetypes.Count - 1; i >= 0; --i)
+                query.MatchingArchetypes[i].Foreach(action);
+        }
+
+        public static void Foreach(this Query query, in Action<Entity> action)
+        {
+            query.Refresh();
+            for (int i = query.MatchingArchetypes.Count - 1; i >= 0; --i)
+                query.MatchingArchetypes[i].Foreach(action);
+        }
+
+        public static void Foreach(this Query query, in entity_query action)
+        {
+            query.Refresh();
+            for (int i = query.MatchingArchetypes.Count - 1; i >= 0; --i)
+                query.MatchingArchetypes[i].Foreach(action);
+        }
+
+        public static void Foreach<C1>(this Query query, in entity_query<C1> action)
+        {
+            query.Refresh();
+            for (int i = query.MatchingArchetypes.Count - 1; i >= 0; --i)
+                query.MatchingArchetypes[i].Foreach(action);
+        }
+
+        public static void Foreach<C1, C2>(this Query query, in entity_query<C1, C2> action)
+        {
+            query.Refresh();
+            for (int i = query.MatchingArchetypes.Count - 1; i >= 0; --i)
+                query.MatchingArchetypes[i].Foreach(action);
+        }
+
+        public static void Foreach<C1, C2, C3>(this Query query, in entity_query<C1, C2, C3> action)
+        {
+            query.Refresh();
+            for (int i = query.MatchingArchetypes.Count - 1; i >= 0; --i)
+                query.MatchingArchetypes[i].Foreach(action);
+        }
+
+        public static void Foreach<C1, C2, C3, C4>(this Query query, in entity_query<C1, C2, C3, C4> action)
+        {
+            query.Refresh();
+            for (int i = query.MatchingArchetypes.Count - 1; i >= 0; --i)
+                query.MatchingArchetypes[i].Foreach(action);
+        }
+
+        public static void Foreach<C1, C2, C3, C4, C5>(this Query query, in entity_query<C1, C2, C3, C4, C5> action)
+        {
+            query.Refresh();
+            for (int i = query.MatchingArchetypes.Count - 1; i >= 0; --i)
+                query.MatchingArchetypes[i].Foreach(action);
+        }
+
+        public static void Foreach<C1, C2, C3, C4, C5, C6>(this Query query, in entity_query<C1, C2, C3, C4, C5, C6> action)
+        {
+            query.Refresh();
+            for (int i = query.MatchingArchetypes.Count - 1; i >= 0; --i)
+                query.MatchingArchetypes[i].Foreach(action);
+        }
+
+        public static void Foreach<C1, C2, C3, C4, C5, C6, C7>(this Query query, in entity_query<C1, C2, C3, C4, C5, C6, C7> action)
+        {
+            query.Refresh();
+            for (int i = query.MatchingArchetypes.Count - 1; i >= 0; --i)
+                query.MatchingArchetypes[i].Foreach(action);
+        }
+
+        public static void Foreach<C1, C2, C3, C4, C5, C6, C7, C8>(this Query query, in entity_query<C1, C2, C3, C4, C5, C6, C7, C8> action)
+        {
+            query.Refresh();
+            for (int i = query.MatchingArchetypes.Count - 1; i >= 0; --i)
+                query.MatchingArchetypes[i].Foreach(action);
+        }
+
+
+        /// ARCHETYPE EXTENSIONS
+
+
+        /// <summary>
+        /// performs action on all entities matching the query and all components in action
+        /// </summary>
+        public static void Foreach<C1>(this World.Archetype archetype, in query<C1> action)
+        {
+            if (archetype.entity_count > 0 &&
+                archetype.TryGetPool<C1>(out var pool_c1))  // skips archetype if not all components in action are contained in archetype
             {
-                var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0)
-                {
-                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                        action(archetype.entity_pool.Values[itr]);
-                }
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr) // go backwards so entity operations can be performed synchonously
+                    action(ref pool_c1.Values[itr]);
+            }
+        }
+
+        public static void Foreach<C1, C2>(this World.Archetype archetype, in query<C1, C2> action)
+        {
+            if (archetype.entity_count > 0 &&
+                archetype.TryGetPool<C1>(out var pool_c1) &&
+                archetype.TryGetPool<C2>(out var pool_c2))
+            {
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
+                    action(ref pool_c1.Values[itr],
+                            ref pool_c2.Values[itr]);
+            }
+        }
+
+        public static void Foreach<C1, C2, C3>(this World.Archetype archetype, in query<C1, C2, C3> action)
+        {
+            if (archetype.entity_count > 0 &&
+                archetype.TryGetPool<C1>(out var pool_c1) &&
+                archetype.TryGetPool<C2>(out var pool_c2) &&
+                archetype.TryGetPool<C3>(out var pool_c3))
+            {
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
+                    action(ref pool_c1.Values[itr],
+                            ref pool_c2.Values[itr],
+                            ref pool_c3.Values[itr]);
+            }
+        }
+
+        public static void Foreach<C1, C2, C3, C4>(this World.Archetype archetype, in query<C1, C2, C3, C4> action)
+        {
+            if (archetype.entity_count > 0 &&
+                archetype.TryGetPool<C1>(out var pool_c1) &&
+                archetype.TryGetPool<C2>(out var pool_c2) &&
+                archetype.TryGetPool<C3>(out var pool_c3) &&
+                archetype.TryGetPool<C4>(out var pool_c4))
+            {
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
+                    action(ref pool_c1.Values[itr],
+                            ref pool_c2.Values[itr],
+                            ref pool_c3.Values[itr],
+                            ref pool_c4.Values[itr]);
+            }
+        }
+
+        public static void Foreach<C1, C2, C3, C4, C5>(this World.Archetype archetype, in query<C1, C2, C3, C4, C5> action)
+        {
+            if (archetype.entity_count > 0 &&
+                archetype.TryGetPool<C1>(out var pool_c1) &&
+                archetype.TryGetPool<C2>(out var pool_c2) &&
+                archetype.TryGetPool<C3>(out var pool_c3) &&
+                archetype.TryGetPool<C4>(out var pool_c4) &&
+                archetype.TryGetPool<C5>(out var pool_c5))
+            {
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
+                    action(ref pool_c1.Values[itr],
+                            ref pool_c2.Values[itr],
+                            ref pool_c3.Values[itr],
+                            ref pool_c4.Values[itr],
+                            ref pool_c5.Values[itr]);
+            }
+        }
+
+        public static void Foreach<C1, C2, C3, C4, C5, C6>(this World.Archetype archetype, in query<C1, C2, C3, C4, C5, C6> action)
+        {
+            if (archetype.entity_count > 0 &&
+                archetype.TryGetPool<C1>(out var pool_c1) &&
+                archetype.TryGetPool<C2>(out var pool_c2) &&
+                archetype.TryGetPool<C3>(out var pool_c3) &&
+                archetype.TryGetPool<C4>(out var pool_c4) &&
+                archetype.TryGetPool<C5>(out var pool_c5) &&
+                archetype.TryGetPool<C6>(out var pool_c6))
+            {
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
+                    action(ref pool_c1.Values[itr],
+                            ref pool_c2.Values[itr],
+                            ref pool_c3.Values[itr],
+                            ref pool_c4.Values[itr],
+                            ref pool_c5.Values[itr],
+                            ref pool_c6.Values[itr]);
+            }
+        }
+
+        public static void Foreach<C1, C2, C3, C4, C5, C6, C7>(this World.Archetype archetype, in query<C1, C2, C3, C4, C5, C6, C7> action)
+        {
+            if (archetype.entity_count > 0 &&
+                archetype.TryGetPool<C1>(out var pool_c1) &&
+                archetype.TryGetPool<C2>(out var pool_c2) &&
+                archetype.TryGetPool<C3>(out var pool_c3) &&
+                archetype.TryGetPool<C4>(out var pool_c4) &&
+                archetype.TryGetPool<C5>(out var pool_c5) &&
+                archetype.TryGetPool<C6>(out var pool_c6) &&
+                archetype.TryGetPool<C7>(out var pool_c7))
+            {
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
+                    action(
+                            ref pool_c1.Values[itr],
+                            ref pool_c2.Values[itr],
+                            ref pool_c3.Values[itr],
+                            ref pool_c4.Values[itr],
+                            ref pool_c5.Values[itr],
+                            ref pool_c6.Values[itr],
+                            ref pool_c7.Values[itr]);
+            }
+        }
+
+        public static void Foreach<C1, C2, C3, C4, C5, C6, C7, C8>(this World.Archetype archetype, in query<C1, C2, C3, C4, C5, C6, C7, C8> action)
+        {
+            if (archetype.entity_count > 0 &&
+                archetype.TryGetPool<C1>(out var pool_c1) &&
+                archetype.TryGetPool<C2>(out var pool_c2) &&
+                archetype.TryGetPool<C3>(out var pool_c3) &&
+                archetype.TryGetPool<C4>(out var pool_c4) &&
+                archetype.TryGetPool<C5>(out var pool_c5) &&
+                archetype.TryGetPool<C6>(out var pool_c6) &&
+                archetype.TryGetPool<C7>(out var pool_c7) &&
+                archetype.TryGetPool<C8>(out var pool_c8))
+            {
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
+                    action(
+                            ref pool_c1.Values[itr],
+                            ref pool_c2.Values[itr],
+                            ref pool_c3.Values[itr],
+                            ref pool_c4.Values[itr],
+                            ref pool_c5.Values[itr],
+                            ref pool_c6.Values[itr],
+                            ref pool_c7.Values[itr],
+                            ref pool_c8.Values[itr]);
+            }
+        }
+
+
+        public static void Foreach(this World.Archetype archetype, in Action<Entity> action)
+        {
+            if (archetype.entity_count > 0)
+            {
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
+                    action(archetype.entity_pool.Values[itr]);
+            }
+        }
+
+        public static void Foreach(this World.Archetype archetype, in entity_query action)
+        {
+            if (archetype.entity_count > 0)
+            {
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
+                    action(archetype.entity_pool.Values[itr]);
             }
         }
 
         /// <summary>
         /// performs action on all entities matching the query and all components in action
         /// </summary>
-        public void Foreach<C1>(entity_query<C1> action)
+        public static void Foreach<C1>(this World.Archetype archetype, in entity_query<C1> action)
         {
-            Refresh();
-            for (int i = archetype_count - 1; i >= 0; --i)  // go backwards so new archetypes aren't updating
+            if (archetype.entity_count > 0 &&
+                archetype.TryGetPool<C1>(out var pool_c1))  // skips archetype if not all components in action are contained in archetype
             {
-                var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 &&
-                    archetype.TryGetPool<C1>(out var pool_c1))  // skips archetype if not all components in action are contained in archetype
-                {
-                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr) // go backwards so entity operations can be performed synchonously
-                        action(archetype.entity_pool.Values[itr],
-                                ref pool_c1.Values[itr]);
-                }
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr) // go backwards so entity operations can be performed synchonously
+                    action(archetype.entity_pool.Values[itr],
+                            ref pool_c1.Values[itr]);
             }
         }
 
-        public void Foreach<C1, C2>(entity_query<C1, C2> action)
+        public static void Foreach<C1, C2>(this World.Archetype archetype, in entity_query<C1, C2> action)
         {
-            Refresh();
-            for (int i = archetype_count - 1; i >= 0; --i)
+            if (archetype.entity_count > 0 &&
+                archetype.TryGetPool<C1>(out var pool_c1) &&
+                archetype.TryGetPool<C2>(out var pool_c2))
             {
-                var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 &&
-                    archetype.TryGetPool<C1>(out var pool_c1) &&
-                    archetype.TryGetPool<C2>(out var pool_c2))
-                {
-                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                        action(archetype.entity_pool.Values[itr],
-                                ref pool_c1.Values[itr],
-                                ref pool_c2.Values[itr]);
-                }
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
+                    action(archetype.entity_pool.Values[itr],
+                            ref pool_c1.Values[itr],
+                            ref pool_c2.Values[itr]);
             }
         }
 
-        public void Foreach<C1, C2, C3>(entity_query<C1, C2, C3> action)
+        public static void Foreach<C1, C2, C3>(this World.Archetype archetype, in entity_query<C1, C2, C3> action)
         {
-            Refresh();
-            for (int i = archetype_count - 1; i >= 0; --i)
+            if (archetype.entity_count > 0 &&
+                archetype.TryGetPool<C1>(out var pool_c1) &&
+                archetype.TryGetPool<C2>(out var pool_c2) &&
+                archetype.TryGetPool<C3>(out var pool_c3))
             {
-                var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 &&
-                    archetype.TryGetPool<C1>(out var pool_c1) &&
-                    archetype.TryGetPool<C2>(out var pool_c2) &&
-                    archetype.TryGetPool<C3>(out var pool_c3))
-                {
-                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                        action(archetype.entity_pool.Values[itr],
-                                ref pool_c1.Values[itr],
-                                ref pool_c2.Values[itr],
-                                ref pool_c3.Values[itr]);
-                }
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
+                    action(archetype.entity_pool.Values[itr],
+                            ref pool_c1.Values[itr],
+                            ref pool_c2.Values[itr],
+                            ref pool_c3.Values[itr]);
             }
         }
 
-        public void Foreach<C1, C2, C3, C4>(entity_query<C1, C2, C3, C4> action)
+        public static void Foreach<C1, C2, C3, C4>(this World.Archetype archetype, in entity_query<C1, C2, C3, C4> action)
         {
-            Refresh();
-            for (int i = archetype_count - 1; i >= 0; --i)
+            if (archetype.entity_count > 0 &&
+                archetype.TryGetPool<C1>(out var pool_c1) &&
+                archetype.TryGetPool<C2>(out var pool_c2) &&
+                archetype.TryGetPool<C3>(out var pool_c3) &&
+                archetype.TryGetPool<C4>(out var pool_c4))
             {
-                var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 &&
-                    archetype.TryGetPool<C1>(out var pool_c1) &&
-                    archetype.TryGetPool<C2>(out var pool_c2) &&
-                    archetype.TryGetPool<C3>(out var pool_c3) &&
-                    archetype.TryGetPool<C4>(out var pool_c4))
-                {
-                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                        action(archetype.entity_pool.Values[itr],
-                                ref pool_c1.Values[itr],
-                                ref pool_c2.Values[itr],
-                                ref pool_c3.Values[itr],
-                                ref pool_c4.Values[itr]);
-                }
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
+                    action(archetype.entity_pool.Values[itr],
+                            ref pool_c1.Values[itr],
+                            ref pool_c2.Values[itr],
+                            ref pool_c3.Values[itr],
+                            ref pool_c4.Values[itr]);
             }
         }
 
-        public void Foreach<C1, C2, C3, C4, C5>(entity_query<C1, C2, C3, C4, C5> action)
+        public static void Foreach<C1, C2, C3, C4, C5>(this World.Archetype archetype, in entity_query<C1, C2, C3, C4, C5> action)
         {
-            Refresh();
-            for (int i = archetype_count - 1; i >= 0; --i)
+            if (archetype.entity_count > 0 &&
+                archetype.TryGetPool<C1>(out var pool_c1) &&
+                archetype.TryGetPool<C2>(out var pool_c2) &&
+                archetype.TryGetPool<C3>(out var pool_c3) &&
+                archetype.TryGetPool<C4>(out var pool_c4) &&
+                archetype.TryGetPool<C5>(out var pool_c5))
             {
-                var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 &&
-                    archetype.TryGetPool<C1>(out var pool_c1) &&
-                    archetype.TryGetPool<C2>(out var pool_c2) &&
-                    archetype.TryGetPool<C3>(out var pool_c3) &&
-                    archetype.TryGetPool<C4>(out var pool_c4) &&
-                    archetype.TryGetPool<C5>(out var pool_c5))
-                {
-                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                        action(archetype.entity_pool.Values[itr],
-                                ref pool_c1.Values[itr],
-                                ref pool_c2.Values[itr],
-                                ref pool_c3.Values[itr],
-                                ref pool_c4.Values[itr],
-                                ref pool_c5.Values[itr]);
-                }
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
+                    action(archetype.entity_pool.Values[itr],
+                            ref pool_c1.Values[itr],
+                            ref pool_c2.Values[itr],
+                            ref pool_c3.Values[itr],
+                            ref pool_c4.Values[itr],
+                            ref pool_c5.Values[itr]);
             }
         }
 
-        public void Foreach<C1, C2, C3, C4, C5, C6>(entity_query<C1, C2, C3, C4, C5, C6> action)
+        public static void Foreach<C1, C2, C3, C4, C5, C6>(this World.Archetype archetype, in entity_query<C1, C2, C3, C4, C5, C6> action)
         {
-            Refresh();
-            for (int i = archetype_count - 1; i >= 0; --i)
+            if (archetype.entity_count > 0 &&
+                archetype.TryGetPool<C1>(out var pool_c1) &&
+                archetype.TryGetPool<C2>(out var pool_c2) &&
+                archetype.TryGetPool<C3>(out var pool_c3) &&
+                archetype.TryGetPool<C4>(out var pool_c4) &&
+                archetype.TryGetPool<C5>(out var pool_c5) &&
+                archetype.TryGetPool<C6>(out var pool_c6))
             {
-                var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 &&
-                    archetype.TryGetPool<C1>(out var pool_c1) &&
-                    archetype.TryGetPool<C2>(out var pool_c2) &&
-                    archetype.TryGetPool<C3>(out var pool_c3) &&
-                    archetype.TryGetPool<C4>(out var pool_c4) &&
-                    archetype.TryGetPool<C5>(out var pool_c5) &&
-                    archetype.TryGetPool<C6>(out var pool_c6))
-                {
-                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                        action(archetype.entity_pool.Values[itr],
-                                ref pool_c1.Values[itr],
-                                ref pool_c2.Values[itr],
-                                ref pool_c3.Values[itr],
-                                ref pool_c4.Values[itr],
-                                ref pool_c5.Values[itr],
-                                ref pool_c6.Values[itr]);
-                }
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
+                    action(archetype.entity_pool.Values[itr],
+                            ref pool_c1.Values[itr],
+                            ref pool_c2.Values[itr],
+                            ref pool_c3.Values[itr],
+                            ref pool_c4.Values[itr],
+                            ref pool_c5.Values[itr],
+                            ref pool_c6.Values[itr]);
             }
         }
 
-        public void Foreach<C1, C2, C3, C4, C5, C6, C7>(entity_query<C1, C2, C3, C4, C5, C6, C7> action)
+        public static void Foreach<C1, C2, C3, C4, C5, C6, C7>(this World.Archetype archetype, in entity_query<C1, C2, C3, C4, C5, C6, C7> action)
         {
-            Refresh();
-            for (int i = archetype_count - 1; i >= 0; --i)
+            if (archetype.entity_count > 0 &&
+                archetype.TryGetPool<C1>(out var pool_c1) &&
+                archetype.TryGetPool<C2>(out var pool_c2) &&
+                archetype.TryGetPool<C3>(out var pool_c3) &&
+                archetype.TryGetPool<C4>(out var pool_c4) &&
+                archetype.TryGetPool<C5>(out var pool_c5) &&
+                archetype.TryGetPool<C6>(out var pool_c6) &&
+                archetype.TryGetPool<C7>(out var pool_c7))
             {
-                var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 &&
-                    archetype.TryGetPool<C1>(out var pool_c1) &&
-                    archetype.TryGetPool<C2>(out var pool_c2) &&
-                    archetype.TryGetPool<C3>(out var pool_c3) &&
-                    archetype.TryGetPool<C4>(out var pool_c4) &&
-                    archetype.TryGetPool<C5>(out var pool_c5) &&
-                    archetype.TryGetPool<C6>(out var pool_c6) &&
-                    archetype.TryGetPool<C7>(out var pool_c7))
-                {
-                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                        action(archetype.entity_pool.Values[itr],
-                                ref pool_c1.Values[itr],
-                                ref pool_c2.Values[itr],
-                                ref pool_c3.Values[itr],
-                                ref pool_c4.Values[itr],
-                                ref pool_c5.Values[itr],
-                                ref pool_c6.Values[itr],
-                                ref pool_c7.Values[itr]);
-                }
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
+                    action(archetype.entity_pool.Values[itr],
+                            ref pool_c1.Values[itr],
+                            ref pool_c2.Values[itr],
+                            ref pool_c3.Values[itr],
+                            ref pool_c4.Values[itr],
+                            ref pool_c5.Values[itr],
+                            ref pool_c6.Values[itr],
+                            ref pool_c7.Values[itr]);
             }
         }
 
-        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8>(entity_query<C1, C2, C3, C4, C5, C6, C7, C8> action)
+        public static void Foreach<C1, C2, C3, C4, C5, C6, C7, C8>(this World.Archetype archetype, in entity_query<C1, C2, C3, C4, C5, C6, C7, C8> action)
         {
-            Refresh();
-            for (int i = archetype_count - 1; i >= 0; --i)
+            if (archetype.entity_count > 0 &&
+                archetype.TryGetPool<C1>(out var pool_c1) &&
+                archetype.TryGetPool<C2>(out var pool_c2) &&
+                archetype.TryGetPool<C3>(out var pool_c3) &&
+                archetype.TryGetPool<C4>(out var pool_c4) &&
+                archetype.TryGetPool<C5>(out var pool_c5) &&
+                archetype.TryGetPool<C6>(out var pool_c6) &&
+                archetype.TryGetPool<C7>(out var pool_c7) &&
+                archetype.TryGetPool<C8>(out var pool_c8))
             {
-                var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 &&
-                    archetype.TryGetPool<C1>(out var pool_c1) &&
-                    archetype.TryGetPool<C2>(out var pool_c2) &&
-                    archetype.TryGetPool<C3>(out var pool_c3) &&
-                    archetype.TryGetPool<C4>(out var pool_c4) &&
-                    archetype.TryGetPool<C5>(out var pool_c5) &&
-                    archetype.TryGetPool<C6>(out var pool_c6) &&
-                    archetype.TryGetPool<C7>(out var pool_c7) &&
-                    archetype.TryGetPool<C8>(out var pool_c8))
-                {
-                    for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                        action(archetype.entity_pool.Values[itr],
-                                ref pool_c1.Values[itr],
-                                ref pool_c2.Values[itr],
-                                ref pool_c3.Values[itr],
-                                ref pool_c4.Values[itr],
-                                ref pool_c5.Values[itr],
-                                ref pool_c6.Values[itr],
-                                ref pool_c7.Values[itr],
-                                ref pool_c8.Values[itr]);
-                }
+                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
+                    action(archetype.entity_pool.Values[itr],
+                            ref pool_c1.Values[itr],
+                            ref pool_c2.Values[itr],
+                            ref pool_c3.Values[itr],
+                            ref pool_c4.Values[itr],
+                            ref pool_c5.Values[itr],
+                            ref pool_c6.Values[itr],
+                            ref pool_c7.Values[itr],
+                            ref pool_c8.Values[itr]);
             }
         }
     }

@@ -81,6 +81,7 @@ query.Foreach( (in Entity entity, ref int value ) =>         // you can access t
   Console.WriteLine($"{entity} value is {value}");                  
 });
 ```
+
 Queries are already very fast, but for maximum performance manual iteration is possible
 ```C#
 query.Refresh();           // if not using Foreach() this must be called manually to keep the query up-to-date
@@ -92,7 +93,8 @@ for(int i = 0;i < query.MatchingArchetypes.Count; ++ i)
         int_pool.Values[index]++;
 }
 ```
-During Foreach strutural changes made using Set(), Remove() and Destroy() are
+
+During Foreach structural changes made using Set(), Remove() and Destroy() are
 cached and applied after iteration is complete. This is to prevent iterator
 invalidation. You can still create entities during foreach loops though as these
 do not change archetype structures.

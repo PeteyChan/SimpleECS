@@ -134,11 +134,15 @@ with the amount of components you want, then recompile.
 
 ```
 using SimpleECS.Internal;
+class Program
+{
+  static void Main(string[] args)
+  {
+    // generates Query.Foreach() functions for up to 24 components
+    Generator.ForeachFunctions("path to foreach functions file.cs", 24); 
 
-// generates Query.Foreach() functions for up to 24 components
-Generator.ForeachFunctions("path to foreach functions file.cs", 24); 
-
-// generates Entity.Create() functions for up to 100 components
-Generator.EntityCreateFunctions("path to create entity functions file.cs", 100);
-
+    // generates Entity.Create() functions for up to 100 components
+    Generator.EntityCreateFunctions("path to create entity functions file.cs", 100); 
+  }
+}
 ```

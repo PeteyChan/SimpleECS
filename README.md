@@ -54,7 +54,7 @@ if(entity)            // same as entity.IsValid
 ```
 ## Systems
 
-There are no systems in simpleECS, instead it just uses simple queries to manage entities.
+There are no systems in SimpleECS, instead it just uses simple queries to manage entities.
 
 
 ## Queries

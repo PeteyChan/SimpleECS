@@ -132,7 +132,7 @@ you want more than 12 components in the foreach function. You can use
 the Generator class to increase the limit. Simply call the functions
 with the amount of components you want, then recompile.
 
-```
+```C#
 using SimpleECS.Internal;
 class Program
 {

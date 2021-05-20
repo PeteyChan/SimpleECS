@@ -131,8 +131,10 @@ the Generator class to increase the limit
 ```
 using SimpleECS.Internal;
 
-Generator.ForeachFunctions("path to foreach functions file", 20); 
-  // generates foreach functions for up to 20 components
-Generator.EntityCreateFunctions("path to create entity function file", 100);
-  // generates create functions for up to 100 components
+// generates Query.Foreach() functions for up to 24 components
+Generator.ForeachFunctions("path to foreach functions file.cs", 24); 
+
+// generates Entity.Create() functions for up to 100 components
+Generator.EntityCreateFunctions("path to create entity functions file.cs", 100);
+
 ```

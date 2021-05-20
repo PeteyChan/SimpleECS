@@ -3,7 +3,7 @@ A Simple and easy to use C# Entity Component System.
 Min C# Framework 4.7
 
 ### Features:
-* No Dependencies, just drop the SimpleECS folder into your workspace
+* No Dependencies, just drop the SimpleECS folder into your project
 * No setup or boilerplate like marking components or code generators to get started
 * Archetype based = fast component iteration
 * Very simple query system

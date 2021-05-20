@@ -106,27 +106,31 @@ entity.Has<string>(); // this will return false
 
 query.Foreach((in Entity entity, ref int int_val) =>
 {
-  entity.Remove<int>();
-  entity.Has<int>();  // however this will turn true since we are in the middle
-                      // of iterating components
-  entity.Set("my entity");
-  entity.Has<string>(); // likewise this will return false
+  entity.Remove<int>(); // since this is a structural change and we are in 
+                        // the middle of interating, this will be cached
+  
+  entity.Has<int>();    // since Remove() was cached, this will return true
+  
+  entity.Set("my entity");// Since this is structural this will also be cached
+  entity.Has<string>();   // so likewise this will return false
 });
 // now all structural changes are applied since we are done iterating entities
-
 entity.Has<string>();   // this will now return true
 entity.Has<int>();      // and this will now return false
 ```
+
 To manually start caching structrual changes use
 ```
 World.AllowStructuralChanges = false;
 ```
-All changes will be applied when set back to true
+All structural changes will be applied when
+World.AllowStructuralChanges is set back to true
 
 ## Generators
 if for some reason 50 components is not enough when creating an entity, or
 you want more than 12 components in the foreach function. You can use
-the Generator class to increase the limit
+the Generator class to increase the limit. Simply call the functions
+with the amount of components you want, then recompile.
 
 ```
 using SimpleECS.Internal;

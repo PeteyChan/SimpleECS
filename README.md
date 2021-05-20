@@ -4,7 +4,7 @@ Min C# Framework 4.7
 
 ### Features:
 * No Dependencies, just drop the SimpleECS folder into your project
-* No setup or boilerplate like marking components or code generators to get started
+* No setup or boilerplate like marking components or code generators
 * Archetype based = fast component iteration
 * Very simple query system
 

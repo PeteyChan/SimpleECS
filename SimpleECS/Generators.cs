@@ -112,11 +112,11 @@ namespace SimpleECS.Internal
                     writer.WriteLine("namespace Internal");
                     writer.WriteLine("{");
                     {
-                        writer.WriteLine($"public delegate void entity_query(in Entity entity);");
+                        writer.WriteLine($"public delegate void entity_query(Entity entity);");
                         for (int size = 1; size < count + 1; ++size)
                         {
                             writer.WriteLine($"public delegate void query<{Pattern("C#", size)}>({Pattern("ref C# c#", size)});");
-                            writer.WriteLine($"public delegate void entity_query<{Pattern("C#", size)}>(in Entity entity, {Pattern("ref C# c#", size)});");
+                            writer.WriteLine($"public delegate void entity_query<{Pattern("C#", size)}>(Entity entity, {Pattern("ref C# c#", size)});");
                         }
 
                         writer.WriteLine("");

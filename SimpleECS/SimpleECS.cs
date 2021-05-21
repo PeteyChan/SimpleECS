@@ -147,7 +147,7 @@ namespace SimpleECS
         /// /// </summary>
         public static bool AllowStructuralChanges
         {
-            get => allow_changes; 
+            get => allow_changes;
             set
             {
                 allow_changes = value;
@@ -157,7 +157,7 @@ namespace SimpleECS
                     switch (item.event_type)
                     {
                         case StructureEvent.Type.Set:
-                            Set(item.entity, item.args, item.component_type, item.component_ID);
+                            Set(item.entity, item.component_ID, item.args);
                             break;
                         case StructureEvent.Type.Remove:
                             RemoveComponent(item.entity, item.component_ID);
@@ -182,7 +182,6 @@ namespace SimpleECS
             public Entity entity;
             public Object args;
             public int component_ID;
-            public System.Type component_type;
         }
 
 
@@ -210,13 +209,7 @@ namespace SimpleECS
             }
             return new Entity(entity_index, entity_data[entity_index].version);
         }
-
-        public static Entity CreateEntity(params Type[] type_signature)
-        {
-            var sig = new TypeSignature(type_signature);
-            return World.CreateEntity(World.GetArchetype(sig));
-        }
-
+        
         public static Entity CreateEntity(Archetype archetype)
         {
             if (!archetype)
@@ -288,8 +281,7 @@ namespace SimpleECS
                         event_type = StructureEvent.Type.Set,
                         entity = entity,
                         args = component,
-                        component_ID = TypeID.GetID<Component>.Value,
-                        component_type = typeof(Component)
+                        component_ID = TypeID.GetID<Component>.Value
                     });
                     return entity;
                 }
@@ -333,7 +325,7 @@ namespace SimpleECS
             return entity;
         }
 
-        static Entity Set(Entity entity, object component, Type componentType, int component_ID)
+        static Entity Set(Entity entity, int component_ID, object component)
         {
             if (IsValid(entity))
             {
@@ -356,13 +348,12 @@ namespace SimpleECS
                         event_type = StructureEvent.Type.Set,
                         entity = entity,
                         args = component,
-                        component_ID = component_ID,
-                        component_type = componentType
+                        component_ID = component_ID
                     });
                     return entity;
                 }
                 {// otherwise create and return one
-                    var target_arch = GetArchetype(new TypeSignature(data.archetype.signature).Add(componentType));
+                    var target_arch = GetArchetype(new TypeSignature(data.archetype.signature).Add(TypeID.Get(component_ID)));
                     var target_index = target_arch.entity_count;
 
                     // updating archetype entities
@@ -394,7 +385,7 @@ namespace SimpleECS
                         return entity;
                     }
                     else    // should never happen since the archetype should have the component by definition
-                        throw new Exception($"FRAMEWORK BUG: Tried adding component to the wrong archetype {componentType} {target_arch}");
+                        throw new Exception($"FRAMEWORK BUG: Tried adding component to the wrong archetype {TypeID.Get(component_ID)} {target_arch}");
                 }
             }
             return entity;
@@ -517,8 +508,8 @@ namespace SimpleECS
 
         public static Archetype GetArchetype(TypeSignature.IReadOnly signature)
         {
-            if (!id_to_archetype.TryGetValue(signature.ID, out var archtypes))
-                id_to_archetype[signature.ID] = archtypes = new List<Archetype>();
+            if (!id_to_archetype.TryGetValue(signature.GetHashCode(), out var archtypes))
+                id_to_archetype[signature.GetHashCode()] = archtypes = new List<Archetype>();
 
             Archetype archetype;
             for (int i = 0; i < archtypes.Count; ++i) // although the hash is good, there is always a slim chance for
@@ -714,10 +705,17 @@ namespace SimpleECS.Internal
     static class TypeID
     {
         static Dictionary<Type, int> newIDs = new Dictionary<Type, int>();
+        static Type[] id_to_type = new Type[64];
+        public static Type Get(int type_id) => id_to_type[type_id];
         public static int Get(Type type)
         {
             if (!newIDs.TryGetValue(type, out var id))
+            {
                 newIDs[type] = id = newIDs.Count + 1;
+                if (id == id_to_type.Length)
+                    Array.Resize(ref id_to_type, id_to_type.Length * 2);
+                id_to_type[id] = type;
+            }
             return id;
         }
 
@@ -747,15 +745,15 @@ namespace SimpleECS.Internal
             Stack<(int id, System.Type type)> to_allocate = new Stack<(int, System.Type)>();
             data_map = new Data[signature.Count == 0 ? 1 : signature.Count];
             component_count = signature.Count;
-            
+
             for (int i = 0; i < data_map.Length; ++i)
                 data_map[i].next = -1;
-            
+
             if (component_count == 0) return;
 
             for (int i = 0; i < signature.Count; ++i)
             {
-                var value = signature.TypeIds[i];
+                var value = signature[i];
                 var type = signature.Types[i];
                 var index = value % data_map.Length;
                 ref var pool = ref data_map[index];
@@ -972,58 +970,54 @@ namespace SimpleECS.Internal
 
     public class TypeSignature : IEquatable<TypeSignature>,
                                     IReadOnlyList<Type>,
-                                    IReadOnlyList<int>,
                                     TypeSignature.IReadOnly
     {
         public interface IReadOnly
         {
+            int this[int index]{get;}
             IReadOnlyList<Type> Types { get; }
-            IReadOnlyList<int> TypeIds { get; }
             bool HasAny(TypeSignature signature);
             bool HasAll(TypeSignature signature);
             bool Has<T>();
             int Count { get; }
-            int ID { get; }
         }
 
-        int[] type_ids = new int[4];
-        Type[] types = new Type[4];
+        public int this[int index] => type_ids[index];
+
+        int[] type_ids;
         int type_count;
-        public int ID => GetHashCode();
+
         /// <summary>
         /// Number of types that make up the signature
         /// </summary>
         public int Count => type_count;
-        public IReadOnlyList<int> TypeIds => this;  // neat trick to save me having to make another class
         public IReadOnlyList<Type> Types => this;
+
+        public TypeSignature()
+        {
+            type_ids = new int[4];
+        }
 
         public TypeSignature(IReadOnly signature)
         {
             type_count = signature.Count;
             type_ids = new int[type_count + 1];
-            types = new Type[type_count + 1];
 
             for (int i = 0; i < type_count; ++i)
             {
-                type_ids[i] = signature.TypeIds[i];
-                types[i] = signature.Types[i];
+                type_ids[i] = signature[i];
             }
         }
         public TypeSignature(params Type[] types)
         {
-            this.type_ids = new int[types.Length + 4];
-            this.types = new Type[types.Length + 4];
+            this.type_ids = new int[types.Length];
             foreach (var type in types)
                 Add(type);
         }
         public void Clear()
            => type_count = 0;
-        TypeSignature Add(int type_id, Type type)
+        public TypeSignature Add(int type_id)
         {
-            if (type == null)
-                return this;
-            sig = null;
-
             for (int i = 0; i < type_count; ++i)
             {
                 if (type_ids[i] == type_id) // if same exit
@@ -1032,51 +1026,38 @@ namespace SimpleECS.Internal
                 if (type_id > type_ids[i])  // since the hash is generated from this, ordering is important
                 {
                     var stored_id = type_ids[i];
-                    var stored_type = types[i];
                     type_ids[i] = type_id;
-                    types[i] = type;
                     type_id = stored_id;
-                    type = stored_type;
                 }
             }
 
-            if (type_count++ == types.Length)
-            {
-                Array.Resize(ref types, type_count + 8);
-                Array.Resize(ref type_ids, type_count + 8);
-            }
+            if (type_count++ == type_ids.Length)
+                Array.Resize(ref type_ids, type_count + 4);
 
             type_ids[type_count - 1] = type_id;
-            types[type_count - 1] = type;
             return this;
         }
 
         public TypeSignature Remove(int type_id)
         {
-            sig = null;
             bool swap = type_ids[0] == type_id;
             for (int i = 1; i < type_count; ++i)
             {
                 if (swap)
-                {
                     type_ids[i - 1] = type_ids[i];
-                    types[i - 1] = types[i];
-                }
                 else
                     swap = type_ids[i] == type_id;
             }
             if (swap)
-            {
                 type_count--;
-            }
             return this;
         }
 
         public TypeSignature Add(Type type)
-            => Add(TypeID.Get(type), type);
+            => Add(TypeID.Get(type));
 
         public TypeSignature Add<T>()
-            => Add(TypeID.GetID<T>.Value, typeof(T));
+            => Add(TypeID.GetID<T>.Value);
 
         public TypeSignature Remove(Type type)
             => Remove(TypeID.Get(type));
@@ -1164,47 +1145,33 @@ namespace SimpleECS.Internal
         public override bool Equals(object obj)
         => obj is TypeSignature sig ? sig.Equals(this) : false;
 
-        string sig;
         public override string ToString()
         {
-            if (sig == null)
+            string sig = "Types [";
+            for (int i = 0; i < type_count; ++i)
             {
-                int count = 0;
-                for (int i = 0; i < type_count; ++i)
-                {
-                    sig += $"{types[i].Name} ";
-                    count++;
-                    if (count > 4)
-                    {
-                        sig += $"...+{type_count - 4} more";
-                        return sig;
-                    }
-                }
+                var type = TypeID.Get(type_ids[i]);
+                sig += $" {type.Name}";
             }
+            sig += "]";
+
             return sig;
         }
 
         // Interface methods
 
-        Type IReadOnlyList<Type>.this[int index] => types[index];
-        int IReadOnlyList<int>.this[int index] => type_ids[index];
-
+        Type IReadOnlyList<Type>.this[int index] => TypeID.Get( type_ids[index]);
+        
         IEnumerator<Type> IEnumerable<Type>.GetEnumerator()
         {
             for (int i = 0; i < type_count; ++i)
-                yield return types[i];
+                yield return TypeID.Get( type_ids[i]);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            foreach (var type in Types)
-                yield return type;
-        }
-
-        IEnumerator<int> IEnumerable<int>.GetEnumerator()
-        {
-            foreach (var id in type_ids)
-                yield return id;
+            for (int i = 0; i < type_count; ++i)
+                yield return TypeID.Get( type_ids[i]);
         }
     }
 }

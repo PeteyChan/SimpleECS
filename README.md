@@ -69,18 +69,20 @@ var query = new Query().Has<int>().Has<float>()       // Has() filters entities 
                                                       // there's no limit to the amount of filters you can add
                                                       // infact the more specific the better
 
-var all_entities = new Query();               // a simple way to match against all entities is to make a query with no filters
-
 query.Foreach( (ref int int_value, ref float float_value) =>  // you then use the foreach function to update your components
-{                                                             // you can use up to 12 components in the query
-    int_value ++; // can manipulate components                // queries operate only on entities that match both the query and 
-    float_value = int_value * 100;                            // contains all the components in the foreach function
-}));
+{                                                             // components must be prefaced with the ref modifier
+    int_value ++;                                             // you can use up to 12 components in the query
+    float_value = int_value * 100;                            // queries operate only on entities that match both the query 
+}));                                                          // and contains all the components in the foreach function
 
-query.Foreach( (in Entity entity, ref int value ) =>         // you can access the owner entity by putting it in the first position
-{                                                            // with the in keyword followed by any components you want to use
-  Console.WriteLine($"{entity} value is {value}");                  
+
+query.Foreach( (Entity entity, ref int value ) =>         // you can access the owner entity by putting it in the first position
+{                                                         // without modifiers. You can then add any components you want to use
+  Console.WriteLine($"{entity} value is {value}");        // afterwards
 });
+
+var all_entities = new Query();                       // a simple way to match against all entities is to make a query with no filters
+all_entities.Foreach( entity => entity.Destroy());    // a simple way to delete all entities
 ```
 
 Queries are already very fast, but for maximum performance manual iteration is possible
@@ -105,7 +107,7 @@ var entity = Entity.Create("my entity", 3);
 entity.Remove<string>();
 entity.Has<string>(); // this will return false
 
-query.Foreach((in Entity entity, ref int int_val) =>
+query.Foreach((Entity entity, ref int int_val) =>
 {
   entity.Remove<int>(); // since this is a structural change and we are in 
                         // the middle of interating, this will be cached

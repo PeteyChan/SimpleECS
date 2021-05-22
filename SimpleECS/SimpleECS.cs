@@ -7,18 +7,17 @@ namespace SimpleECS
     using Internal;
 
     /// <summary>
-    /// Is called on the component if the component is added to entity with Set() and it was successful
+    /// Is called on the component when added to entity with Set()
     /// </summary>
-    public interface ISetCallback
+    public interface IOnSetCallback
     {
         void OnSet(Entity entity);
     }
 
     /// <summary>
-    /// Is called when a component implementing this is removed or it's owning entity is destroyed.
-    /// If the entity was destroyed, the entity will be invalid when the OnRemove fucntion is called
+    /// Is called on the component when owner entity removed it or is destroyed.
     /// </summary>
-    public interface IRemoveCallback
+    public interface IOnRemoveCallback
     {
         void OnRemove(Entity entity);
     }
@@ -267,9 +266,9 @@ namespace SimpleECS
                     if (data.archetype.TryGetPool<Component>(out var pool))
                     {
                         pool.Values[data.component_index] = component;
-                        if (component is ISetCallback settable)
+                        if (pool is IPoolSetableCallback setablePool)
                         {
-                            settable.OnSet(entity);
+                            setablePool.Callback(entity, data.component_index);
                         }
                         return entity;
                     }
@@ -312,9 +311,9 @@ namespace SimpleECS
                     if (target_arch.TryGetPool<Component>(out var poolT))
                     {
                         poolT.Add(component);
-                        if (component is ISetCallback settable)
+                        if (poolT is IPoolSetableCallback setablePool)
                         {
-                            settable.OnSet(entity);
+                            setablePool.Callback(entity, target_index);
                         }
                         return entity;
                     }
@@ -334,9 +333,9 @@ namespace SimpleECS
                     if (data.archetype.TryGetPool(component_ID, out var pool))
                     {
                         pool.Set(data.component_index, component);
-                        if (component is ISetCallback settable)
+                        if (pool is IPoolSetableCallback setablePool)
                         {
-                            settable.OnSet(entity);
+                            setablePool.Callback(entity, component_ID);
                         }
                         return entity;
                     }
@@ -378,9 +377,9 @@ namespace SimpleECS
                     if (target_arch.TryGetPool(component_ID, out var poolT))
                     {
                         poolT.Add(component);
-                        if (component is ISetCallback settable)
+                        if (poolT is IPoolSetableCallback setablePool)
                         {
-                            settable.OnSet(entity);
+                            setablePool.Callback(entity, target_index);
                         }
                         return entity;
                     }
@@ -422,7 +421,7 @@ namespace SimpleECS
                     }
                     data.component_index = target_index;
                     data.archetype = target_arch;
-                    if (comp is IRemoveCallback removeComponent)
+                    if (comp is IOnRemoveCallback removeComponent)
                         removeComponent.OnRemove(entity);
                 }
             }
@@ -431,7 +430,7 @@ namespace SimpleECS
 
         public static Entity Remove<Component>(Entity entity) => RemoveComponent(entity, TypeID.GetID<Component>.Value);
 
-        static Stack<IRemoveCallback> disposables = new Stack<IRemoveCallback>();
+        static Stack<IOnRemoveCallback> disposables = new Stack<IOnRemoveCallback>();
         public static void DestroyEntity(Entity entity)
         {
             if (IsValid(entity))
@@ -456,11 +455,11 @@ namespace SimpleECS
                     var pool = data.archetype.pools[i];
 
                     var removed = pool.Remove(data.component_index);
-                    if (removed is IRemoveCallback disposable)
-                        disposables.Push(disposable);
+                    if (removed is IOnRemoveCallback disposable)    
+                        disposables.Push(disposable);               
                 }
-                while (disposables.Count > 0)           // calling onremove() after all structural changes are complete
-                    disposables.Pop().OnRemove(entity); // just in case Dispose() causes more structural changes
+                while (disposables.Count > 0)           // calling OnRemove() after all structural changes are complete
+                    disposables.Pop().OnRemove(entity);
             }
         }
 
@@ -574,6 +573,7 @@ namespace SimpleECS
         /// </summary>
         public Query Has<T>()
         {
+            name = null;
             has.Add<T>();
             return this;
         }
@@ -583,6 +583,7 @@ namespace SimpleECS
         /// </summary>
         public Query Not<T>()
         {
+            name = null;
             not.Add<T>();
             return this;
         }
@@ -623,8 +624,6 @@ namespace SimpleECS
             }
             return $"{name}";
         }
-
-        int lastWorldID;
 
         /// <summary>
         /// Only needs to be called during manual iteration.
@@ -729,13 +728,13 @@ namespace SimpleECS.Internal
     {
         public TypeSignature.IReadOnly signature;
         public readonly Pool<Entity> entity_pool;
+        public IReadOnlyList<IPool> pools => this;
         int ID;
         public override int GetHashCode() => ID;
         public int entity_count => entity_pool.Count;
         Data[] data_map;
         readonly int component_count;
 
-        public IReadOnlyList<IPool> pools => this;
         public Archetype(TypeSignature.IReadOnly signature)
         {
             this.signature = new TypeSignature(signature);
@@ -760,7 +759,7 @@ namespace SimpleECS.Internal
                 if (pool.ID == 0)
                 {
                     pool.ID = value;
-                    pool.pool = System.Activator.CreateInstance(typeof(Pool<>).MakeGenericType(type)) as IPool;
+                    pool.pool = CreatePool(type);
                 }
                 else
                     to_allocate.Push((value, type));
@@ -773,7 +772,7 @@ namespace SimpleECS.Internal
                     continue;
                 var values = to_allocate.Pop();
                 data.ID = values.id;
-                data.pool = System.Activator.CreateInstance(typeof(Pool<>).MakeGenericType(values.type)) as IPool;
+                data.pool = CreatePool(values.type);
                 var goalIndex = data.ID % data_map.Length;
                 while (data_map[goalIndex].next >= 0)
                     goalIndex = data_map[goalIndex].next;
@@ -782,6 +781,16 @@ namespace SimpleECS.Internal
                     return;
             }
         }
+
+        IPool CreatePool(Type type)
+        {
+            Type pool_type;
+            if (typeof(IOnSetCallback).IsAssignableFrom(type))
+                pool_type = typeof(SettablePool<>).MakeGenericType(type);
+            else pool_type = typeof(Pool<>).MakeGenericType(type);
+            return Activator.CreateInstance(pool_type) as IPool;
+        }
+
 
         public Entity CreateEntity() => World.CreateEntity(this);
 
@@ -797,7 +806,7 @@ namespace SimpleECS.Internal
 
         public bool TryGetPool(int type_id, out IPool pool)
         {
-            var data = data_map[type_id % data_map.Length]; //TODO: allow zero component 
+            var data = data_map[type_id % data_map.Length];
             if (data.ID == type_id)
             {
                 pool = data.pool;
@@ -893,6 +902,19 @@ namespace SimpleECS.Internal
         int Count { get; }
 
         int ID { get; }
+    }
+
+    public interface IPoolSetableCallback
+    {
+        void Callback(Entity entity, int index);
+    }
+
+    public class SettablePool<T> : Pool<T>, IPoolSetableCallback where T : IOnSetCallback   // pain in the arse but needed to allow structs
+    {                                                                                       // to mutate during their OnSetCallback
+        void IPoolSetableCallback.Callback(Entity entity, int index)
+        {
+            Values[index]?.OnSet(entity);
+        }
     }
 
     public class Pool<T> : IPool, IReadOnlyList<T>

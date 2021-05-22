@@ -176,7 +176,9 @@ archetypes and their entities. Normally you won't need to do anything with
 this class but there are a couple of useful functions.
 ```C#
 World.AllowStructuralChanges = true;  // set to false to manually start caching structural changes
-                                      // changes will be appiled when set back to true
+                                      // changes will be appiled when set back to true.
+                                      // query.Foreach() internally set this to false before starting
+                                      // the query and true once complete
                                       
 World.Resize();   // if a large amount of entities and components were recently
                   // deleted, use this to resize the archetype backing arrays. This can be

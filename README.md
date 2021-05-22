@@ -11,7 +11,8 @@ Min C# Framework 4.7
 ## Entities
 To create an entity use Entity.Create() with the components as arguments. 
 Anything that can be put into a list can be a component.
-You can add up to 50 components.
+The function can take up to 50 components, but entities themselves have 
+no component limit.
 ```C#
 Entity.Create("my entity", 3, 5f);    // creates a new entity with components
 ```

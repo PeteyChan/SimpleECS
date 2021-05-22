@@ -136,8 +136,8 @@ entity.Has<int>();      // and this will now return false
 
 ## Systems
 
-Since queries are so simple, there was little point in adding systems. Rather you can 
-easily just use the existing game engine's systems.
+Since queries are so simple, there was little point in adding systems. Rather if you 
+are using an existing game engine, you can easily just use their systems.
 A small Unity Example.
 
 ```C#

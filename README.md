@@ -26,8 +26,6 @@ ref int value = ref entity.Get<int>();  // gets the entity's int component by re
 entity.Get<int>() += 4;           // since they are returned by ref, you can assign values directly
 
 entity.Set(3).Set("my entitiy");  // sets the entity's components to values. Component is added if not already on entity.
-                                  // if a component implements ISetCallback, it will be called if it
-                                  // was sucessfully set on the entity
 
 if (enity.Has<int>())             // returns true if entity has component
 {
@@ -40,12 +38,8 @@ if (entity.TryGet<int>(out var value)) // gets the component's value on entity, 
 }
 
 entity.Remove<T>();   // removes the component on entity if found.
-                      // if component implements IRemoveCallback, it'll
-                      // be called when it's removed
                     
 entity.Destroy();     // destroys the entity leaving it invalid
-                      // all components implmenting IRemoveCallback will
-                      // also be called
 
 if (entity.IsValid)   // returns false if entity is destroyed or invalid
 {}
@@ -53,10 +47,23 @@ if (entity.IsValid)   // returns false if entity is destroyed or invalid
 if(entity)            // same as entity.IsValid
 {}
 ```
-## Systems
 
-There are no systems in SimpleECS, instead it just uses simple queries to manage entities.
-
+### Component Callbacks
+There are 2 callbacks which components can implement. IOnSetCallback and IOnRemoveCallback.
+```C#
+class MyComponent: IOnSetCallback, IOnRemoveCallback
+{
+  void IOnSetCallback.OnSet(Entity entity)  // called whenever entity sets the component with OnSet()
+  {                                         // or during entity creation
+    Console.WriteLine($"{entity} set MyComponent");    
+  }
+  
+  void IOnRemoveCallback.OnRemove(Entity entity)        // called when entity removes the component or
+  {                                                     // if entity was destroyed. If entity was destroyed
+    Console.WriteLine($"{entity} removed MyComponent"); // entity.IsValid will be false
+  }
+}
+```
 
 ## Queries
 
@@ -86,7 +93,8 @@ var all_entities = new Query();                       // a simple way to match a
 all_entities.Foreach( entity => entity.Destroy());    // a simple way to delete all entities
 ```
 
-Queries are already very fast, but for maximum performance manual iteration is possible
+Queries are already very fast, but for maximum performance, or control
+over iteration order, manual iteration is possible.
 ```C#
 query.Refresh();           // if not using Foreach() this must be called manually to keep the query up-to-date
 for(int i = 0;i < query.MatchingArchetypes.Count; ++ i)
@@ -121,6 +129,42 @@ query.Foreach((Entity entity, ref int int_val) =>
 // now all structural changes are applied since we are done iterating entities
 entity.Has<string>();   // this will now return true
 entity.Has<int>();      // and this will now return false
+```
+
+## Systems
+
+Since queries are so simple, there was little point in adding systems. Rather you can 
+easily just use the existing game engine's systems.
+A small Unity Example.
+
+```C#
+class Player : MonoBehaviour , IOnRemoveCallback // player gameobject
+{
+  void Awake()
+  {
+    Entity.Create(this, GetComponent<Animator>(), GetComponent<Rigidbody>()); //...etc
+  }
+  
+  void IOnRemoveCallback.OnRemove(Entity entity)
+  {
+    Destroy(gameobject);  // Sync gameobject destruction with entity destruction
+  }
+}
+
+// some other file
+
+class PlayerSystem: MonoBehaviour
+{
+  Query player_query = new Query().Has<Player>();
+
+  void Update()
+  {
+    player_query.Foreach((ref Rigidbody rb, ref Animator animator) =>
+    {
+      // etc...
+    });
+  }
+}
 ```
 
 ## Generators

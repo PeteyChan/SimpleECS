@@ -23,11 +23,12 @@ ref int value = ref entity.Get<int>();  // gets the entity's int component by re
                                         // throws an exception if the entity is invalid or
                                         // the entity does not have the component
 
-entity.Get<int>() += 4;           // since they are returned by ref, you can assign values directly
+entity.Get<int>() += 4;   // since they are returned by ref, you can assign values directly
 
-entity.Set(3).Set("my entitiy");  // sets the entity's components to values. Component is added if not already on entity.
+entity.Set(3)             // sets the entity's components to values. Component is added if not already on entity.
+      .Set("my entity");  
 
-if (enity.Has<int>())             // returns true if entity has component
+if (enity.Has<int>())     // returns true if entity has component
 {
   // do something
 }

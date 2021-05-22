@@ -123,13 +123,6 @@ entity.Has<string>();   // this will now return true
 entity.Has<int>();      // and this will now return false
 ```
 
-To manually start caching structrual changes use
-```
-World.AllowStructuralChanges = false;
-```
-All structural changes will be applied when
-World.AllowStructuralChanges is set back to true
-
 ## Generators
 if for some reason 50 components is not enough when creating an entity, or
 you want more than 12 components in the foreach function. You can use

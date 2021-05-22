@@ -96,7 +96,7 @@ var all_entities = new Query();                       // a simple way to match a
 all_entities.Foreach( entity => entity.Destroy());    // a simple way to delete all entities
 ```
 
-Queries are already very fast, but for maximum performance, or control
+Queries are already very fast, but for maximum performance or control
 over iteration order, manual iteration is possible.
 ```C#
 query.Refresh();           // if not using Foreach() this must be called manually to keep the query up-to-date

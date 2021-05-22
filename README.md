@@ -47,6 +47,9 @@ if (entity.IsValid)   // returns false if entity is destroyed or invalid
 if(entity)            // same as entity.IsValid
 {}
 ```
+Entities and their components are stored in Archetypes which have contiguous arrays based on their components. 
+Because of this, for performance reasons it's recommended to add all components you want on the entity 
+during creation rather than calling Set() over and over.
 
 ### Component Callbacks
 There are 2 callbacks which components can implement. IOnSetCallback and IOnRemoveCallback.
@@ -165,6 +168,18 @@ class PlayerSystem: MonoBehaviour
     });
   }
 }
+```
+## World
+The world static class is what stores and handles all the underlying
+archetypes and their entities. Normally you won't need to do anything with
+this class but there are a couple of useful functions.
+```C#
+World.AllowStructuralChanges = true;  // set to false to manually start caching structural changes
+                                      // changes will be appiled when set back to true
+                                      
+World.Resize();   // if a large amount of entities and components were recently
+                  // deleted, use this to resize the archetype backing arrays. This can be
+                  // followed up with System.GC.Collect() to reclaim memory.
 ```
 
 ## Generators

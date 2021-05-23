@@ -48,9 +48,6 @@ if (entity.IsValid)   // returns false if entity is destroyed or invalid
 if(entity)            // same as entity.IsValid
 {}
 ```
-Entities and their components are stored in Archetypes which have contiguous arrays based on their components. 
-Because of this, for performance reasons it's recommended to add all components you want on the entity 
-during creation rather than calling Set() over and over.
 
 ### Component Callbacks
 There are 2 callbacks which components can implement. IOnSetCallback and IOnRemoveCallback.

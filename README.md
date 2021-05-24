@@ -98,8 +98,8 @@ over iteration order, manual iteration is possible.
 for(int i = 0;i < query.MatchingArchetypes.Count; ++ i) // getting the matching archetype count will 
 {                                                       // keep the query up-to-date
   var archetype = query.MatchingArchetypes[i];
-    if (archetype.entity_count > 0 && archetype.TryGetPool<int>(out var int_pool))
-      for(int index = 0; index < archetype.entity_count; ++ index)
+    if (archetype.Entities.Count > 0 && archetype.TryGetPool<int>(out var int_pool))
+      for(int index = 0; index < archetype.Entities.Count; ++ index)
         int_pool.Values[index]++;
 }
 ```

@@ -3,7 +3,7 @@ A Simple and easy to use C# Entity Component System.
 Min C# Framework 4.7
 
 ### Features:
-* No Dependencies, just drop the SimpleECS folder into your project
+* No Dependencies, just build and drop in however you want
 * No setup or boilerplate like marking components or code generators
 * Archetype based = fast component iteration
 * Very simple and easy to use queries
@@ -19,7 +19,10 @@ Entity.Create("my entity", 3, 5f);    // creates a new entity with components
 
 Manipulating entities is pretty simple
 ```C#
-entity.Get<int>() += 4; // gets the entity's int component by ref value.
+if(entity)              // returns false if entity is destroyed or invalid
+{}
+
+entity.Get<int>() += 4; // gets the entity's component by ref value.
                         // throws an exception if the entity is invalid or
                         // the entity does not have the component
                         // since they are returned by ref, you can assign values directly
@@ -42,11 +45,6 @@ entity.Remove<T>();   // removes the component on entity if found.
                     
 entity.Destroy();     // destroys the entity leaving it invalid
 
-if (entity.IsValid)   // returns false if entity is destroyed or invalid
-{}
-
-if(entity)            // same as entity.IsValid
-{}
 ```
 
 ### Component Callbacks
@@ -54,14 +52,14 @@ There are 2 callbacks which components can implement. IOnSetCallback and IOnRemo
 ```C#
 class MyComponent: IOnSetCallback, IOnRemoveCallback
 {
-  void IOnSetCallback.OnSet(Entity entity)  // called whenever entity sets the component with OnSet()
+  void IOnSetCallback.OnSetBy(Entity entity)  // called whenever entity sets the component with OnSet()
   {                                         // or during entity creation
     Console.WriteLine($"{entity} set MyComponent");    
   }
   
-  void IOnRemoveCallback.OnRemove(Entity entity)        // called when entity removes the component or
-  {                                                     // if entity was destroyed. If entity was destroyed
-    Console.WriteLine($"{entity} removed MyComponent"); // entity.IsValid will be false
+  void IOnRemoveCallback.OnRemoveBy(Entity entity)        // called when entity removes the component or
+  {                                                       // if entity was destroyed. If entity was destroyed
+    Console.WriteLine($"{entity} removed MyComponent");   // if(entity) will be false
   }
 }
 ```
@@ -145,7 +143,7 @@ class Player : MonoBehaviour , IOnRemoveCallback // player gameobject
     Entity.Create(this, GetComponent<Animator>(), GetComponent<Rigidbody>()); //...etc
   }
   
-  void IOnRemoveCallback.OnRemove(Entity entity)
+  void IOnRemoveCallback.OnRemoveBy(Entity entity)
   {
     Destroy(gameobject);  // Sync gameobject destruction with entity destruction
   }
@@ -184,7 +182,7 @@ World.Resize();   // if a large amount of entities and components were recently
 ## Generators
 if for some reason 64 components is not enough for entity creation or
 you want more than 16 components in the foreach function. You can use
-the Generator class to increase the limit. Simply call the functions
+the Generator class to increase that limit. Simply call the functions
 with the amount of components you want, then recompile.
 
 ```C#
@@ -197,7 +195,7 @@ class Program
     Generator.ForeachFunctions("path to foreach functions file.cs", 24); 
 
     // generates Entity.Create() functions for up to 100 components
-    Generator.EntityCreateFunctions("path to create entity functions file.cs", 100); 
+    Generator.EntityCreateFunctions("path to entity create functions file.cs", 100); 
   }
 }
 ```

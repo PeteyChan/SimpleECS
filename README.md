@@ -132,7 +132,7 @@ entity.Has<int>();      // and this will now return false
 ## Systems
 
 Since queries are so flexible there was little point in adding systems. Rather if you 
-are using an existing game engine, you can easily just use their exisitng systems.
+are using an existing game engine, you can easily just use their systems.
 A small Unity Example.
 
 ```C#
@@ -165,9 +165,8 @@ class PlayerSystem: MonoBehaviour
 }
 ```
 ## World
-The world static class is what stores and handles all the underlying
-archetypes and their entities. Normally you won't need to do anything with
-this class but there are a couple of useful features.
+The world static class is what all the archetypes and their entities. 
+Normally you won't need to do much with this class but there are a couple of useful features.
 ```C#
 World.AllowStructuralChanges = true;  // set to false to manually start caching structural changes
                                       // changes will be appiled when set back to true.

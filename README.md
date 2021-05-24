@@ -49,17 +49,19 @@ entity.Destroy();     // destroys the entity leaving it invalid
 
 ### Component Callbacks
 There are 2 callbacks which components can implement. IOnSetCallback and IOnRemoveCallback.
+Although most sources say ECS components should be plain data, these callbacks make it easier to use 
+SimpleECS with game engines such as Unity.
 ```C#
 class MyComponent: IOnSetCallback, IOnRemoveCallback
 {
   void IOnSetCallback.OnSetBy(Entity entity)  // called whenever entity sets the component with OnSet()
-  {                                         // or during entity creation
+  {                                           // or during entity creation
     Console.WriteLine($"{entity} set MyComponent");    
   }
   
-  void IOnRemoveCallback.OnRemoveBy(Entity entity)        // called when entity removes the component or
-  {                                                       // if entity was destroyed. If entity was destroyed
-    Console.WriteLine($"{entity} removed MyComponent");   // if(entity) will be false
+  void IOnRemoveCallback.OnRemoveBy(Entity entity)        // called when the entity removes the component or
+  {                                                       // if the entity was destroyed. If entity was destroyed
+    Console.WriteLine($"{entity} removed MyComponent");   // if(entity) will return false
   }
 }
 ```
@@ -112,27 +114,30 @@ do not affect archetype structures.
 ```C#
 var entity = Entity.Create("my entity", 3);
 entity.Remove<string>();
-entity.Has<string>();   // this will return false
+entity.Has<string>();       // this will return false
 
 query.Foreach((Entity entity, ref int int_val) =>
 {
-  entity.Remove<int>(); // since this is a structural change and we are in 
-                        // the middle of interating, this will be cached
+  entity.Remove<int>();     // since this is a structural change and we are in 
+                            // the middle of iterating, this operation will be cached
   
-  entity.Has<int>();    // since Remove() was cached, this will return true
+  entity.Has<int>();        // since Remove() was cached, this will still return true
   
-  entity.Set("my entity");// Since this is structural this will also be cached
-  entity.Has<string>();   // so likewise this will return false
+  entity.Set("my entity");  // Since this was removed before the query, this is a 
+                            // structural operation and will also be cached
+  
+  entity.Has<string>();     // so this will still false
 });
 // now all structural changes are applied since we are done iterating entities
+
 entity.Has<string>();   // this will now return true
 entity.Has<int>();      // and this will now return false
 ```
 
 ## Systems
 
-Since queries are so flexible there was little point in adding systems. Rather if you 
-are using an existing game engine, you can easily just use their systems.
+Since queries are so flexible there was little point in adding dedicated systems. 
+Rather if you are using an existing game engine, it's pretty simple to just use their systems.
 A small Unity Example.
 
 ```C#
@@ -165,16 +170,16 @@ class PlayerSystem: MonoBehaviour
 }
 ```
 ## World
-The world static class is what all the archetypes and their entities. 
+The world static class is what manages all the underlying archetypes and their entities. 
 Normally you won't need to do much with this class but there are a couple of useful features.
 ```C#
-World.AllowStructuralChanges = true;  // set to false to manually start caching structural changes
+World.AllowStructuralChanges = true;  // set to false to start caching structural changes
                                       // changes will be appiled when set back to true.
                                       // query.Foreach() internally sets this to false before starting
                                       // the query and true once complete
                                       
-World.Resize();   // if a large amount of entities and components were recently
-                  // deleted, use this to resize the archetype backing arrays. This can be
+World.Resize();   // if a large amount of entities and components were recently deleted, 
+                  // use this to resize the archetype backing arrays. This can be
                   // followed up with System.GC.Collect() to reclaim memory.
 ```
 

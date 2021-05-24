@@ -1,7 +1,5 @@
 namespace SimpleECS
 {
-    using SimpleECS.Internal;
-
     public partial struct Entity
     {
         /// <summary>
@@ -9,7 +7,7 @@ namespace SimpleECS
         /// </summary>
         public static Entity Create() => Sig.archetype.CreateEntity();
         public static Entity Create<C1>(
-        C1 c1)
+        in C1 c1)
         {
             ref var archetype = ref Sig<C1>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1)));
@@ -17,7 +15,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2>(
-        C1 c1, C2 c2)
+        in C1 c1, in C2 c2)
         {
             ref var archetype = ref Sig<C1, C2>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2)));
@@ -25,7 +23,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3>(
-        C1 c1, C2 c2, C3 c3)
+        in C1 c1, in C2 c2, in C3 c3)
         {
             ref var archetype = ref Sig<C1, C2, C3>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3)));
@@ -33,7 +31,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4>(
-        C1 c1, C2 c2, C3 c3, C4 c4)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4)));
@@ -41,7 +39,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5)));
@@ -49,7 +47,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6)));
@@ -57,7 +55,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7)));
@@ -65,7 +63,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8)));
@@ -73,7 +71,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9)));
@@ -81,7 +79,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10)));
@@ -89,7 +87,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11)));
@@ -97,7 +95,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12)));
@@ -105,7 +103,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13)));
@@ -113,7 +111,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14)));
@@ -121,7 +119,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15)));
@@ -129,7 +127,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16)));
@@ -137,7 +135,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17)));
@@ -145,7 +143,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18)));
@@ -153,7 +151,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19)));
@@ -161,7 +159,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20)));
@@ -169,7 +167,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21)));
@@ -177,7 +175,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22)));
@@ -185,7 +183,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23)));
@@ -193,7 +191,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24)));
@@ -201,7 +199,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25)));
@@ -209,7 +207,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26)));
@@ -217,7 +215,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27)));
@@ -225,7 +223,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28)));
@@ -233,7 +231,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29)));
@@ -241,7 +239,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30)));
@@ -249,7 +247,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31)));
@@ -257,7 +255,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32)));
@@ -265,7 +263,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33)));
@@ -273,7 +271,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34)));
@@ -281,7 +279,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35)));
@@ -289,7 +287,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36)));
@@ -297,7 +295,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37)));
@@ -305,7 +303,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38)));
@@ -313,7 +311,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39)));
@@ -321,7 +319,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40)));
@@ -329,7 +327,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41)));
@@ -337,7 +335,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42)));
@@ -345,7 +343,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43)));
@@ -353,7 +351,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44)));
@@ -361,7 +359,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45)));
@@ -369,7 +367,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45, C46 c46)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45), typeof(C46)));
@@ -377,7 +375,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45, C46 c46, C47 c47)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45), typeof(C46), typeof(C47)));
@@ -385,7 +383,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45, C46 c46, C47 c47, C48 c48)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45), typeof(C46), typeof(C47), typeof(C48)));
@@ -393,7 +391,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45, C46 c46, C47 c47, C48 c48, C49 c49)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45), typeof(C46), typeof(C47), typeof(C48), typeof(C49)));
@@ -401,7 +399,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45, C46 c46, C47 c47, C48 c48, C49 c49, C50 c50)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45), typeof(C46), typeof(C47), typeof(C48), typeof(C49), typeof(C50)));
@@ -409,7 +407,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45, C46 c46, C47 c47, C48 c48, C49 c49, C50 c50, C51 c51)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45), typeof(C46), typeof(C47), typeof(C48), typeof(C49), typeof(C50), typeof(C51)));
@@ -417,7 +415,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45, C46 c46, C47 c47, C48 c48, C49 c49, C50 c50, C51 c51, C52 c52)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45), typeof(C46), typeof(C47), typeof(C48), typeof(C49), typeof(C50), typeof(C51), typeof(C52)));
@@ -425,7 +423,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45, C46 c46, C47 c47, C48 c48, C49 c49, C50 c50, C51 c51, C52 c52, C53 c53)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45), typeof(C46), typeof(C47), typeof(C48), typeof(C49), typeof(C50), typeof(C51), typeof(C52), typeof(C53)));
@@ -433,7 +431,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45, C46 c46, C47 c47, C48 c48, C49 c49, C50 c50, C51 c51, C52 c52, C53 c53, C54 c54)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45), typeof(C46), typeof(C47), typeof(C48), typeof(C49), typeof(C50), typeof(C51), typeof(C52), typeof(C53), typeof(C54)));
@@ -441,7 +439,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45, C46 c46, C47 c47, C48 c48, C49 c49, C50 c50, C51 c51, C52 c52, C53 c53, C54 c54, C55 c55)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45), typeof(C46), typeof(C47), typeof(C48), typeof(C49), typeof(C50), typeof(C51), typeof(C52), typeof(C53), typeof(C54), typeof(C55)));
@@ -449,7 +447,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45, C46 c46, C47 c47, C48 c48, C49 c49, C50 c50, C51 c51, C52 c52, C53 c53, C54 c54, C55 c55, C56 c56)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55, in C56 c56)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45), typeof(C46), typeof(C47), typeof(C48), typeof(C49), typeof(C50), typeof(C51), typeof(C52), typeof(C53), typeof(C54), typeof(C55), typeof(C56)));
@@ -457,7 +455,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45, C46 c46, C47 c47, C48 c48, C49 c49, C50 c50, C51 c51, C52 c52, C53 c53, C54 c54, C55 c55, C56 c56, C57 c57)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55, in C56 c56, in C57 c57)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45), typeof(C46), typeof(C47), typeof(C48), typeof(C49), typeof(C50), typeof(C51), typeof(C52), typeof(C53), typeof(C54), typeof(C55), typeof(C56), typeof(C57)));
@@ -465,7 +463,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45, C46 c46, C47 c47, C48 c48, C49 c49, C50 c50, C51 c51, C52 c52, C53 c53, C54 c54, C55 c55, C56 c56, C57 c57, C58 c58)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55, in C56 c56, in C57 c57, in C58 c58)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45), typeof(C46), typeof(C47), typeof(C48), typeof(C49), typeof(C50), typeof(C51), typeof(C52), typeof(C53), typeof(C54), typeof(C55), typeof(C56), typeof(C57), typeof(C58)));
@@ -473,7 +471,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45, C46 c46, C47 c47, C48 c48, C49 c49, C50 c50, C51 c51, C52 c52, C53 c53, C54 c54, C55 c55, C56 c56, C57 c57, C58 c58, C59 c59)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55, in C56 c56, in C57 c57, in C58 c58, in C59 c59)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45), typeof(C46), typeof(C47), typeof(C48), typeof(C49), typeof(C50), typeof(C51), typeof(C52), typeof(C53), typeof(C54), typeof(C55), typeof(C56), typeof(C57), typeof(C58), typeof(C59)));
@@ -481,7 +479,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45, C46 c46, C47 c47, C48 c48, C49 c49, C50 c50, C51 c51, C52 c52, C53 c53, C54 c54, C55 c55, C56 c56, C57 c57, C58 c58, C59 c59, C60 c60)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55, in C56 c56, in C57 c57, in C58 c58, in C59 c59, in C60 c60)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45), typeof(C46), typeof(C47), typeof(C48), typeof(C49), typeof(C50), typeof(C51), typeof(C52), typeof(C53), typeof(C54), typeof(C55), typeof(C56), typeof(C57), typeof(C58), typeof(C59), typeof(C60)));
@@ -489,7 +487,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45, C46 c46, C47 c47, C48 c48, C49 c49, C50 c50, C51 c51, C52 c52, C53 c53, C54 c54, C55 c55, C56 c56, C57 c57, C58 c58, C59 c59, C60 c60, C61 c61)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55, in C56 c56, in C57 c57, in C58 c58, in C59 c59, in C60 c60, in C61 c61)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45), typeof(C46), typeof(C47), typeof(C48), typeof(C49), typeof(C50), typeof(C51), typeof(C52), typeof(C53), typeof(C54), typeof(C55), typeof(C56), typeof(C57), typeof(C58), typeof(C59), typeof(C60), typeof(C61)));
@@ -497,7 +495,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61, C62>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45, C46 c46, C47 c47, C48 c48, C49 c49, C50 c50, C51 c51, C52 c52, C53 c53, C54 c54, C55 c55, C56 c56, C57 c57, C58 c58, C59 c59, C60 c60, C61 c61, C62 c62)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55, in C56 c56, in C57 c57, in C58 c58, in C59 c59, in C60 c60, in C61 c61, in C62 c62)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61, C62>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45), typeof(C46), typeof(C47), typeof(C48), typeof(C49), typeof(C50), typeof(C51), typeof(C52), typeof(C53), typeof(C54), typeof(C55), typeof(C56), typeof(C57), typeof(C58), typeof(C59), typeof(C60), typeof(C61), typeof(C62)));
@@ -505,7 +503,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61, C62, C63>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45, C46 c46, C47 c47, C48 c48, C49 c49, C50 c50, C51 c51, C52 c52, C53 c53, C54 c54, C55 c55, C56 c56, C57 c57, C58 c58, C59 c59, C60 c60, C61 c61, C62 c62, C63 c63)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55, in C56 c56, in C57 c57, in C58 c58, in C59 c59, in C60 c60, in C61 c61, in C62 c62, in C63 c63)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61, C62, C63>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45), typeof(C46), typeof(C47), typeof(C48), typeof(C49), typeof(C50), typeof(C51), typeof(C52), typeof(C53), typeof(C54), typeof(C55), typeof(C56), typeof(C57), typeof(C58), typeof(C59), typeof(C60), typeof(C61), typeof(C62), typeof(C63)));
@@ -513,7 +511,7 @@ namespace SimpleECS
         }
 
         public static Entity Create<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61, C62, C63, C64>(
-        C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32, C33 c33, C34 c34, C35 c35, C36 c36, C37 c37, C38 c38, C39 c39, C40 c40, C41 c41, C42 c42, C43 c43, C44 c44, C45 c45, C46 c46, C47 c47, C48 c48, C49 c49, C50 c50, C51 c51, C52 c52, C53 c53, C54 c54, C55 c55, C56 c56, C57 c57, C58 c58, C59 c59, C60 c60, C61 c61, C62 c62, C63 c63, C64 c64)
+        in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55, in C56 c56, in C57 c57, in C58 c58, in C59 c59, in C60 c60, in C61 c61, in C62 c62, in C63 c63, in C64 c64)
         {
             ref var archetype = ref Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61, C62, C63, C64>.archetype;
             if (!archetype) archetype = World.GetArchetype(new TypeSignature(typeof(C1), typeof(C2), typeof(C3), typeof(C4), typeof(C5), typeof(C6), typeof(C7), typeof(C8), typeof(C9), typeof(C10), typeof(C11), typeof(C12), typeof(C13), typeof(C14), typeof(C15), typeof(C16), typeof(C17), typeof(C18), typeof(C19), typeof(C20), typeof(C21), typeof(C22), typeof(C23), typeof(C24), typeof(C25), typeof(C26), typeof(C27), typeof(C28), typeof(C29), typeof(C30), typeof(C31), typeof(C32), typeof(C33), typeof(C34), typeof(C35), typeof(C36), typeof(C37), typeof(C38), typeof(C39), typeof(C40), typeof(C41), typeof(C42), typeof(C43), typeof(C44), typeof(C45), typeof(C46), typeof(C47), typeof(C48), typeof(C49), typeof(C50), typeof(C51), typeof(C52), typeof(C53), typeof(C54), typeof(C55), typeof(C56), typeof(C57), typeof(C58), typeof(C59), typeof(C60), typeof(C61), typeof(C62), typeof(C63), typeof(C64)));

@@ -1,9 +1,12 @@
 namespace SimpleECS
 {
-    using SimpleECS.Internal;
+    using Delegates;
 
     public partial class Query
     {
+        /// <summary>
+        /// Allows iteration of components in query, can add up to 16 components
+        /// </summary>
         public void Foreach<C1>(in query<C1> action)
         {
             Update();
@@ -466,299 +469,299 @@ namespace SimpleECS
         }
 
     }
-    namespace Internal
+
+    public partial class Archetype
     {
-
-        public partial class Archetype
+        public void Foreach(in entity_query action)
         {
-            public void Foreach(in entity_query action)
+            if (entity_count > 0)
             {
-                if (entity_count > 0)
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(entity_pool.Values[i]);
-                }
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(entity_pool.Values[i]);
             }
-            public void Foreach<C1>(in query<C1> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(ref pool_c1.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2>(in query<C1, C2> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(ref pool_c1.Values[i], ref pool_c2.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3>(in query<C1, C2, C3> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4>(in query<C1, C2, C3, C4> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5>(in query<C1, C2, C3, C4, C5> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6>(in query<C1, C2, C3, C4, C5, C6> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6, C7>(in query<C1, C2, C3, C4, C5, C6, C7> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8>(in query<C1, C2, C3, C4, C5, C6, C7, C8> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13) && TryGetPool<C14>(out var pool_c14))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i], ref pool_c14.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13) && TryGetPool<C14>(out var pool_c14) && TryGetPool<C15>(out var pool_c15))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i], ref pool_c14.Values[i], ref pool_c15.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13) && TryGetPool<C14>(out var pool_c14) && TryGetPool<C15>(out var pool_c15) && TryGetPool<C16>(out var pool_c16))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i], ref pool_c14.Values[i], ref pool_c15.Values[i], ref pool_c16.Values[i]);
-                }
-            }
-
-            public void Foreach<C1>(in entity_query<C1> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(entity_pool.Values[i], ref pool_c1.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2>(in entity_query<C1, C2> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3>(in entity_query<C1, C2, C3> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4>(in entity_query<C1, C2, C3, C4> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5>(in entity_query<C1, C2, C3, C4, C5> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6>(in entity_query<C1, C2, C3, C4, C5, C6> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6, C7>(in entity_query<C1, C2, C3, C4, C5, C6, C7> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13) && TryGetPool<C14>(out var pool_c14))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i], ref pool_c14.Values[i]);
-                }
-            }
-
-            public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15> action)
-            {
-                if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13) && TryGetPool<C14>(out var pool_c14) && TryGetPool<C15>(out var pool_c15))
-                {
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i], ref pool_c14.Values[i], ref pool_c15.Values[i]);
-                }
-            }
-
         }
+        public void Foreach<C1>(in query<C1> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(ref pool_c1.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2>(in query<C1, C2> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(ref pool_c1.Values[i], ref pool_c2.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3>(in query<C1, C2, C3> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4>(in query<C1, C2, C3, C4> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5>(in query<C1, C2, C3, C4, C5> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6>(in query<C1, C2, C3, C4, C5, C6> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7>(in query<C1, C2, C3, C4, C5, C6, C7> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8>(in query<C1, C2, C3, C4, C5, C6, C7, C8> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13) && TryGetPool<C14>(out var pool_c14))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i], ref pool_c14.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13) && TryGetPool<C14>(out var pool_c14) && TryGetPool<C15>(out var pool_c15))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i], ref pool_c14.Values[i], ref pool_c15.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13) && TryGetPool<C14>(out var pool_c14) && TryGetPool<C15>(out var pool_c15) && TryGetPool<C16>(out var pool_c16))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i], ref pool_c14.Values[i], ref pool_c15.Values[i], ref pool_c16.Values[i]);
+            }
+        }
+
+        public void Foreach<C1>(in entity_query<C1> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(entity_pool.Values[i], ref pool_c1.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2>(in entity_query<C1, C2> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3>(in entity_query<C1, C2, C3> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4>(in entity_query<C1, C2, C3, C4> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5>(in entity_query<C1, C2, C3, C4, C5> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6>(in entity_query<C1, C2, C3, C4, C5, C6> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7>(in entity_query<C1, C2, C3, C4, C5, C6, C7> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13) && TryGetPool<C14>(out var pool_c14))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i], ref pool_c14.Values[i]);
+            }
+        }
+
+        public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15> action)
+        {
+            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13) && TryGetPool<C14>(out var pool_c14) && TryGetPool<C15>(out var pool_c15))
+            {
+                for (int i = entity_count - 1; i >= 0; --i)
+                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i], ref pool_c14.Values[i], ref pool_c15.Values[i]);
+            }
+        }
+
+    }
+    namespace Delegates
+    {
         public delegate void query<C1>(ref C1 c1);
         public delegate void query<C1, C2>(ref C1 c1, ref C2 c2);
         public delegate void query<C1, C2, C3>(ref C1 c1, ref C2 c2, ref C3 c3);

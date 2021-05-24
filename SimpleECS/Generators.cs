@@ -41,7 +41,7 @@ namespace SimpleECS.Internal
                         for (int size = 1; size < count + 1; ++size)
                         {
                             writer.WriteLine("public static Entity Create<" + Pattern("C#", size) + ">(");
-                            writer.WriteLine(Pattern("C# c#", size) + ")");
+                            writer.WriteLine(Pattern("in C# c#", size) + ")");
                             writer.WriteLine("{");
                             writer.WriteLine($"ref var archetype = ref Sig<{Pattern("C#", size)}>.archetype;");
                             writer.WriteLine($"if (!archetype) archetype = World.GetArchetype(new TypeSignature({Pattern("typeof(C#)", size)}));");
@@ -73,7 +73,7 @@ namespace SimpleECS.Internal
                 writer.WriteLine("namespace SimpleECS");
                 writer.WriteLine("{");
                 {
-                    writer.WriteLine("using SimpleECS.Internal;");
+                    writer.WriteLine("using Delegates;");
                     writer.WriteLine("");
                     writer.WriteLine("public partial class Query");
                     writer.WriteLine("{");
@@ -89,7 +89,7 @@ namespace SimpleECS.Internal
                                 writer.WriteLine("World.AllowStructuralChanges = false;");
                                 writer.WriteLine("for (int i = archetype_count - 1; i >= 0; --i)"); // for some reason iterating backwards doubles the performance on my machine
                                     writer.WriteLine("{");                                          // I suspect because the compiler can ignore array bounds checks
-                                    writer.WriteLine("var archetype = matching_archetypes[i];");    // since i has to be greater than 0 and we are iterating backwards
+                                    writer.WriteLine("var archetype = matching_archetypes[i];");    // since it only needs to make sure archetype_count -1 has to be within the bounds
                                     writer.WriteLine($"if (archetype.entity_count > 0 {Pattern("&& archetype.TryGetPool<C#>(out var pool_c#)", size, false)})");
                                     writer.WriteLine("for(int e = archetype.entity_count; e >= 0; -- e)");
                                     writer.WriteLine($"action({Pattern("ref pool_c#.Values[e]", size)});");
@@ -133,53 +133,54 @@ namespace SimpleECS.Internal
                     }
                     writer.WriteLine("}");
 
-                    writer.WriteLine("namespace Internal");
+                    
+                    writer.WriteLine("");
+                    writer.WriteLine("public partial class Archetype");
                     writer.WriteLine("{");
                     {
-                        writer.WriteLine("");
-                        writer.WriteLine("public partial class Archetype");
+                        writer.WriteLine("public void Foreach(in entity_query action)");
                         writer.WriteLine("{");
+                        writer.WriteLine("if (entity_count > 0)");
                         {
-                            writer.WriteLine("public void Foreach(in entity_query action)");
                             writer.WriteLine("{");
-                            writer.WriteLine("if (entity_count > 0)");
-                            {
-                                writer.WriteLine("{");
-                                writer.WriteLine("for (int i = entity_count - 1; i >= 0; --i)");
-                                writer.WriteLine("action(entity_pool.Values[i]);");
-                                writer.WriteLine("}");
-                            }
+                            writer.WriteLine("for (int i = entity_count - 1; i >= 0; --i)");
+                            writer.WriteLine("action(entity_pool.Values[i]);");
                             writer.WriteLine("}");
-
-                            for (int size = 1; size < count + 1; ++size)
-                            {
-                                writer.WriteLine($"public void Foreach<{Pattern("C#", size)}>(in query<{Pattern("C#", size)}> action)");
-                                writer.WriteLine("{");
-                                writer.WriteLine("if (entity_count > 0" + Pattern("&& TryGetPool<C#>(out var pool_c#)", size, false) + ")");
-                                    writer.WriteLine("{");
-                                    writer.WriteLine("for (int i = entity_count - 1; i >= 0; --i)");
-                                    writer.WriteLine($"action({Pattern("ref pool_c#.Values[i]", size)});");
-                                    writer.WriteLine("}");
-                                writer.WriteLine("}");
-                                writer.WriteLine("");
-                            }
-                            for (int size = 1; size < count; ++ size)
-                            {
-                                writer.WriteLine($"public void Foreach<{Pattern("C#", size)}>(in entity_query<{Pattern("C#", size)}> action)");
-                                writer.WriteLine("{");
-                                writer.WriteLine("if (entity_count > 0" + Pattern("&& TryGetPool<C#>(out var pool_c#)", size, false) + ")");
-                                {
-                                    writer.WriteLine("{");
-                                    writer.WriteLine("for (int i = entity_count - 1; i >= 0; --i)");
-                                    writer.WriteLine($"action(entity_pool.Values[i], {Pattern("ref pool_c#.Values[i]", size)});");
-                                    writer.WriteLine("}");
-                                }
-                                writer.WriteLine("}");
-                                writer.WriteLine("");
-                            }
                         }
                         writer.WriteLine("}");
 
+                        for (int size = 1; size < count + 1; ++size)
+                        {
+                            writer.WriteLine($"public void Foreach<{Pattern("C#", size)}>(in query<{Pattern("C#", size)}> action)");
+                            writer.WriteLine("{");
+                            writer.WriteLine("if (entity_count > 0" + Pattern("&& TryGetPool<C#>(out var pool_c#)", size, false) + ")");
+                                writer.WriteLine("{");
+                                writer.WriteLine("for (int i = entity_count - 1; i >= 0; --i)");
+                                writer.WriteLine($"action({Pattern("ref pool_c#.Values[i]", size)});");
+                                writer.WriteLine("}");
+                            writer.WriteLine("}");
+                            writer.WriteLine("");
+                        }
+                        for (int size = 1; size < count; ++ size)
+                        {
+                            writer.WriteLine($"public void Foreach<{Pattern("C#", size)}>(in entity_query<{Pattern("C#", size)}> action)");
+                            writer.WriteLine("{");
+                            writer.WriteLine("if (entity_count > 0" + Pattern("&& TryGetPool<C#>(out var pool_c#)", size, false) + ")");
+                            {
+                                writer.WriteLine("{");
+                                writer.WriteLine("for (int i = entity_count - 1; i >= 0; --i)");
+                                writer.WriteLine($"action(entity_pool.Values[i], {Pattern("ref pool_c#.Values[i]", size)});");
+                                writer.WriteLine("}");
+                            }
+                            writer.WriteLine("}");
+                            writer.WriteLine("");
+                        }
+                    }
+                    writer.WriteLine("}");
+                    
+                    writer.WriteLine("namespace Delegates");
+                    writer.WriteLine("{");
+                    {
                         for (int size = 1; size < count + 1; ++size)
                         {
                             writer.WriteLine($"public delegate void query<{Pattern("C#", size)}>({Pattern("ref C# c#", size)});");

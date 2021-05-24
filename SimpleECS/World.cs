@@ -132,8 +132,9 @@ namespace SimpleECS
             if (IsValid(entity))
             {
                 ref var data = ref entity_data[entity.index];
-                if (data.archetype.TryGetPool<Component>(out var pool))
-                    return ref pool.Values[data.component_index];
+                if (data.archetype.TryGetArray<Component>(out var pool))
+                    return ref pool[data.component_index];
+                    //return ref pool.Get<Component>()[data.component_index]; 
                 throw new Exception($"{entity} does not have {typeof(Component).FullName}");
             }
             throw new Exception($"{entity} has been destroyed or is not valid, cannot get component");
@@ -151,7 +152,7 @@ namespace SimpleECS
             {
                 ref var data = ref entity_data[entity.index];
 
-                if (data.archetype.TryGetPool<Component>(out var pool)) // if component exists set it and return
+                if (data.archetype.TryGetPool(TypeID<Component>.Value, out var pool)) // if component exists set it and return
                 {
                     pool.Set(entity, data.component_index, component);
                     return entity;
@@ -164,7 +165,7 @@ namespace SimpleECS
                         event_type = StructureEvent.Type.Set,
                         entity = entity,
                         args = component,
-                        component_ID = TypeID.GetID<Component>.Value
+                        component_ID = TypeID<Component>.Value
                     });
                     return entity;
                 }
@@ -174,14 +175,14 @@ namespace SimpleECS
                 var target_index = target_arch.entity_count;
 
                 // updating archetype entity component information
-                entity_data[data.archetype.entity_pool.Values[data.archetype.entity_count - 1].index]
+                entity_data[data.archetype.entity_pool[data.archetype.entity_count - 1].index]
                     .component_index = data.component_index;
                 data.archetype.MoveEntity(data.component_index, target_arch, target_index);
                 data.component_index = target_index;
                 data.archetype = target_arch;
 
                 // add the new component
-                if (target_arch.TryGetPool<Component>(out var target_pool))
+                if (target_arch.TryGetPool(TypeID<Component>.Value, out var target_pool))
                     target_pool.Set(entity, target_index, component);
                 else
                     throw new Exception($"FRAMEWORK BUG: Tried adding component to the wrong archetype {typeof(Component)} {target_arch}");
@@ -218,7 +219,7 @@ namespace SimpleECS
                     var target_index = target_arch.entity_count;
 
                     // updating archetype entities
-                    entity_data[data.archetype.entity_pool.Values[data.archetype.entity_count - 1].index].component_index = data.component_index;
+                    entity_data[data.archetype.entity_pool[data.archetype.entity_count - 1].index].component_index = data.component_index;
                     data.archetype.MoveEntity(data.component_index, target_arch, target_index);
                     data.component_index = target_index;
                     data.archetype = target_arch;
@@ -251,7 +252,7 @@ namespace SimpleECS
                     var target_index = target_arch.entity_count;
 
                     // updating entity
-                    entity_data[data.archetype.entity_pool.Values[data.archetype.entity_count - 1].index].component_index = data.component_index;
+                    entity_data[data.archetype.entity_pool[data.archetype.entity_count - 1].index].component_index = data.component_index;
                     data.archetype.MoveEntity(data.component_index, target_arch, target_index);
                     data.component_index = target_index;
                     data.archetype = target_arch;
@@ -267,7 +268,7 @@ namespace SimpleECS
         /// Removes the component type from entity if entity has one.
         /// Calls the IOnRemoveCallback on component if component implements it
         /// </summary>
-        public static Entity Remove<Component>(this Entity entity) => RemoveComponent(entity, TypeID.GetID<Component>.Value);
+        public static Entity Remove<Component>(this Entity entity) => RemoveComponent(entity, TypeID<Component>.Value);
 
         /// <summary>
         /// Destroys the component. All components implementing IOnRemoveCallback will have it called.
@@ -293,7 +294,7 @@ namespace SimpleECS
                 free_entities[free_entity_count] = entity.index;
                 free_entity_count++;
 
-                entity_data[data.archetype.entity_pool.Values[data.archetype.entity_count - 1].index]
+                entity_data[data.archetype.entity_pool[data.archetype.entity_count - 1].index]
                                 .component_index = data.component_index;
 
                 data.archetype.DestroyEntity(data.component_index);
@@ -331,9 +332,9 @@ namespace SimpleECS
             if (IsValid(entity))
             {
                 var data = entity_data[entity.index];
-                if (data.archetype.TryGetPool<T>(out var pool))
+                if (data.archetype.TryGetArray<T>(out var pool))
                 {
-                    value = pool.Values[data.component_index];
+                    value = pool[data.component_index];
                     return true;
                 }
             }

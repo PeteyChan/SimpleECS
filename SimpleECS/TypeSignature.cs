@@ -3,6 +3,8 @@ namespace SimpleECS
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    
+    internal static class TypeID<T>{ public static readonly int Value = TypeID.Get(typeof(T)); }
     internal static class TypeID
     {
         static Dictionary<Type, int> newIDs = new Dictionary<Type, int>();
@@ -18,11 +20,6 @@ namespace SimpleECS
                 id_to_type[id] = type;
             }
             return id;
-        }
-
-        public static class GetID<T>
-        {
-            public static readonly int Value = Get(typeof(T));
         }
     }
 
@@ -61,6 +58,12 @@ namespace SimpleECS
             this.type_ids = new int[types.Length];
             foreach (var type in types)
                 Add(type);
+        }
+
+        public TypeSignature(Archetype archetype)
+        {
+            type_ids = new int[archetype.signature.type_count + 1];
+            this.Copy(archetype.signature);
         }
 
         /// <summary>
@@ -119,6 +122,9 @@ namespace SimpleECS
             return this;
         }
 
+        public TypeSignature Copy(Archetype archetype)
+            => this.Copy(archetype.signature);
+
         /// <summary>
         /// Adds type to the signature
         /// </summary>
@@ -129,7 +135,7 @@ namespace SimpleECS
         /// Adds type to the signature
         /// </summary>
         public TypeSignature Add<T>()
-            => Add(TypeID.GetID<T>.Value);
+            => Add(TypeID<T>.Value);
 
         /// <summary>
         /// Removes type from signature
@@ -141,12 +147,12 @@ namespace SimpleECS
         /// Removes type from signature
         /// </summary>
         public TypeSignature Remove<T>()
-            => Remove(TypeID.GetID<T>.Value);
+            => Remove(TypeID<T>.Value);
 
         /// <summary>
         /// Returns true if signature has type
         /// </summary>
-        public bool Has<T>() => Has(TypeID.GetID<T>.Value);
+        public bool Has<T>() => Has(TypeID<T>.Value);
 
         /// <summary>
         /// Returns true if signature has type

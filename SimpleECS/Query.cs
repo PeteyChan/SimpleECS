@@ -135,23 +135,6 @@ namespace SimpleECS
             }
         }
 
-        /// <summary>
-        /// Destroys all entities that match query
-        /// </summary>
-        public void DestroyMatches()    // this could potentially be really efficient by updating the archetype's in bulk
-        {                               // but good enough for now
-            bool cache = World.AllowStructuralChanges;
-            World.AllowStructuralChanges = false;
-            Update();
-            for (int i = archetype_count - 1; i >= 0; --i)
-            {
-                var archetype = matching_archetypes[i];
-                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                    archetype.entity_pool.Values[itr].Destroy();
-            }
-            World.AllowStructuralChanges = cache;
-        }
-
         IEnumerator<Entity> IEnumerable<Entity>.GetEnumerator()
         {
             Update();
@@ -159,7 +142,7 @@ namespace SimpleECS
             {
                 var archetype = matching_archetypes[i];
                 for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                    yield return archetype.entity_pool.Values[itr];
+                    yield return archetype.entity_pool[itr];
             }
         }
 
@@ -177,7 +160,7 @@ namespace SimpleECS
             {
                 var archetype = matching_archetypes[i];
                 for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                    yield return archetype.entity_pool.Values[itr];
+                    yield return archetype.entity_pool[itr];
             }
         }
         int IReadOnlyCollection<Archetype>.Count

@@ -14,9 +14,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1))
                     for (int e = archetype.entity_count; e >= 0; --e)
-                        action(ref pool_c1.Values[e]);
+                        action(ref pool_c1[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -28,9 +28,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2))
                     for (int e = archetype.entity_count; e >= 0; --e)
-                        action(ref pool_c1.Values[e], ref pool_c2.Values[e]);
+                        action(ref pool_c1[e], ref pool_c2[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -42,9 +42,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3))
                     for (int e = archetype.entity_count; e >= 0; --e)
-                        action(ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e]);
+                        action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -56,9 +56,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4))
                     for (int e = archetype.entity_count; e >= 0; --e)
-                        action(ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e]);
+                        action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -70,9 +70,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5))
                     for (int e = archetype.entity_count; e >= 0; --e)
-                        action(ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e]);
+                        action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -84,9 +84,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6))
                     for (int e = archetype.entity_count; e >= 0; --e)
-                        action(ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e]);
+                        action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -98,9 +98,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7))
                     for (int e = archetype.entity_count; e >= 0; --e)
-                        action(ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e]);
+                        action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -112,9 +112,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7) && archetype.TryGetPool<C8>(out var pool_c8))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8))
                     for (int e = archetype.entity_count; e >= 0; --e)
-                        action(ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e], ref pool_c8.Values[e]);
+                        action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -126,9 +126,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7) && archetype.TryGetPool<C8>(out var pool_c8) && archetype.TryGetPool<C9>(out var pool_c9))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9))
                     for (int e = archetype.entity_count; e >= 0; --e)
-                        action(ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e], ref pool_c8.Values[e], ref pool_c9.Values[e]);
+                        action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -140,9 +140,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7) && archetype.TryGetPool<C8>(out var pool_c8) && archetype.TryGetPool<C9>(out var pool_c9) && archetype.TryGetPool<C10>(out var pool_c10))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10))
                     for (int e = archetype.entity_count; e >= 0; --e)
-                        action(ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e], ref pool_c8.Values[e], ref pool_c9.Values[e], ref pool_c10.Values[e]);
+                        action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -154,9 +154,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7) && archetype.TryGetPool<C8>(out var pool_c8) && archetype.TryGetPool<C9>(out var pool_c9) && archetype.TryGetPool<C10>(out var pool_c10) && archetype.TryGetPool<C11>(out var pool_c11))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10) && archetype.TryGetArray<C11>(out var pool_c11))
                     for (int e = archetype.entity_count; e >= 0; --e)
-                        action(ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e], ref pool_c8.Values[e], ref pool_c9.Values[e], ref pool_c10.Values[e], ref pool_c11.Values[e]);
+                        action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e], ref pool_c11[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -168,9 +168,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7) && archetype.TryGetPool<C8>(out var pool_c8) && archetype.TryGetPool<C9>(out var pool_c9) && archetype.TryGetPool<C10>(out var pool_c10) && archetype.TryGetPool<C11>(out var pool_c11) && archetype.TryGetPool<C12>(out var pool_c12))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10) && archetype.TryGetArray<C11>(out var pool_c11) && archetype.TryGetArray<C12>(out var pool_c12))
                     for (int e = archetype.entity_count; e >= 0; --e)
-                        action(ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e], ref pool_c8.Values[e], ref pool_c9.Values[e], ref pool_c10.Values[e], ref pool_c11.Values[e], ref pool_c12.Values[e]);
+                        action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e], ref pool_c11[e], ref pool_c12[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -182,9 +182,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7) && archetype.TryGetPool<C8>(out var pool_c8) && archetype.TryGetPool<C9>(out var pool_c9) && archetype.TryGetPool<C10>(out var pool_c10) && archetype.TryGetPool<C11>(out var pool_c11) && archetype.TryGetPool<C12>(out var pool_c12) && archetype.TryGetPool<C13>(out var pool_c13))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10) && archetype.TryGetArray<C11>(out var pool_c11) && archetype.TryGetArray<C12>(out var pool_c12) && archetype.TryGetArray<C13>(out var pool_c13))
                     for (int e = archetype.entity_count; e >= 0; --e)
-                        action(ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e], ref pool_c8.Values[e], ref pool_c9.Values[e], ref pool_c10.Values[e], ref pool_c11.Values[e], ref pool_c12.Values[e], ref pool_c13.Values[e]);
+                        action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e], ref pool_c11[e], ref pool_c12[e], ref pool_c13[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -196,9 +196,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7) && archetype.TryGetPool<C8>(out var pool_c8) && archetype.TryGetPool<C9>(out var pool_c9) && archetype.TryGetPool<C10>(out var pool_c10) && archetype.TryGetPool<C11>(out var pool_c11) && archetype.TryGetPool<C12>(out var pool_c12) && archetype.TryGetPool<C13>(out var pool_c13) && archetype.TryGetPool<C14>(out var pool_c14))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10) && archetype.TryGetArray<C11>(out var pool_c11) && archetype.TryGetArray<C12>(out var pool_c12) && archetype.TryGetArray<C13>(out var pool_c13) && archetype.TryGetArray<C14>(out var pool_c14))
                     for (int e = archetype.entity_count; e >= 0; --e)
-                        action(ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e], ref pool_c8.Values[e], ref pool_c9.Values[e], ref pool_c10.Values[e], ref pool_c11.Values[e], ref pool_c12.Values[e], ref pool_c13.Values[e], ref pool_c14.Values[e]);
+                        action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e], ref pool_c11[e], ref pool_c12[e], ref pool_c13[e], ref pool_c14[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -210,9 +210,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7) && archetype.TryGetPool<C8>(out var pool_c8) && archetype.TryGetPool<C9>(out var pool_c9) && archetype.TryGetPool<C10>(out var pool_c10) && archetype.TryGetPool<C11>(out var pool_c11) && archetype.TryGetPool<C12>(out var pool_c12) && archetype.TryGetPool<C13>(out var pool_c13) && archetype.TryGetPool<C14>(out var pool_c14) && archetype.TryGetPool<C15>(out var pool_c15))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10) && archetype.TryGetArray<C11>(out var pool_c11) && archetype.TryGetArray<C12>(out var pool_c12) && archetype.TryGetArray<C13>(out var pool_c13) && archetype.TryGetArray<C14>(out var pool_c14) && archetype.TryGetArray<C15>(out var pool_c15))
                     for (int e = archetype.entity_count; e >= 0; --e)
-                        action(ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e], ref pool_c8.Values[e], ref pool_c9.Values[e], ref pool_c10.Values[e], ref pool_c11.Values[e], ref pool_c12.Values[e], ref pool_c13.Values[e], ref pool_c14.Values[e], ref pool_c15.Values[e]);
+                        action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e], ref pool_c11[e], ref pool_c12[e], ref pool_c13[e], ref pool_c14[e], ref pool_c15[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -224,9 +224,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7) && archetype.TryGetPool<C8>(out var pool_c8) && archetype.TryGetPool<C9>(out var pool_c9) && archetype.TryGetPool<C10>(out var pool_c10) && archetype.TryGetPool<C11>(out var pool_c11) && archetype.TryGetPool<C12>(out var pool_c12) && archetype.TryGetPool<C13>(out var pool_c13) && archetype.TryGetPool<C14>(out var pool_c14) && archetype.TryGetPool<C15>(out var pool_c15) && archetype.TryGetPool<C16>(out var pool_c16))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10) && archetype.TryGetArray<C11>(out var pool_c11) && archetype.TryGetArray<C12>(out var pool_c12) && archetype.TryGetArray<C13>(out var pool_c13) && archetype.TryGetArray<C14>(out var pool_c14) && archetype.TryGetArray<C15>(out var pool_c15) && archetype.TryGetArray<C16>(out var pool_c16))
                     for (int e = archetype.entity_count; e >= 0; --e)
-                        action(ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e], ref pool_c8.Values[e], ref pool_c9.Values[e], ref pool_c10.Values[e], ref pool_c11.Values[e], ref pool_c12.Values[e], ref pool_c13.Values[e], ref pool_c14.Values[e], ref pool_c15.Values[e], ref pool_c16.Values[e]);
+                        action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e], ref pool_c11[e], ref pool_c12[e], ref pool_c13[e], ref pool_c14[e], ref pool_c15[e], ref pool_c16[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -239,7 +239,7 @@ namespace SimpleECS
             {
                 var archetype = matching_archetypes[i];
                 for (int e = archetype.entity_count - 1; e >= 0; --e)
-                    action(archetype.entity_pool.Values[e]);
+                    action(archetype.entity_pool[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -251,9 +251,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1))
                     for (int e = archetype.entity_count - 1; e >= 0; --e)
-                        action(archetype.entity_pool.Values[e], ref pool_c1.Values[e]);
+                        action(archetype.entity_pool[e], ref pool_c1[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -265,9 +265,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2))
                     for (int e = archetype.entity_count - 1; e >= 0; --e)
-                        action(archetype.entity_pool.Values[e], ref pool_c1.Values[e], ref pool_c2.Values[e]);
+                        action(archetype.entity_pool[e], ref pool_c1[e], ref pool_c2[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -279,9 +279,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3))
                     for (int e = archetype.entity_count - 1; e >= 0; --e)
-                        action(archetype.entity_pool.Values[e], ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e]);
+                        action(archetype.entity_pool[e], ref pool_c1[e], ref pool_c2[e], ref pool_c3[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -293,9 +293,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4))
                     for (int e = archetype.entity_count - 1; e >= 0; --e)
-                        action(archetype.entity_pool.Values[e], ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e]);
+                        action(archetype.entity_pool[e], ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -307,9 +307,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5))
                     for (int e = archetype.entity_count - 1; e >= 0; --e)
-                        action(archetype.entity_pool.Values[e], ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e]);
+                        action(archetype.entity_pool[e], ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -321,9 +321,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6))
                     for (int e = archetype.entity_count - 1; e >= 0; --e)
-                        action(archetype.entity_pool.Values[e], ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e]);
+                        action(archetype.entity_pool[e], ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -335,9 +335,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7))
                     for (int e = archetype.entity_count - 1; e >= 0; --e)
-                        action(archetype.entity_pool.Values[e], ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e]);
+                        action(archetype.entity_pool[e], ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -349,9 +349,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7) && archetype.TryGetPool<C8>(out var pool_c8))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8))
                     for (int e = archetype.entity_count - 1; e >= 0; --e)
-                        action(archetype.entity_pool.Values[e], ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e], ref pool_c8.Values[e]);
+                        action(archetype.entity_pool[e], ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -363,9 +363,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7) && archetype.TryGetPool<C8>(out var pool_c8) && archetype.TryGetPool<C9>(out var pool_c9))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9))
                     for (int e = archetype.entity_count - 1; e >= 0; --e)
-                        action(archetype.entity_pool.Values[e], ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e], ref pool_c8.Values[e], ref pool_c9.Values[e]);
+                        action(archetype.entity_pool[e], ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -377,9 +377,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7) && archetype.TryGetPool<C8>(out var pool_c8) && archetype.TryGetPool<C9>(out var pool_c9) && archetype.TryGetPool<C10>(out var pool_c10))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10))
                     for (int e = archetype.entity_count - 1; e >= 0; --e)
-                        action(archetype.entity_pool.Values[e], ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e], ref pool_c8.Values[e], ref pool_c9.Values[e], ref pool_c10.Values[e]);
+                        action(archetype.entity_pool[e], ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -391,9 +391,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7) && archetype.TryGetPool<C8>(out var pool_c8) && archetype.TryGetPool<C9>(out var pool_c9) && archetype.TryGetPool<C10>(out var pool_c10) && archetype.TryGetPool<C11>(out var pool_c11))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10) && archetype.TryGetArray<C11>(out var pool_c11))
                     for (int e = archetype.entity_count - 1; e >= 0; --e)
-                        action(archetype.entity_pool.Values[e], ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e], ref pool_c8.Values[e], ref pool_c9.Values[e], ref pool_c10.Values[e], ref pool_c11.Values[e]);
+                        action(archetype.entity_pool[e], ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e], ref pool_c11[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -405,9 +405,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7) && archetype.TryGetPool<C8>(out var pool_c8) && archetype.TryGetPool<C9>(out var pool_c9) && archetype.TryGetPool<C10>(out var pool_c10) && archetype.TryGetPool<C11>(out var pool_c11) && archetype.TryGetPool<C12>(out var pool_c12))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10) && archetype.TryGetArray<C11>(out var pool_c11) && archetype.TryGetArray<C12>(out var pool_c12))
                     for (int e = archetype.entity_count - 1; e >= 0; --e)
-                        action(archetype.entity_pool.Values[e], ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e], ref pool_c8.Values[e], ref pool_c9.Values[e], ref pool_c10.Values[e], ref pool_c11.Values[e], ref pool_c12.Values[e]);
+                        action(archetype.entity_pool[e], ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e], ref pool_c11[e], ref pool_c12[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -419,9 +419,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7) && archetype.TryGetPool<C8>(out var pool_c8) && archetype.TryGetPool<C9>(out var pool_c9) && archetype.TryGetPool<C10>(out var pool_c10) && archetype.TryGetPool<C11>(out var pool_c11) && archetype.TryGetPool<C12>(out var pool_c12) && archetype.TryGetPool<C13>(out var pool_c13))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10) && archetype.TryGetArray<C11>(out var pool_c11) && archetype.TryGetArray<C12>(out var pool_c12) && archetype.TryGetArray<C13>(out var pool_c13))
                     for (int e = archetype.entity_count - 1; e >= 0; --e)
-                        action(archetype.entity_pool.Values[e], ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e], ref pool_c8.Values[e], ref pool_c9.Values[e], ref pool_c10.Values[e], ref pool_c11.Values[e], ref pool_c12.Values[e], ref pool_c13.Values[e]);
+                        action(archetype.entity_pool[e], ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e], ref pool_c11[e], ref pool_c12[e], ref pool_c13[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -433,9 +433,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7) && archetype.TryGetPool<C8>(out var pool_c8) && archetype.TryGetPool<C9>(out var pool_c9) && archetype.TryGetPool<C10>(out var pool_c10) && archetype.TryGetPool<C11>(out var pool_c11) && archetype.TryGetPool<C12>(out var pool_c12) && archetype.TryGetPool<C13>(out var pool_c13) && archetype.TryGetPool<C14>(out var pool_c14))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10) && archetype.TryGetArray<C11>(out var pool_c11) && archetype.TryGetArray<C12>(out var pool_c12) && archetype.TryGetArray<C13>(out var pool_c13) && archetype.TryGetArray<C14>(out var pool_c14))
                     for (int e = archetype.entity_count - 1; e >= 0; --e)
-                        action(archetype.entity_pool.Values[e], ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e], ref pool_c8.Values[e], ref pool_c9.Values[e], ref pool_c10.Values[e], ref pool_c11.Values[e], ref pool_c12.Values[e], ref pool_c13.Values[e], ref pool_c14.Values[e]);
+                        action(archetype.entity_pool[e], ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e], ref pool_c11[e], ref pool_c12[e], ref pool_c13[e], ref pool_c14[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -447,9 +447,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7) && archetype.TryGetPool<C8>(out var pool_c8) && archetype.TryGetPool<C9>(out var pool_c9) && archetype.TryGetPool<C10>(out var pool_c10) && archetype.TryGetPool<C11>(out var pool_c11) && archetype.TryGetPool<C12>(out var pool_c12) && archetype.TryGetPool<C13>(out var pool_c13) && archetype.TryGetPool<C14>(out var pool_c14) && archetype.TryGetPool<C15>(out var pool_c15))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10) && archetype.TryGetArray<C11>(out var pool_c11) && archetype.TryGetArray<C12>(out var pool_c12) && archetype.TryGetArray<C13>(out var pool_c13) && archetype.TryGetArray<C14>(out var pool_c14) && archetype.TryGetArray<C15>(out var pool_c15))
                     for (int e = archetype.entity_count - 1; e >= 0; --e)
-                        action(archetype.entity_pool.Values[e], ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e], ref pool_c8.Values[e], ref pool_c9.Values[e], ref pool_c10.Values[e], ref pool_c11.Values[e], ref pool_c12.Values[e], ref pool_c13.Values[e], ref pool_c14.Values[e], ref pool_c15.Values[e]);
+                        action(archetype.entity_pool[e], ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e], ref pool_c11[e], ref pool_c12[e], ref pool_c13[e], ref pool_c14[e], ref pool_c15[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -461,9 +461,9 @@ namespace SimpleECS
             for (int i = archetype_count - 1; i >= 0; --i)
             {
                 var archetype = matching_archetypes[i];
-                if (archetype.entity_count > 0 && archetype.TryGetPool<C1>(out var pool_c1) && archetype.TryGetPool<C2>(out var pool_c2) && archetype.TryGetPool<C3>(out var pool_c3) && archetype.TryGetPool<C4>(out var pool_c4) && archetype.TryGetPool<C5>(out var pool_c5) && archetype.TryGetPool<C6>(out var pool_c6) && archetype.TryGetPool<C7>(out var pool_c7) && archetype.TryGetPool<C8>(out var pool_c8) && archetype.TryGetPool<C9>(out var pool_c9) && archetype.TryGetPool<C10>(out var pool_c10) && archetype.TryGetPool<C11>(out var pool_c11) && archetype.TryGetPool<C12>(out var pool_c12) && archetype.TryGetPool<C13>(out var pool_c13) && archetype.TryGetPool<C14>(out var pool_c14) && archetype.TryGetPool<C15>(out var pool_c15) && archetype.TryGetPool<C16>(out var pool_c16))
+                if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10) && archetype.TryGetArray<C11>(out var pool_c11) && archetype.TryGetArray<C12>(out var pool_c12) && archetype.TryGetArray<C13>(out var pool_c13) && archetype.TryGetArray<C14>(out var pool_c14) && archetype.TryGetArray<C15>(out var pool_c15) && archetype.TryGetArray<C16>(out var pool_c16))
                     for (int e = archetype.entity_count - 1; e >= 0; --e)
-                        action(archetype.entity_pool.Values[e], ref pool_c1.Values[e], ref pool_c2.Values[e], ref pool_c3.Values[e], ref pool_c4.Values[e], ref pool_c5.Values[e], ref pool_c6.Values[e], ref pool_c7.Values[e], ref pool_c8.Values[e], ref pool_c9.Values[e], ref pool_c10.Values[e], ref pool_c11.Values[e], ref pool_c12.Values[e], ref pool_c13.Values[e], ref pool_c14.Values[e], ref pool_c15.Values[e], ref pool_c16.Values[e]);
+                        action(archetype.entity_pool[e], ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e], ref pool_c11[e], ref pool_c12[e], ref pool_c13[e], ref pool_c14[e], ref pool_c15[e], ref pool_c16[e]);
             }
             World.AllowStructuralChanges = true;
         }
@@ -475,288 +475,224 @@ namespace SimpleECS
         public void Foreach(in entity_query action)
         {
             if (entity_count > 0)
-            {
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(entity_pool.Values[i]);
-            }
+                    action(entity_pool[i]);
         }
         public void Foreach<C1>(in query<C1> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(ref pool_c1.Values[i]);
-            }
+                    action(ref pool_c1[i]);
         }
 
         public void Foreach<C1, C2>(in query<C1, C2> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(ref pool_c1.Values[i], ref pool_c2.Values[i]);
-            }
+                    action(ref pool_c1[i], ref pool_c2[i]);
         }
 
         public void Foreach<C1, C2, C3>(in query<C1, C2, C3> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i]);
-            }
+                    action(ref pool_c1[i], ref pool_c2[i], ref pool_c3[i]);
         }
 
         public void Foreach<C1, C2, C3, C4>(in query<C1, C2, C3, C4> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i]);
-            }
+                    action(ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5>(in query<C1, C2, C3, C4, C5> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i]);
-            }
+                    action(ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6>(in query<C1, C2, C3, C4, C5, C6> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i]);
-            }
+                    action(ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7>(in query<C1, C2, C3, C4, C5, C6, C7> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6) && TryGetArray<C7>(out var pool_c7))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i]);
-            }
+                    action(ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i], ref pool_c7[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8>(in query<C1, C2, C3, C4, C5, C6, C7, C8> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6) && TryGetArray<C7>(out var pool_c7) && TryGetArray<C8>(out var pool_c8))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i]);
-            }
+                    action(ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i], ref pool_c7[i], ref pool_c8[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6) && TryGetArray<C7>(out var pool_c7) && TryGetArray<C8>(out var pool_c8) && TryGetArray<C9>(out var pool_c9))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i]);
-            }
+                    action(ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i], ref pool_c7[i], ref pool_c8[i], ref pool_c9[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6) && TryGetArray<C7>(out var pool_c7) && TryGetArray<C8>(out var pool_c8) && TryGetArray<C9>(out var pool_c9) && TryGetArray<C10>(out var pool_c10))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i]);
-            }
+                    action(ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i], ref pool_c7[i], ref pool_c8[i], ref pool_c9[i], ref pool_c10[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6) && TryGetArray<C7>(out var pool_c7) && TryGetArray<C8>(out var pool_c8) && TryGetArray<C9>(out var pool_c9) && TryGetArray<C10>(out var pool_c10) && TryGetArray<C11>(out var pool_c11))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i]);
-            }
+                    action(ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i], ref pool_c7[i], ref pool_c8[i], ref pool_c9[i], ref pool_c10[i], ref pool_c11[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6) && TryGetArray<C7>(out var pool_c7) && TryGetArray<C8>(out var pool_c8) && TryGetArray<C9>(out var pool_c9) && TryGetArray<C10>(out var pool_c10) && TryGetArray<C11>(out var pool_c11) && TryGetArray<C12>(out var pool_c12))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i]);
-            }
+                    action(ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i], ref pool_c7[i], ref pool_c8[i], ref pool_c9[i], ref pool_c10[i], ref pool_c11[i], ref pool_c12[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6) && TryGetArray<C7>(out var pool_c7) && TryGetArray<C8>(out var pool_c8) && TryGetArray<C9>(out var pool_c9) && TryGetArray<C10>(out var pool_c10) && TryGetArray<C11>(out var pool_c11) && TryGetArray<C12>(out var pool_c12) && TryGetArray<C13>(out var pool_c13))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i]);
-            }
+                    action(ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i], ref pool_c7[i], ref pool_c8[i], ref pool_c9[i], ref pool_c10[i], ref pool_c11[i], ref pool_c12[i], ref pool_c13[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13) && TryGetPool<C14>(out var pool_c14))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6) && TryGetArray<C7>(out var pool_c7) && TryGetArray<C8>(out var pool_c8) && TryGetArray<C9>(out var pool_c9) && TryGetArray<C10>(out var pool_c10) && TryGetArray<C11>(out var pool_c11) && TryGetArray<C12>(out var pool_c12) && TryGetArray<C13>(out var pool_c13) && TryGetArray<C14>(out var pool_c14))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i], ref pool_c14.Values[i]);
-            }
+                    action(ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i], ref pool_c7[i], ref pool_c8[i], ref pool_c9[i], ref pool_c10[i], ref pool_c11[i], ref pool_c12[i], ref pool_c13[i], ref pool_c14[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13) && TryGetPool<C14>(out var pool_c14) && TryGetPool<C15>(out var pool_c15))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6) && TryGetArray<C7>(out var pool_c7) && TryGetArray<C8>(out var pool_c8) && TryGetArray<C9>(out var pool_c9) && TryGetArray<C10>(out var pool_c10) && TryGetArray<C11>(out var pool_c11) && TryGetArray<C12>(out var pool_c12) && TryGetArray<C13>(out var pool_c13) && TryGetArray<C14>(out var pool_c14) && TryGetArray<C15>(out var pool_c15))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i], ref pool_c14.Values[i], ref pool_c15.Values[i]);
-            }
+                    action(ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i], ref pool_c7[i], ref pool_c8[i], ref pool_c9[i], ref pool_c10[i], ref pool_c11[i], ref pool_c12[i], ref pool_c13[i], ref pool_c14[i], ref pool_c15[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16>(in query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13) && TryGetPool<C14>(out var pool_c14) && TryGetPool<C15>(out var pool_c15) && TryGetPool<C16>(out var pool_c16))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6) && TryGetArray<C7>(out var pool_c7) && TryGetArray<C8>(out var pool_c8) && TryGetArray<C9>(out var pool_c9) && TryGetArray<C10>(out var pool_c10) && TryGetArray<C11>(out var pool_c11) && TryGetArray<C12>(out var pool_c12) && TryGetArray<C13>(out var pool_c13) && TryGetArray<C14>(out var pool_c14) && TryGetArray<C15>(out var pool_c15) && TryGetArray<C16>(out var pool_c16))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i], ref pool_c14.Values[i], ref pool_c15.Values[i], ref pool_c16.Values[i]);
-            }
+                    action(ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i], ref pool_c7[i], ref pool_c8[i], ref pool_c9[i], ref pool_c10[i], ref pool_c11[i], ref pool_c12[i], ref pool_c13[i], ref pool_c14[i], ref pool_c15[i], ref pool_c16[i]);
         }
 
         public void Foreach<C1>(in entity_query<C1> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(entity_pool.Values[i], ref pool_c1.Values[i]);
-            }
+                    action(entity_pool[i], ref pool_c1[i]);
         }
 
         public void Foreach<C1, C2>(in entity_query<C1, C2> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i]);
-            }
+                    action(entity_pool[i], ref pool_c1[i], ref pool_c2[i]);
         }
 
         public void Foreach<C1, C2, C3>(in entity_query<C1, C2, C3> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i]);
-            }
+                    action(entity_pool[i], ref pool_c1[i], ref pool_c2[i], ref pool_c3[i]);
         }
 
         public void Foreach<C1, C2, C3, C4>(in entity_query<C1, C2, C3, C4> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i]);
-            }
+                    action(entity_pool[i], ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5>(in entity_query<C1, C2, C3, C4, C5> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i]);
-            }
+                    action(entity_pool[i], ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6>(in entity_query<C1, C2, C3, C4, C5, C6> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i]);
-            }
+                    action(entity_pool[i], ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7>(in entity_query<C1, C2, C3, C4, C5, C6, C7> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6) && TryGetArray<C7>(out var pool_c7))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i]);
-            }
+                    action(entity_pool[i], ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i], ref pool_c7[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6) && TryGetArray<C7>(out var pool_c7) && TryGetArray<C8>(out var pool_c8))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i]);
-            }
+                    action(entity_pool[i], ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i], ref pool_c7[i], ref pool_c8[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6) && TryGetArray<C7>(out var pool_c7) && TryGetArray<C8>(out var pool_c8) && TryGetArray<C9>(out var pool_c9))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i]);
-            }
+                    action(entity_pool[i], ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i], ref pool_c7[i], ref pool_c8[i], ref pool_c9[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6) && TryGetArray<C7>(out var pool_c7) && TryGetArray<C8>(out var pool_c8) && TryGetArray<C9>(out var pool_c9) && TryGetArray<C10>(out var pool_c10))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i]);
-            }
+                    action(entity_pool[i], ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i], ref pool_c7[i], ref pool_c8[i], ref pool_c9[i], ref pool_c10[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6) && TryGetArray<C7>(out var pool_c7) && TryGetArray<C8>(out var pool_c8) && TryGetArray<C9>(out var pool_c9) && TryGetArray<C10>(out var pool_c10) && TryGetArray<C11>(out var pool_c11))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i]);
-            }
+                    action(entity_pool[i], ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i], ref pool_c7[i], ref pool_c8[i], ref pool_c9[i], ref pool_c10[i], ref pool_c11[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6) && TryGetArray<C7>(out var pool_c7) && TryGetArray<C8>(out var pool_c8) && TryGetArray<C9>(out var pool_c9) && TryGetArray<C10>(out var pool_c10) && TryGetArray<C11>(out var pool_c11) && TryGetArray<C12>(out var pool_c12))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i]);
-            }
+                    action(entity_pool[i], ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i], ref pool_c7[i], ref pool_c8[i], ref pool_c9[i], ref pool_c10[i], ref pool_c11[i], ref pool_c12[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6) && TryGetArray<C7>(out var pool_c7) && TryGetArray<C8>(out var pool_c8) && TryGetArray<C9>(out var pool_c9) && TryGetArray<C10>(out var pool_c10) && TryGetArray<C11>(out var pool_c11) && TryGetArray<C12>(out var pool_c12) && TryGetArray<C13>(out var pool_c13))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i]);
-            }
+                    action(entity_pool[i], ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i], ref pool_c7[i], ref pool_c8[i], ref pool_c9[i], ref pool_c10[i], ref pool_c11[i], ref pool_c12[i], ref pool_c13[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13) && TryGetPool<C14>(out var pool_c14))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6) && TryGetArray<C7>(out var pool_c7) && TryGetArray<C8>(out var pool_c8) && TryGetArray<C9>(out var pool_c9) && TryGetArray<C10>(out var pool_c10) && TryGetArray<C11>(out var pool_c11) && TryGetArray<C12>(out var pool_c12) && TryGetArray<C13>(out var pool_c13) && TryGetArray<C14>(out var pool_c14))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i], ref pool_c14.Values[i]);
-            }
+                    action(entity_pool[i], ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i], ref pool_c7[i], ref pool_c8[i], ref pool_c9[i], ref pool_c10[i], ref pool_c11[i], ref pool_c12[i], ref pool_c13[i], ref pool_c14[i]);
         }
 
         public void Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15>(in entity_query<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15> action)
         {
-            if (entity_count > 0 && TryGetPool<C1>(out var pool_c1) && TryGetPool<C2>(out var pool_c2) && TryGetPool<C3>(out var pool_c3) && TryGetPool<C4>(out var pool_c4) && TryGetPool<C5>(out var pool_c5) && TryGetPool<C6>(out var pool_c6) && TryGetPool<C7>(out var pool_c7) && TryGetPool<C8>(out var pool_c8) && TryGetPool<C9>(out var pool_c9) && TryGetPool<C10>(out var pool_c10) && TryGetPool<C11>(out var pool_c11) && TryGetPool<C12>(out var pool_c12) && TryGetPool<C13>(out var pool_c13) && TryGetPool<C14>(out var pool_c14) && TryGetPool<C15>(out var pool_c15))
-            {
+            if (entity_count > 0 && TryGetArray<C1>(out var pool_c1) && TryGetArray<C2>(out var pool_c2) && TryGetArray<C3>(out var pool_c3) && TryGetArray<C4>(out var pool_c4) && TryGetArray<C5>(out var pool_c5) && TryGetArray<C6>(out var pool_c6) && TryGetArray<C7>(out var pool_c7) && TryGetArray<C8>(out var pool_c8) && TryGetArray<C9>(out var pool_c9) && TryGetArray<C10>(out var pool_c10) && TryGetArray<C11>(out var pool_c11) && TryGetArray<C12>(out var pool_c12) && TryGetArray<C13>(out var pool_c13) && TryGetArray<C14>(out var pool_c14) && TryGetArray<C15>(out var pool_c15))
                 for (int i = entity_count - 1; i >= 0; --i)
-                    action(entity_pool.Values[i], ref pool_c1.Values[i], ref pool_c2.Values[i], ref pool_c3.Values[i], ref pool_c4.Values[i], ref pool_c5.Values[i], ref pool_c6.Values[i], ref pool_c7.Values[i], ref pool_c8.Values[i], ref pool_c9.Values[i], ref pool_c10.Values[i], ref pool_c11.Values[i], ref pool_c12.Values[i], ref pool_c13.Values[i], ref pool_c14.Values[i], ref pool_c15.Values[i]);
-            }
+                    action(entity_pool[i], ref pool_c1[i], ref pool_c2[i], ref pool_c3[i], ref pool_c4[i], ref pool_c5[i], ref pool_c6[i], ref pool_c7[i], ref pool_c8[i], ref pool_c9[i], ref pool_c10[i], ref pool_c11[i], ref pool_c12[i], ref pool_c13[i], ref pool_c14[i], ref pool_c15[i]);
         }
 
     }

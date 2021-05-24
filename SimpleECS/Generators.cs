@@ -73,128 +73,118 @@ namespace SimpleECS.Internal
                 writer.WriteLine("namespace SimpleECS");
                 writer.WriteLine("{");
                 {
-                    writer.WriteLine("using Delegates;");
+
+                    writer.WriteLine("  using Delegates;");
                     writer.WriteLine("");
-                    writer.WriteLine("public partial class Query");
-                    writer.WriteLine("{");
+                    writer.WriteLine("  public partial class Query");
+                    writer.WriteLine("  {");
                     {
-                        writer.WriteLine("/// <summary>");
-                        writer.WriteLine($"/// Allows iteration of components in query, can add up to {count} components");
-                        writer.WriteLine("/// </summary>");
+                        writer.WriteLine("      /// <summary>");
+                        writer.WriteLine($"     /// Allows iteration of components in query, can add up to {count} components");
+                        writer.WriteLine("      /// </summary>");
                         for (int size = 1; size < count + 1; ++size)
                         {
-                            writer.WriteLine($"public void Foreach<{Pattern("C#", size)}>(in query<{Pattern("C#", size)}> action)");
-                            writer.WriteLine("{");
-                                writer.WriteLine("Update();");
-                                writer.WriteLine("World.AllowStructuralChanges = false;");
-                                writer.WriteLine("for (int i = archetype_count - 1; i >= 0; --i)"); // for some reason iterating backwards doubles the performance on my machine
-                                    writer.WriteLine("{");                                          // I suspect because the compiler can ignore array bounds checks
-                                    writer.WriteLine("var archetype = matching_archetypes[i];");    // since it only needs to make sure archetype_count -1 has to be within the bounds
-                                    writer.WriteLine($"if (archetype.entity_count > 0 {Pattern("&& archetype.TryGetPool<C#>(out var pool_c#)", size, false)})");
-                                    writer.WriteLine("for(int e = archetype.entity_count; e >= 0; -- e)");
-                                    writer.WriteLine($"action({Pattern("ref pool_c#.Values[e]", size)});");
-                                    writer.WriteLine("}");
-                                writer.WriteLine("World.AllowStructuralChanges = true;");
-                            writer.WriteLine("}");
+                            writer.WriteLine($"     public void Foreach<{Pattern("C#", size)}>(in query<{Pattern("C#", size)}> action)");
+                            writer.WriteLine("      {");
+                            writer.WriteLine("          Update();");
+                            writer.WriteLine("          World.AllowStructuralChanges = false;");
+                            writer.WriteLine("          for (int i = archetype_count - 1; i >= 0; --i)");   // for some reason iterating backwards doubles the performance on my machine
+                            writer.WriteLine("          {");                                                // I suspect because the compiler can ignore array bounds checks
+                            writer.WriteLine("              var archetype = matching_archetypes[i];");      // since it only needs to make sure archetype_count -1 has to be within the bounds
+                            writer.WriteLine($"             if (archetype.entity_count > 0 {Pattern("&& archetype.TryGetArray<C#>(out var pool_c#)", size, false)})");
+                            writer.WriteLine("                  for(int e = archetype.entity_count; e >= 0; -- e)");
+                            writer.WriteLine($"                     action({Pattern("ref pool_c#[e]", size)});");
+                            writer.WriteLine("          }");
+                            writer.WriteLine("          World.AllowStructuralChanges = true;");
+                            writer.WriteLine("      }");
                             writer.WriteLine("");
                         }
 
-                        writer.WriteLine("public void Foreach(in entity_query action)");
-                        writer.WriteLine("{");
-                            writer.WriteLine("Update();");
-                            writer.WriteLine("World.AllowStructuralChanges = false;");
-                            writer.WriteLine("for (int i = archetype_count - 1; i >= 0; --i)");
-                            writer.WriteLine("{");
-                                writer.WriteLine("var archetype = matching_archetypes[i];");
-                                writer.WriteLine("for(int e = archetype.entity_count - 1; e >= 0; --e)");
-                                writer.WriteLine("action(archetype.entity_pool.Values[e]);");
-                            writer.WriteLine("}");
-                            writer.WriteLine("World.AllowStructuralChanges = true;");
+                        writer.WriteLine("      public void Foreach(in entity_query action)");
+                        writer.WriteLine("      {");
+                        writer.WriteLine("          Update();");
+                        writer.WriteLine("          World.AllowStructuralChanges = false;");
+                        writer.WriteLine("          for (int i = archetype_count - 1; i >= 0; --i)");
+                        writer.WriteLine("          {");
+                        writer.WriteLine("              var archetype = matching_archetypes[i];");
+                        writer.WriteLine("              for(int e = archetype.entity_count - 1; e >= 0; --e)");
+                        writer.WriteLine("                  action(archetype.entity_pool[e]);");
+                        writer.WriteLine("          }");
+                        writer.WriteLine("          World.AllowStructuralChanges = true;");
+                        writer.WriteLine("      }");
+                        writer.WriteLine("");
+
+                        for (int size = 1; size < count + 1; ++size)
+                        {
+                            writer.WriteLine($"     public void Foreach<{Pattern("C#", size)}>(in entity_query<{Pattern("C#", size)}> action)");
+                            writer.WriteLine("      {");
+                            writer.WriteLine("          Update();");
+                            writer.WriteLine("          World.AllowStructuralChanges = false;");
+                            writer.WriteLine("          for (int i = archetype_count - 1; i >= 0; --i)");
+                            writer.WriteLine("          {");
+                            writer.WriteLine("              var archetype = matching_archetypes[i];");
+                            writer.WriteLine($"             if (archetype.entity_count > 0 {Pattern("&& archetype.TryGetArray<C#>(out var pool_c#)", size, false)})");
+                            writer.WriteLine("                  for(int e = archetype.entity_count - 1; e >= 0; -- e)");
+                            writer.WriteLine($"                     action(archetype.entity_pool[e], {Pattern("ref pool_c#[e]", size)});");
+                            writer.WriteLine("          }");
+                            writer.WriteLine("          World.AllowStructuralChanges = true;");
+                            writer.WriteLine("      }");
+                            writer.WriteLine("");
+                        }
                         writer.WriteLine("}");
                         writer.WriteLine("");
 
-                        for(int size = 1; size < count + 1; ++ size)
+                        writer.WriteLine("  public partial class Archetype");
+                        writer.WriteLine("  {");
                         {
-                            writer.WriteLine($"public void Foreach<{Pattern("C#", size)}>(in entity_query<{Pattern("C#", size)}> action)");
-                            writer.WriteLine("{");
-                                writer.WriteLine("Update();");
-                                writer.WriteLine("World.AllowStructuralChanges = false;");
-                                writer.WriteLine("for (int i = archetype_count - 1; i >= 0; --i)");
-                                    writer.WriteLine("{");
-                                    writer.WriteLine("var archetype = matching_archetypes[i];");
-                                    writer.WriteLine($"if (archetype.entity_count > 0 {Pattern("&& archetype.TryGetPool<C#>(out var pool_c#)", size, false)})");
-                                    writer.WriteLine("for(int e = archetype.entity_count - 1; e >= 0; -- e)");
-                                    writer.WriteLine($"action(archetype.entity_pool.Values[e], {Pattern("ref pool_c#.Values[e]", size)});");
-                                    writer.WriteLine("}");
-                                writer.WriteLine("World.AllowStructuralChanges = true;");
-                            writer.WriteLine("}");
-                            writer.WriteLine("");
-                        }
-                    }
-                    writer.WriteLine("}");
+                            writer.WriteLine("      public void Foreach(in entity_query action)");
+                            writer.WriteLine("      {");
+                            writer.WriteLine("          if (entity_count > 0)");
+                            writer.WriteLine("          for (int i = entity_count - 1; i >= 0; --i)");
+                            writer.WriteLine("              action(entity_pool[i]);");
+                            writer.WriteLine("      }");
 
-                    
-                    writer.WriteLine("");
-                    writer.WriteLine("public partial class Archetype");
-                    writer.WriteLine("{");
-                    {
-                        writer.WriteLine("public void Foreach(in entity_query action)");
-                        writer.WriteLine("{");
-                        writer.WriteLine("if (entity_count > 0)");
-                        {
-                            writer.WriteLine("{");
-                            writer.WriteLine("for (int i = entity_count - 1; i >= 0; --i)");
-                            writer.WriteLine("action(entity_pool.Values[i]);");
-                            writer.WriteLine("}");
-                        }
-                        writer.WriteLine("}");
-
-                        for (int size = 1; size < count + 1; ++size)
-                        {
-                            writer.WriteLine($"public void Foreach<{Pattern("C#", size)}>(in query<{Pattern("C#", size)}> action)");
-                            writer.WriteLine("{");
-                            writer.WriteLine("if (entity_count > 0" + Pattern("&& TryGetPool<C#>(out var pool_c#)", size, false) + ")");
-                                writer.WriteLine("{");
-                                writer.WriteLine("for (int i = entity_count - 1; i >= 0; --i)");
-                                writer.WriteLine($"action({Pattern("ref pool_c#.Values[i]", size)});");
-                                writer.WriteLine("}");
-                            writer.WriteLine("}");
-                            writer.WriteLine("");
-                        }
-                        for (int size = 1; size < count; ++ size)
-                        {
-                            writer.WriteLine($"public void Foreach<{Pattern("C#", size)}>(in entity_query<{Pattern("C#", size)}> action)");
-                            writer.WriteLine("{");
-                            writer.WriteLine("if (entity_count > 0" + Pattern("&& TryGetPool<C#>(out var pool_c#)", size, false) + ")");
+                            for (int size = 1; size < count + 1; ++size)
                             {
-                                writer.WriteLine("{");
-                                writer.WriteLine("for (int i = entity_count - 1; i >= 0; --i)");
-                                writer.WriteLine($"action(entity_pool.Values[i], {Pattern("ref pool_c#.Values[i]", size)});");
-                                writer.WriteLine("}");
+                                writer.WriteLine($"     public void Foreach<{Pattern("C#", size)}>(in query<{Pattern("C#", size)}> action)");
+                                writer.WriteLine("      {");
+                                writer.WriteLine("          if (entity_count > 0" + Pattern("&& TryGetArray<C#>(out var pool_c#)", size, false) + ")");
+                                writer.WriteLine("              for (int i = entity_count - 1; i >= 0; --i)");
+                                writer.WriteLine($"                 action({Pattern("ref pool_c#[i]", size)});");
+                                writer.WriteLine("      }");
+                                writer.WriteLine("");
                             }
-                            writer.WriteLine("}");
+                            for (int size = 1; size < count; ++size)
+                            {
+                                writer.WriteLine($"     public void Foreach<{Pattern("C#", size)}>(in entity_query<{Pattern("C#", size)}> action)");
+                                writer.WriteLine("      {");
+                                writer.WriteLine("          if (entity_count > 0" + Pattern("&& TryGetArray<C#>(out var pool_c#)", size, false) + ")");
+                                writer.WriteLine("          for (int i = entity_count - 1; i >= 0; --i)");
+                                writer.WriteLine($"             action(entity_pool[i], {Pattern("ref pool_c#[i]", size)});");
+                                writer.WriteLine("      }");
+                                writer.WriteLine("");
+                            }
+                        }
+                        writer.WriteLine("}");
+
+                        writer.WriteLine("  namespace Delegates");
+                        writer.WriteLine("  {");
+                        {
+                            for (int size = 1; size < count + 1; ++size)
+                            {
+                                writer.WriteLine($"     public delegate void query<{Pattern("C#", size)}>({Pattern("ref C# c#", size)});");
+                            }
                             writer.WriteLine("");
+                            writer.WriteLine($"     public delegate void entity_query(Entity entity);");
+                            for (int size = 1; size < count + 1; ++size)
+                            {
+                                writer.WriteLine($"     public delegate void entity_query<{Pattern("C#", size)}>(Entity entity, {Pattern("ref C# c#", size)});");
+                            }
                         }
-                    }
-                    writer.WriteLine("}");
-                    
-                    writer.WriteLine("namespace Delegates");
-                    writer.WriteLine("{");
-                    {
-                        for (int size = 1; size < count + 1; ++size)
-                        {
-                            writer.WriteLine($"public delegate void query<{Pattern("C#", size)}>({Pattern("ref C# c#", size)});");
-                        }
-                        writer.WriteLine("");
-                        writer.WriteLine($"public delegate void entity_query(Entity entity);");
-                        for (int size = 1; size < count + 1; ++size)
-                        {
-                            writer.WriteLine($"public delegate void entity_query<{Pattern("C#", size)}>(Entity entity, {Pattern("ref C# c#", size)});");
-                        }
+                        writer.WriteLine("}");
                     }
                     writer.WriteLine("}");
                 }
-                writer.WriteLine("}");
             }
         }
     }

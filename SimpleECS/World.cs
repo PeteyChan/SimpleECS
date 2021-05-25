@@ -44,9 +44,9 @@ namespace SimpleECS
             set
             {
                 allow_changes = value;
-                while (allow_changes && structureEvents.Count > 0)
+                while (allow_changes && StructureEvent.queue.Count > 0)
                 {
-                    var item = structureEvents.Dequeue();
+                    var item = StructureEvent.queue.Dequeue();
                     switch (item.event_type)
                     {
                         case StructureEvent.Type.Set:
@@ -63,10 +63,15 @@ namespace SimpleECS
             }
         }
 
-        static Queue<StructureEvent> structureEvents = new Queue<StructureEvent>(INITIAL_CAPACITY);
 
         struct StructureEvent
         {
+            public static Queue<StructureEvent> queue = new Queue<StructureEvent>(INITIAL_CAPACITY);
+            public static void Post(Type event_type, Entity entity, int compID = 0, in object args = default)
+            {
+                queue.Enqueue(new StructureEvent { event_type = event_type, entity = entity, component_ID = compID, args = args });
+            }
+
             public enum Type
             {
                 Set, Remove, Destroy
@@ -84,9 +89,20 @@ namespace SimpleECS
         public static bool TryGetEntity(int index, out Entity entity)
         {
             if (index >= 0 && index < entity_data.Length)
-                entity = new Entity(index, entity_data[index].version);
-            else entity = default;
-            return entity;
+            {
+                var data = entity_data[index];
+                var comp_id = data.component_index;
+                if (data.archetype)
+                {
+                    if (comp_id < data.archetype.entity_pool.Length)
+                        entity = data.archetype.entity_pool[comp_id];
+                    else entity = default;
+                    if (entity.index != index)
+                        entity =default;
+                    return entity;
+                }
+            }
+            return entity = default;
         }
 
         /// <summary>
@@ -119,7 +135,7 @@ namespace SimpleECS
         /// <summary>
         /// Returns false if entity was destroyed or not valid
         /// </summary>
-        public static bool IsValid(Entity entity)
+        public static bool IsValid(this Entity entity)
             => entity.version == entity_data[entity.index].version;
 
         /// <summary>
@@ -134,7 +150,6 @@ namespace SimpleECS
                 ref var data = ref entity_data[entity.index];
                 if (data.archetype.TryGetArray<Component>(out var pool))
                     return ref pool[data.component_index];
-                    //return ref pool.Get<Component>()[data.component_index]; 
                 throw new Exception($"{entity} does not have {typeof(Component).FullName}");
             }
             throw new Exception($"{entity} has been destroyed or is not valid, cannot get component");
@@ -152,21 +167,15 @@ namespace SimpleECS
             {
                 ref var data = ref entity_data[entity.index];
 
-                if (data.archetype.TryGetPool(TypeID<Component>.Value, out var pool)) // if component exists set it and return
+                if (data.archetype.TryGetPool<Component>(out var pool)) // if component exists set it and return
                 {
-                    pool.Set(entity, data.component_index, component);
+                    pool.SetValue(entity, data.component_index, component);
                     return entity;
                 }
 
                 if (!allow_changes) // if changes are not allowed, queue them and apply the actions later
                 {
-                    structureEvents.Enqueue(new StructureEvent
-                    {
-                        event_type = StructureEvent.Type.Set,
-                        entity = entity,
-                        args = component,
-                        component_ID = TypeID<Component>.Value
-                    });
+                    StructureEvent.Post(StructureEvent.Type.Set, entity, TypeID<Component>.Value, component);
                     return entity;
                 }
 
@@ -182,8 +191,8 @@ namespace SimpleECS
                 data.archetype = target_arch;
 
                 // add the new component
-                if (target_arch.TryGetPool(TypeID<Component>.Value, out var target_pool))
-                    target_pool.Set(entity, target_index, component);
+                if (target_arch.TryGetPool<Component>(out var target_pool))
+                    target_pool.SetValue(entity, target_index, component);
                 else
                     throw new Exception($"FRAMEWORK BUG: Tried adding component to the wrong archetype {typeof(Component)} {target_arch}");
             }
@@ -198,19 +207,13 @@ namespace SimpleECS
                 // if component exists set it
                 if (data.archetype.TryGetPool(component_ID, out var pool))
                 {
-                    pool.Set(entity, data.component_index, component);
+                    pool.SetObject(entity, data.component_index, component);
                     return entity;
                 }
 
                 if (!allow_changes) // if changes are not allowed, queue them and apply the actions later
                 {
-                    structureEvents.Enqueue(new StructureEvent
-                    {
-                        event_type = StructureEvent.Type.Set,
-                        entity = entity,
-                        args = component,
-                        component_ID = component_ID
-                    });
+                    StructureEvent.Post(StructureEvent.Type.Set, entity, component_ID, component);
                     return entity;
                 }
 
@@ -226,7 +229,7 @@ namespace SimpleECS
 
                     // add the new component
                     if (target_arch.TryGetPool(component_ID, out var target_pool))
-                        target_pool.Set(entity, target_index, component);
+                        target_pool.SetObject(entity, target_index, component);
                     else
                         throw new Exception($"FRAMEWORK BUG: Tried adding component to the wrong archetype {TypeID.Get(component_ID).FullName} {target_arch}");
                 }
@@ -240,14 +243,13 @@ namespace SimpleECS
             {
                 if (!allow_changes)
                 {
-                    structureEvents.Enqueue(new StructureEvent { event_type = StructureEvent.Type.Remove, entity = entity, component_ID = comp_id });
+                    StructureEvent.Post(StructureEvent.Type.Remove, entity, comp_id);
                     return entity;
                 }
 
                 ref var data = ref entity_data[entity.index];
                 if (data.archetype.TryGetPool(comp_id, out var pool))
                 {
-                    var comp = pool.Get(data.component_index);
                     var target_arch = GetArchetype(signature.Copy(data.archetype.signature).Remove(comp_id)); // get target archetype
                     var target_index = target_arch.entity_count;
 
@@ -256,9 +258,7 @@ namespace SimpleECS
                     data.archetype.MoveEntity(data.component_index, target_arch, target_index);
                     data.component_index = target_index;
                     data.archetype = target_arch;
-
-                    if (comp is IOnRemoveCallback removeComponent)
-                        removeComponent.OnRemoveBy(entity);
+                    pool.remove_callback?.Invoke(entity);
                 }
             }
             return entity;
@@ -281,7 +281,7 @@ namespace SimpleECS
             {
                 if (!allow_changes)
                 {
-                    structureEvents.Enqueue(new StructureEvent { event_type = StructureEvent.Type.Destroy, entity = entity });
+                    StructureEvent.Post(StructureEvent.Type.Destroy, entity);
                     return;
                 }
 
@@ -375,14 +375,51 @@ namespace SimpleECS
             return archetype;
         }
 
+        internal static int Version; // version updates whenever archetypes are destroyed
+
+        /// <summary>
+        /// Removes all archetypes with no entities from the world.
+        /// </summary>
+        public static void RemoveEmptyArchetypes()
+        {
+            List<Archetype> kept_archs = new List<Archetype>();
+            foreach (var pending in archetypes)
+                if (pending.entity_count > 0)
+                    kept_archs.Add(pending);
+                else
+                    pending.Destroy();
+
+            archetypes.Clear();
+            id_to_archetype.Clear();
+            foreach (var archetype in kept_archs)
+            {
+                var id = archetype.signature.GetHashCode();
+                if (!id_to_archetype.TryGetValue(id, out var stored_archs))
+                    id_to_archetype[id] = stored_archs = new List<Archetype>();
+                stored_archs.Add(archetype);
+                archetypes.Add(archetype);
+            }
+            Version++;
+        }
+
         /// <summary>
         /// Resizes all archetype backing arrays to the minimum power of 2 needed to hold their components.
         /// Useful after deleting large amounts of entities or transitioning to other scenes in game engines.
         /// </summary>
-        public static void Resize()
+        public static void ResizeBackingArrays()
         {
             for (int i = 0; i < archetypes.Count; ++i)
-                archetypes[i].Resize();
+                archetypes[i].ResizeBackingArrays();
+        }
+
+        /// <summary>
+        /// Removes all empty archetypes, resizes all backing arrays then does a GC.Collect();
+        /// </summary>
+        public static void Compact()
+        {
+            RemoveEmptyArchetypes();
+            ResizeBackingArrays();
+            GC.Collect();
         }
 
         struct Entity_Data

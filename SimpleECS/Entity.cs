@@ -2,23 +2,6 @@ namespace SimpleECS
 {
     using System;
 
-    /// <summary>
-    /// Is called on the component when added to the entity with Set()
-    /// </summary>
-    public interface IOnSetCallback
-    {
-        void OnSetBy (Entity entity);
-    }
-
-    /// <summary>
-    /// Is called on the component when owner entity remove's the component or entity is destroyed.
-    /// If entity was destroyed, entity will be invalid during the callback
-    /// </summary>
-    public interface IOnRemoveCallback
-    {
-        void OnRemoveBy (Entity entity);
-    }
-
     public partial struct Entity : IEquatable<Entity>, IComparable<Entity>
     {
         internal Entity(int id, int version)

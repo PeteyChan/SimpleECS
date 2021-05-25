@@ -30,6 +30,7 @@ namespace SimpleECS
         TypeSignature has = new TypeSignature();
         TypeSignature not = new TypeSignature();
         int current_archetype_index; // index of last archetype in world that we checked for a match
+        int current_version;
         int archetype_count;    // number of matching archetypes
 
         /// <summary>
@@ -111,12 +112,23 @@ namespace SimpleECS
 
         void Update() // checks for any new archetypes since last run and updates accordingly
         {
-            if (current_archetype_index != World.Archetypes.Count)  // check for any new archetypes
+            
+            if (World.Version > current_version) // check to see if world's version changed, if so need to update
+            {
+                for(int i = archetype_count-1; i>= 0; --i)
+                    matching_archetypes[i] = default;
+
+                current_version = World.Version;
+                current_archetype_index = 0;
+                archetype_count = 0;
+            }
+
+            if (current_archetype_index < World.Archetypes.Count)  // check for any new archetypes
             {
                 for (int i = current_archetype_index; i < World.Archetypes.Count; ++i)
                 {
                     var archetype = World.Archetypes[i];
-
+                    
                     if (!archetype.signature.HasAll(has))
                         goto next_archetype;
 

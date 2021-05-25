@@ -70,16 +70,6 @@ namespace SimpleECS
                 if (to_allocate.Count == 0)
                     break;
             }
-
-            List<Pool> removables = new List<Pool>();
-            for (int i = 0; i < component_count; ++i)
-            {
-                if (data_map[i].pool.HasOnRemoveCallbacks)
-                    removables.Add(data_map[i].pool);
-            }
-            RemoveCallbackPools = new (Pool, IOnRemoveCallback)[removables.Count];
-            for (int i = 0; i < removables.Count; ++i)
-                RemoveCallbackPools[i].pool = removables[i];
         }
 
         internal void AddEntity(Entity entity)   // returns component id
@@ -98,7 +88,7 @@ namespace SimpleECS
         internal void MoveEntity(int component_index, Archetype archetype, int target_index)
         {
             archetype.AddEntity(entity_pool[component_index]);
-            entity_pool[component_index] = entity_pool[entity_count-1];
+            entity_pool[component_index] = entity_pool[entity_count - 1];
 
             for (int i = 0; i < component_count; ++i)
             {
@@ -110,40 +100,30 @@ namespace SimpleECS
 
         internal void DestroyEntity(int component_index)
         {
-            for (int i = 0; i < RemoveCallbackPools.Length; ++i)
-                RemoveCallbackPools[i].callback = RemoveCallbackPools[i].pool.Get(component_index) as IOnRemoveCallback;
-
             for (int i = 0; i < component_count; ++i)
                 data_map[i].pool.Remove(component_index, entity_count);
 
             var entity = entity_pool[component_index];
-            for (int i = 0; i < RemoveCallbackPools.Length; ++i)
-            {
-                RemoveCallbackPools[i].callback?.OnRemoveBy(entity);
-                RemoveCallbackPools[i].callback = default;
-            }
             entity_pool[component_index] = entity_pool[--entity_count];
+
+            for (int i = 0; i < component_count; ++i)
+                data_map[i].pool.remove_callback?.Invoke(entity);
         }
 
         internal void GetAllComponents(int component_index, List<object> components)
         {
-            foreach (var data in data_map)
-                components.Add(data.pool.Get(component_index));
+            for(int i = 0;i < component_count; ++ i)
+                components.Add(data_map[i].pool.Get(component_index));
         }
-
-        (Pool pool, IOnRemoveCallback callback)[] RemoveCallbackPools;
 
         Pool CreatePool(Type type)
         {
-            if (typeof(IOnSetCallback).IsAssignableFrom(type))
-                return Activator.CreateInstance(typeof(SettablePool<>).MakeGenericType(type)) as Pool;
-
             return Activator.CreateInstance(typeof(Pool<>).MakeGenericType(type)) as Pool;
         }
 
         /// <summary>
         /// Tries to retrieve the stored entitys component array.
-        /// Returns false if archetype does not have component array
+        /// Returns false if stored entities don't have components
         /// </summary>
         public bool TryGetArray<Component>(out Component[] components)
         {
@@ -164,6 +144,28 @@ namespace SimpleECS
                 }
             }
             components = default;
+            return false;
+        }
+
+        internal bool TryGetPool<T>(out Pool<T> pool)
+        {
+            int type_id = TypeID<T>.Value;
+            var data = data_map[type_id % data_map.Length];
+            if (data.ID == type_id)
+            {
+                pool = (Pool<T>)data.pool;
+                return true;
+            }
+            while (data.next >= 0)
+            {
+                data = data_map[data.next];
+                if (data.ID == type_id)
+                {
+                    pool = (Pool<T>)data.pool;
+                    return true;
+                }
+            }
+            pool = default;
             return false;
         }
 
@@ -210,7 +212,7 @@ namespace SimpleECS
         /// <summary>
         /// Resizes archetype's backing arrays to minimum power of 2 needed to store components
         /// </summary>
-        public void Resize()
+        public void ResizeBackingArrays()
         {
             int length = 8;
             while (length < entity_count)
@@ -220,6 +222,13 @@ namespace SimpleECS
             Array.Resize(ref entity_pool, length);
             for (int i = 0; i < component_count; ++i)
                 data_map[i].pool.Resize(length);
+        }
+
+        internal void Destroy()
+        {
+            data_map = default;
+            signature = default;
+            entity_pool = default;
         }
 
         internal struct Data
@@ -233,7 +242,7 @@ namespace SimpleECS
             => $"Archetype [{signature}]";
 
         public static implicit operator bool(Archetype archetype)
-            => archetype == null ? false : true;
+            => archetype?.entity_pool == null ? false : true;
 
         // pool readonly interface
         IEnumerator<Entity> IEnumerable<Entity>.GetEnumerator()
@@ -254,14 +263,12 @@ namespace SimpleECS
 
         internal abstract class Pool
         {
-            /// <summary>
-            /// removes component at index, returns removed component
-            /// </summary>
+            internal delegate void set_by_object(in Entity entity, int index, in object obj);
+            internal delegate void set_by_value<T>(in Entity entity, int index, in T obj);
+
             internal abstract void Remove(int index, int entity_count);
 
-            internal abstract void Set(in Entity entity, int index, in object obj);
-
-            internal virtual void Set<T>(in Entity entity, int index, T obj) => ((T[])array)[index] = obj;
+            internal set_by_object SetObject;
 
             internal abstract object Get(int index);
 
@@ -269,34 +276,41 @@ namespace SimpleECS
 
             internal abstract void Move(int index, Archetype archetype, int new_index);
 
-            internal abstract bool HasOnRemoveCallbacks { get; }
-
             internal object array;
+
+            internal Action<Entity> remove_callback;
         }
 
-        sealed class SettablePool<T> : Pool<T> where T : IOnSetCallback   // pain in the arse but needed to allow structs
-        {                                                                 // to mutate during their OnSetCallback
-            internal override void Set(in Entity entity, int index, in object obj)
-            {
-                Values[index] = (T)obj;
-                Values[index]?.OnSetBy(entity);
-            }
-
-            internal override void Set<T1>(in Entity entity, int index, T1 obj)
-            {
-                ((T1[])array)[index] = obj; // so dodge, but works
-                Values[index]?.OnSetBy(entity);
-            }
-        }
-
-        class Pool<T> : Pool
+        internal sealed class Pool<T> : Pool
         {
             public Pool()
             {
                 array = Values;
+                if (EntityCallbacks<T>.OnSet != null)
+                {
+                    SetValue = (in Entity entity, int index, in T obj) =>
+                    {
+                        Values[index] = obj;
+                        EntityCallbacks<T>.OnSet(entity, ref Values[index]);
+                    };
+
+                    SetObject = (in Entity entity, int index, in object obj) =>
+                    {
+                        Values[index] = (T)obj;
+                        EntityCallbacks<T>.OnSet(entity, ref Values[index]);
+                    };
+                }
+                else
+                {
+                    SetValue = (in Entity e, int index, in T obj) => Values[index] = obj;
+                    SetObject = (in Entity e, int index, in object obj) => Values[index] = (T)obj;
+                }
+
+                if (EntityCallbacks<T>.OnRemove != null)
+                    remove_callback = e => EntityCallbacks<T>.OnRemove(e, ref removed);
             }
 
-            internal override bool HasOnRemoveCallbacks => typeof(IOnRemoveCallback).IsAssignableFrom(typeof(T));
+            T removed;
 
             public T[] Values = new T[8];
 
@@ -304,11 +318,12 @@ namespace SimpleECS
 
             internal override void Remove(int index, int entity_count)
             {
+                removed = Values[index];
                 Values[index] = Values[entity_count - 1];
                 Values[entity_count - 1] = default;
             }
 
-            internal override void Set(in Entity entity, int index, in object obj) => Values[index] = (T)obj;
+            internal set_by_value<T> SetValue;
 
             internal override void Resize(int capacity)
             {
@@ -320,7 +335,7 @@ namespace SimpleECS
             {
                 if (archetype.TryGetArray<T>(out var pool))
                     pool[target_index] = Values[index];
-            }         
+            }
         }
     }
 }

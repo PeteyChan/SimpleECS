@@ -12,29 +12,35 @@ namespace SimpleECS
 
     internal class EntityCallbacks
     {
-        internal static List<MethodInfo> SetCallbacks = new List<MethodInfo>();
-        internal static List<MethodInfo> RemoveCallbacks = new List<MethodInfo>();
-        
+        internal static List<MethodInfo> on_set = new List<MethodInfo>();
+        internal static List<MethodInfo> on_remove = new List<MethodInfo>();
         static EntityCallbacks()
         {
-            List<MethodInfo> methods = new List<MethodInfo>();
-            foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
-                foreach (var type in assembly.GetTypes())
+            foreach (var type in Assembly.GetExecutingAssembly().GetTypes())    // if using multiple assemblies this may break
+            {                                                                   // but adds like a second if searching through all assemblies
+                if (type.IsGenericType) continue;
+                foreach (var method in type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
                 {
-                    if (type.IsGenericType) continue;
-                    foreach (var method in type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
-                    {
-                        var p = method.GetParameters();
-                        if (p.Length != 2) continue;
-                        if (p[0].ParameterType != typeof(Entity)) continue;
-                        if (!p[1].ParameterType.IsByRef || p[1].IsOut) continue;
+                    var p = method.GetParameters();
+                    if (p.Length != 2) continue;
+                    if (method.IsGenericMethod) continue;
 
-                        if (method.GetCustomAttributes<OnSetCallback>() != null)
-                            SetCallbacks.Add(method);
-                        if (method.GetCustomAttributes<OnRemoveCallback>() != null)
-                            RemoveCallbacks.Add(method);
+                    if (p[0].ParameterType != typeof(Entity)) continue;
+                    if (!p[1].ParameterType.IsByRef || p[1].IsOut) continue;
+
+                    if (method.GetCustomAttribute<OnSetCallback>() != null)
+                    {
+                        if (!method.IsStatic) throw new Exception($"{method.DeclaringType}.{method.Name} is marked as {nameof(OnSetCallback)} but is not static");
+                        on_set.Add(method);
+                    }
+                    if (method.GetCustomAttribute<OnRemoveCallback>() != null)
+                    {
+                        if (!method.IsStatic) throw new Exception($"{method.DeclaringType}.{method.Name} is marked as {nameof(OnRemoveCallback)} but is not static");
+                        on_remove.Add(method);
                     }
                 }
+            }
+
         }
     }
 
@@ -45,14 +51,14 @@ namespace SimpleECS
 
         static EntityCallbacks()
         {
-            foreach (var method in SetCallbacks)
+            foreach (var method in on_set)
             {
                 if (method.GetParameters()[1].ParameterType.GetElementType() == typeof(Component))
                     OnSet += (Delegates.entity_query<Component>)Delegate.CreateDelegate(typeof(Delegates.entity_query<Component>), null, method);
-                
+
             }
 
-            foreach (var method in RemoveCallbacks)
+            foreach (var method in on_remove)
             {
                 if (method.GetParameters()[1].ParameterType.GetElementType() == typeof(Component))
                     OnRemove += (Delegates.entity_query<Component>)Delegate.CreateDelegate(typeof(Delegates.entity_query<Component>), null, method);

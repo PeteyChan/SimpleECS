@@ -92,7 +92,7 @@ namespace SimpleECS.Internal
                             writer.WriteLine("          {");                                                // I suspect because the compiler can ignore array bounds checks
                             writer.WriteLine("              var archetype = matching_archetypes[i];");      // since it only needs to make sure archetype_count -1 has to be within the bounds
                             writer.WriteLine($"             if (archetype.entity_count > 0 {Pattern("&& archetype.TryGetArray<C#>(out var pool_c#)", size, false)})");
-                            writer.WriteLine("                  for(int e = archetype.entity_count; e >= 0; -- e)");
+                            writer.WriteLine("                  for(int e = archetype.entity_count - 1; e >= 0; -- e)");
                             writer.WriteLine($"                     action({Pattern("ref pool_c#[e]", size)});");
                             writer.WriteLine("          }");
                             writer.WriteLine("          World.AllowStructuralChanges = true;");

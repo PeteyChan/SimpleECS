@@ -15,7 +15,7 @@ namespace SimpleECS
             {
                 var archetype = matching_archetypes[i];
                 if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1))
-                    for (int e = archetype.entity_count; e >= 0; --e)
+                    for (int e = archetype.entity_count - 1; e >= 0; --e)
                         action(ref pool_c1[e]);
             }
             World.AllowStructuralChanges = true;
@@ -29,7 +29,7 @@ namespace SimpleECS
             {
                 var archetype = matching_archetypes[i];
                 if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2))
-                    for (int e = archetype.entity_count; e >= 0; --e)
+                    for (int e = archetype.entity_count - 1; e >= 0; --e)
                         action(ref pool_c1[e], ref pool_c2[e]);
             }
             World.AllowStructuralChanges = true;
@@ -43,7 +43,7 @@ namespace SimpleECS
             {
                 var archetype = matching_archetypes[i];
                 if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3))
-                    for (int e = archetype.entity_count; e >= 0; --e)
+                    for (int e = archetype.entity_count - 1; e >= 0; --e)
                         action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e]);
             }
             World.AllowStructuralChanges = true;
@@ -57,7 +57,7 @@ namespace SimpleECS
             {
                 var archetype = matching_archetypes[i];
                 if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4))
-                    for (int e = archetype.entity_count; e >= 0; --e)
+                    for (int e = archetype.entity_count - 1; e >= 0; --e)
                         action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e]);
             }
             World.AllowStructuralChanges = true;
@@ -71,7 +71,7 @@ namespace SimpleECS
             {
                 var archetype = matching_archetypes[i];
                 if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5))
-                    for (int e = archetype.entity_count; e >= 0; --e)
+                    for (int e = archetype.entity_count - 1; e >= 0; --e)
                         action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e]);
             }
             World.AllowStructuralChanges = true;
@@ -85,7 +85,7 @@ namespace SimpleECS
             {
                 var archetype = matching_archetypes[i];
                 if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6))
-                    for (int e = archetype.entity_count; e >= 0; --e)
+                    for (int e = archetype.entity_count - 1; e >= 0; --e)
                         action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e]);
             }
             World.AllowStructuralChanges = true;
@@ -99,7 +99,7 @@ namespace SimpleECS
             {
                 var archetype = matching_archetypes[i];
                 if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7))
-                    for (int e = archetype.entity_count; e >= 0; --e)
+                    for (int e = archetype.entity_count - 1; e >= 0; --e)
                         action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e]);
             }
             World.AllowStructuralChanges = true;
@@ -113,7 +113,7 @@ namespace SimpleECS
             {
                 var archetype = matching_archetypes[i];
                 if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8))
-                    for (int e = archetype.entity_count; e >= 0; --e)
+                    for (int e = archetype.entity_count - 1; e >= 0; --e)
                         action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e]);
             }
             World.AllowStructuralChanges = true;
@@ -127,7 +127,7 @@ namespace SimpleECS
             {
                 var archetype = matching_archetypes[i];
                 if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9))
-                    for (int e = archetype.entity_count; e >= 0; --e)
+                    for (int e = archetype.entity_count - 1; e >= 0; --e)
                         action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e]);
             }
             World.AllowStructuralChanges = true;
@@ -141,7 +141,7 @@ namespace SimpleECS
             {
                 var archetype = matching_archetypes[i];
                 if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10))
-                    for (int e = archetype.entity_count; e >= 0; --e)
+                    for (int e = archetype.entity_count - 1; e >= 0; --e)
                         action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e]);
             }
             World.AllowStructuralChanges = true;
@@ -155,7 +155,7 @@ namespace SimpleECS
             {
                 var archetype = matching_archetypes[i];
                 if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10) && archetype.TryGetArray<C11>(out var pool_c11))
-                    for (int e = archetype.entity_count; e >= 0; --e)
+                    for (int e = archetype.entity_count - 1; e >= 0; --e)
                         action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e], ref pool_c11[e]);
             }
             World.AllowStructuralChanges = true;
@@ -169,7 +169,7 @@ namespace SimpleECS
             {
                 var archetype = matching_archetypes[i];
                 if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10) && archetype.TryGetArray<C11>(out var pool_c11) && archetype.TryGetArray<C12>(out var pool_c12))
-                    for (int e = archetype.entity_count; e >= 0; --e)
+                    for (int e = archetype.entity_count - 1; e >= 0; --e)
                         action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e], ref pool_c11[e], ref pool_c12[e]);
             }
             World.AllowStructuralChanges = true;
@@ -183,7 +183,7 @@ namespace SimpleECS
             {
                 var archetype = matching_archetypes[i];
                 if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10) && archetype.TryGetArray<C11>(out var pool_c11) && archetype.TryGetArray<C12>(out var pool_c12) && archetype.TryGetArray<C13>(out var pool_c13))
-                    for (int e = archetype.entity_count; e >= 0; --e)
+                    for (int e = archetype.entity_count - 1; e >= 0; --e)
                         action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e], ref pool_c11[e], ref pool_c12[e], ref pool_c13[e]);
             }
             World.AllowStructuralChanges = true;
@@ -197,7 +197,7 @@ namespace SimpleECS
             {
                 var archetype = matching_archetypes[i];
                 if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10) && archetype.TryGetArray<C11>(out var pool_c11) && archetype.TryGetArray<C12>(out var pool_c12) && archetype.TryGetArray<C13>(out var pool_c13) && archetype.TryGetArray<C14>(out var pool_c14))
-                    for (int e = archetype.entity_count; e >= 0; --e)
+                    for (int e = archetype.entity_count - 1; e >= 0; --e)
                         action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e], ref pool_c11[e], ref pool_c12[e], ref pool_c13[e], ref pool_c14[e]);
             }
             World.AllowStructuralChanges = true;
@@ -211,7 +211,7 @@ namespace SimpleECS
             {
                 var archetype = matching_archetypes[i];
                 if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10) && archetype.TryGetArray<C11>(out var pool_c11) && archetype.TryGetArray<C12>(out var pool_c12) && archetype.TryGetArray<C13>(out var pool_c13) && archetype.TryGetArray<C14>(out var pool_c14) && archetype.TryGetArray<C15>(out var pool_c15))
-                    for (int e = archetype.entity_count; e >= 0; --e)
+                    for (int e = archetype.entity_count - 1; e >= 0; --e)
                         action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e], ref pool_c11[e], ref pool_c12[e], ref pool_c13[e], ref pool_c14[e], ref pool_c15[e]);
             }
             World.AllowStructuralChanges = true;
@@ -225,7 +225,7 @@ namespace SimpleECS
             {
                 var archetype = matching_archetypes[i];
                 if (archetype.entity_count > 0 && archetype.TryGetArray<C1>(out var pool_c1) && archetype.TryGetArray<C2>(out var pool_c2) && archetype.TryGetArray<C3>(out var pool_c3) && archetype.TryGetArray<C4>(out var pool_c4) && archetype.TryGetArray<C5>(out var pool_c5) && archetype.TryGetArray<C6>(out var pool_c6) && archetype.TryGetArray<C7>(out var pool_c7) && archetype.TryGetArray<C8>(out var pool_c8) && archetype.TryGetArray<C9>(out var pool_c9) && archetype.TryGetArray<C10>(out var pool_c10) && archetype.TryGetArray<C11>(out var pool_c11) && archetype.TryGetArray<C12>(out var pool_c12) && archetype.TryGetArray<C13>(out var pool_c13) && archetype.TryGetArray<C14>(out var pool_c14) && archetype.TryGetArray<C15>(out var pool_c15) && archetype.TryGetArray<C16>(out var pool_c16))
-                    for (int e = archetype.entity_count; e >= 0; --e)
+                    for (int e = archetype.entity_count - 1; e >= 0; --e)
                         action(ref pool_c1[e], ref pool_c2[e], ref pool_c3[e], ref pool_c4[e], ref pool_c5[e], ref pool_c6[e], ref pool_c7[e], ref pool_c8[e], ref pool_c9[e], ref pool_c10[e], ref pool_c11[e], ref pool_c12[e], ref pool_c13[e], ref pool_c14[e], ref pool_c15[e], ref pool_c16[e]);
             }
             World.AllowStructuralChanges = true;

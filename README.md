@@ -47,25 +47,6 @@ entity.Destroy();     // destroys the entity leaving it invalid
 
 ```
 
-### Component Callbacks
-There are 2 callbacks which components can implement. IOnSetCallback and IOnRemoveCallback.
-Although most sources say ECS components should be plain data, these callbacks make it easier to use 
-SimpleECS with game engines such as Unity.
-```C#
-class MyComponent: IOnSetCallback, IOnRemoveCallback
-{
-  void IOnSetCallback.OnSetBy(Entity entity)  // called whenever entity sets the component with OnSet()
-  {                                           // or during entity creation
-    Console.WriteLine($"{entity} set MyComponent");    
-  }
-  
-  void IOnRemoveCallback.OnRemoveBy(Entity entity)        // called when the entity removes the component or
-  {                                                       // if the entity was destroyed. If entity was destroyed
-    Console.WriteLine($"{entity} removed MyComponent");   // if(entity) will return false
-  }
-}
-```
-
 ## Queries
 
 Queries let you iterate over entities based on specified components.
@@ -134,41 +115,6 @@ entity.Has<string>();   // this will now return true
 entity.Has<int>();      // and this will now return false
 ```
 
-## Systems
-
-Since queries are so flexible there was little point in adding dedicated systems. 
-Rather if you are using an existing game engine, it's pretty simple to just use their systems.
-A small Unity Example.
-
-```C#
-class Player : MonoBehaviour , IOnRemoveCallback // player gameobject
-{
-  void Awake()
-  {
-    Entity.Create(this, GetComponent<Animator>(), GetComponent<Rigidbody>()); //...etc
-  }
-  
-  void IOnRemoveCallback.OnRemoveBy(Entity entity)
-  {
-    Destroy(gameobject);  // Sync gameobject destruction with entity destruction
-  }
-}
-
-// some other file
-
-class PlayerSystem: MonoBehaviour
-{
-  Query player_query = new Query().Has<Player>();
-
-  void Update()
-  {
-    player_query.Foreach((ref Rigidbody rb, ref Animator animator) =>
-    {
-      // etc...
-    });
-  }
-}
-```
 ## World
 The world static class is what manages all the underlying archetypes and their entities. 
 Normally you won't need to do much with this class but there are a couple of useful features.

@@ -18,7 +18,7 @@ Entity.Create("my entity", 3, 5f);    // creates a new entity with components
 ```
 Anything that can be put into a list can be a component.
 Only one component of each type can be associated with an entity, however there's nothing
-stopping you having a List<Component> as a component if you need more than one.
+stopping you having a List or array of that component as a component if you need more than one.
 Setting more than one component of the same type will simply overwrite the old one.
 The function can take up to 64 components, but entities themselves have 
 no component limit.

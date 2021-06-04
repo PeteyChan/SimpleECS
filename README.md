@@ -141,7 +141,7 @@ query.Foreach((Entity entity, ref int int_val) =>
   entity.Set("my entity");  // Since this was removed before the query, this is a 
                             // structural operation and will also be cached
   
-  entity.Has<string>();     // so this will still false
+  entity.Has<string>();     // so this will still return false
 });
 // now all structural changes are applied since we are done iterating entities
 

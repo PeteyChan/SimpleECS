@@ -15,6 +15,8 @@ To create an entity use Entity.Create() with the components you want grouped.
 Entity.Create("my entity", 3, 5f);    // creates a new entity with components
                                       // components added this way will trigger
                                       // the OnSetCallback event
+                                      // setting the entity's string component
+                                      // will change the entity's ToString() value
 ```
 Anything that can be put into a list can be a component.
 Only one component of each type can be associated with an entity, however there's nothing

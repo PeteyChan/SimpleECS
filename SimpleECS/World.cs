@@ -106,7 +106,7 @@ namespace SimpleECS
         }
 
         /// <summary>
-        /// Creates an entity using archetype with default components
+        /// Creates an entity in the archetype with default components
         /// </summary>
         public static Entity CreateEntity(this Archetype archetype)
         {
@@ -159,7 +159,8 @@ namespace SimpleECS
 
         /// <summary>
         /// Sets the component on entity to value, if the entity does not already have
-        /// the component it will add it to the entity.
+        /// the component it will add it to the entity. Methods marked with OnSetCallback 
+        /// with this type will be invoked
         /// </summary>
         public static Entity Set<Component>(this in Entity entity, in Component component)
         {
@@ -266,15 +267,14 @@ namespace SimpleECS
 
         /// <summary>
         /// Removes the component type from entity if entity has one.
-        /// Calls the IOnRemoveCallback on component if component implements it
+        /// Methods marked with the OnRemoveCallback attribute with this component will be invoked if it was removed
         /// </summary>
         public static Entity Remove<Component>(this Entity entity) => RemoveComponent(entity, TypeID<Component>.Value);
 
         /// <summary>
-        /// Destroys the component. All components implementing IOnRemoveCallback will have it called.
-        /// Entity is invalid during IOnRemoveCallback
+        /// Destroys the entity. Methods marked with OnRemoveCallback of any of the components destroyed will 
+        /// be invoked. The entity will be invalid during the callback.
         /// </summary>
-        /// <param name="entity"></param>
         public static void Destroy(this Entity entity)
         {
             if (IsValid(entity))
@@ -343,14 +343,18 @@ namespace SimpleECS
         }
 
         /// <summary>
-        /// Returns the archetype the entity belongs to.
-        /// Throws an exception if entity is invalid
+        /// Tries to get the entity's archetype
+        /// Returns false if entity is destroyed or invalid
         /// </summary>
-        public static Archetype GetArchetype(this Entity entity)
+        public static bool TryGetArchetype(this Entity entity, out Archetype archetype)
         {
             if (IsValid(entity))
-                return entity_data[entity.index].archetype;
-            throw new Exception($"{entity} is invalid. Cannot get archetype");
+            {
+                archetype = entity_data[entity.index].archetype;
+                return true;
+            }
+            archetype = default;
+            return false;
         }
 
         /// <summary>
@@ -378,7 +382,7 @@ namespace SimpleECS
         internal static int Version; // version updates whenever archetypes are destroyed
 
         /// <summary>
-        /// Removes all archetypes with no entities from the world.
+        /// Removes all archetypes with no entities.
         /// </summary>
         public static void RemoveEmptyArchetypes()
         {

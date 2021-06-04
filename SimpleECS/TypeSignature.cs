@@ -21,6 +21,14 @@ namespace SimpleECS
             }
             return id;
         }
+
+        public static List<Type> GetAssignedTypes()
+        {
+            var list = new List<Type>();
+            foreach(var type in newIDs)
+                list.Add(type.Key);
+            return list;
+        }
     }
 
     /// <summary>
@@ -34,7 +42,11 @@ namespace SimpleECS
         {
             type_ids = new int[capacity];
         }
-
+        
+        /// <summary>
+        /// Creates a new type signature using the supplied types
+        /// </summary>
+        /// <param name="types"></param>
         public TypeSignature(IEnumerable<Type> types)
         {
             type_ids = new int[4];
@@ -42,6 +54,10 @@ namespace SimpleECS
                 Add(type);
         }
 
+        /// <summary>
+        /// Creates a new type signature that matches the supplied type signature
+        /// </summary>
+        /// <param name="signature"></param>
         public TypeSignature(TypeSignature signature)
         {
             type_count = signature.type_count;
@@ -53,6 +69,10 @@ namespace SimpleECS
             }
         }
 
+        /// <summary>
+        /// Creates a new type signature with the supplied types
+        /// </summary>
+        /// <param name="types"></param>
         public TypeSignature(params Type[] types)
         {
             this.type_ids = new int[types.Length];
@@ -60,6 +80,10 @@ namespace SimpleECS
                 Add(type);
         }
 
+        /// <summary>
+        /// Create a new type signature with the same signature as the supplied archetype
+        /// </summary>
+        /// <param name="archetype"></param>
         public TypeSignature(Archetype archetype)
         {
             type_ids = new int[archetype.signature.type_count + 1];
@@ -122,6 +146,9 @@ namespace SimpleECS
             return this;
         }
 
+        /// <summary>
+        /// Makes this type signature the same as the archetype's type signature
+        /// </summary>
         public TypeSignature Copy(Archetype archetype)
             => this.Copy(archetype.signature);
 
@@ -202,7 +229,8 @@ namespace SimpleECS
             }
             return true;
         }
-
+        
+        #pragma warning disable
         public override int GetHashCode()
         {
             int prime = 53;

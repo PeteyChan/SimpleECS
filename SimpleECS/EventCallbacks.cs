@@ -4,11 +4,21 @@ namespace SimpleECS
     using System.Collections.Generic;
     using System.Reflection;
 
+    /// <summary>
+    /// Put the attribute on a static method in a non Generic class to recieve callbacks whenever an entity sets a component.
+    /// The method signature needs to be in the form of (Entity entity, ref C component) where C is the component type that 
+    /// you wish to get callbacks from
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    class OnSetCallback : Attribute { }
+    public class OnSetCallback : Attribute { }
 
+    /// <summary>
+    /// Put the attribute on a static method in a non Generic class to recieve callbacks whenever an entity removes a component.
+    /// The method signature needs to be in the form of (Entity entity, ref C component) where C is the component type that 
+    /// you wish to get callbacks from
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    class OnRemoveCallback : Attribute { }
+    public class OnRemoveCallback : Attribute { }
 
     internal class EntityCallbacks
     {
@@ -16,27 +26,37 @@ namespace SimpleECS
         internal static List<MethodInfo> on_remove = new List<MethodInfo>();
         static EntityCallbacks()
         {
-            foreach (var type in Assembly.GetExecutingAssembly().GetTypes())    // if using multiple assemblies this may break
-            {                                                                   // but adds like a second if searching through all assemblies
-                if (type.IsGenericType) continue;
-                foreach (var method in type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+            foreach (var assem in System.AppDomain.CurrentDomain.GetAssemblies())
+            {
+                var name = assem.FullName.ToLower();
+                if (name.StartsWith("system")) continue;        // quick hack to make searching assemblies fast by not searching through default ones
+                if (name.StartsWith("netstandard")) continue;   // without this it can take 2 or more seconds to go through all the assemblies
+                if (name.StartsWith("mscorlib")) continue;      // this does have the unfortunate side effect that your own assemblies
+                if (name.StartsWith("unity")) continue;         // can't start with any of these values if you want to use the callback events
+                if (name.StartsWith("godot")) continue;         // maybe manually subscribing is better?
+
+                foreach (var type in assem.GetTypes())
                 {
-                    var p = method.GetParameters();
-                    if (p.Length != 2) continue;
-                    if (method.IsGenericMethod) continue;
-
-                    if (p[0].ParameterType != typeof(Entity)) continue;
-                    if (!p[1].ParameterType.IsByRef || p[1].IsOut) continue;
-
-                    if (method.GetCustomAttribute<OnSetCallback>() != null)
+                    if (type.IsGenericType) continue;
+                    foreach (var method in type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
                     {
-                        if (!method.IsStatic) throw new Exception($"{method.DeclaringType}.{method.Name} is marked as {nameof(OnSetCallback)} but is not static");
-                        on_set.Add(method);
-                    }
-                    if (method.GetCustomAttribute<OnRemoveCallback>() != null)
-                    {
-                        if (!method.IsStatic) throw new Exception($"{method.DeclaringType}.{method.Name} is marked as {nameof(OnRemoveCallback)} but is not static");
-                        on_remove.Add(method);
+                        var p = method.GetParameters();
+                        if (p.Length != 2) continue;
+                        if (method.IsGenericMethod) continue;
+
+                        if (p[0].ParameterType != typeof(Entity)) continue;
+                        if (!p[1].ParameterType.IsByRef || p[1].IsOut) continue;
+
+                        if (method.GetCustomAttribute<OnSetCallback>() != null)
+                        {
+                            if (!method.IsStatic) throw new Exception($"{method.DeclaringType}.{method.Name} is marked as {nameof(OnSetCallback)} but is not static");
+                            on_set.Add(method);
+                        }
+                        if (method.GetCustomAttribute<OnRemoveCallback>() != null)
+                        {
+                            if (!method.IsStatic) throw new Exception($"{method.DeclaringType}.{method.Name} is marked as {nameof(OnRemoveCallback)} but is not static");
+                            on_remove.Add(method);
+                        }
                     }
                 }
             }

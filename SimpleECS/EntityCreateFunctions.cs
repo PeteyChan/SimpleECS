@@ -6,6 +6,7 @@ namespace SimpleECS
         /// Creates an Entity with supplied Components, can add up to 64 components
         /// </summary>
         public static Entity Create() => Sig.archetype.CreateEntity();
+        # pragma warning disable
         public static Entity Create<C1>(
         in C1 c1)
         {

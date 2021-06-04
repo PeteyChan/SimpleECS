@@ -1,8 +1,8 @@
 // ENTITY CREATE FUNCTION
-namespace SimpleECS.Internal
+namespace SimpleECS
 {
     using System.IO;
-    class Generator
+    internal class Generator
     {
         static string Pattern(string value, int count, bool comma_sep = true)
         {

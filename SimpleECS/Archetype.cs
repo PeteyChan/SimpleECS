@@ -6,6 +6,7 @@ namespace SimpleECS
 
     /// <summary>
     /// Stores all entities and their components that match it's signature.
+    /// Entities and components are stored in contiguous arrays for fast iterations.
     /// Can iterate over entities and thier components just like with queries using Foreach()
     /// </summary>
     public partial class Archetype : IReadOnlyList<Entity>
@@ -27,7 +28,6 @@ namespace SimpleECS
         /// </summary>
         public IReadOnlyList<Type> TypeSignature => signature;
 
-        public override int GetHashCode() => ID;
         internal Archetype(TypeSignature signature)
         {
             this.signature = new TypeSignature(signature);
@@ -122,8 +122,9 @@ namespace SimpleECS
         }
 
         /// <summary>
-        /// Tries to retrieve the stored entitys component array.
-        /// Returns false if stored entities don't have components
+        /// Tries to retrieve the component array of the stored entities.
+        /// Returns false if stored entities don't have the component type.
+        /// The amount of components is equal to this archetype's Entities.Count NOT the length of the component array.
         /// </summary>
         public bool TryGetArray<Component>(out Component[] components)
         {
@@ -210,6 +211,25 @@ namespace SimpleECS
         }
 
         /// <summary>
+        /// Returns true if archetype's signature contains component type
+        /// </summary>
+        public bool Has(Type type)
+        {
+            var type_id = TypeID.Get(type);
+            var data = data_map[type_id % data_map.Length];
+            if (data.ID == type_id)
+                return true;
+
+            while (data.next >= 0)
+            {
+                data = data_map[data.next];
+                if (data.ID == type_id)
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Resizes archetype's backing arrays to minimum power of 2 needed to store components
         /// </summary>
         public void ResizeBackingArrays()
@@ -223,6 +243,10 @@ namespace SimpleECS
             for (int i = 0; i < component_count; ++i)
                 data_map[i].pool.Resize(length);
         }
+
+        #pragma warning disable
+
+        public override int GetHashCode() => ID;
 
         internal void Destroy()
         {

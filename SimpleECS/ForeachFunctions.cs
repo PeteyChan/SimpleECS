@@ -20,7 +20,8 @@ namespace SimpleECS
             }
             World.AllowStructuralChanges = true;
         }
-
+        
+        #pragma warning disable
         public void Foreach<C1, C2>(in query<C1, C2> action)
         {
             Update();

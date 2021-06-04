@@ -36,7 +36,7 @@ namespace SimpleECS
         /// <summary>
         /// Current count of entities matching the query
         /// </summary>
-        public int EntityCount  // count of matching entities
+        public int EntityCount 
         {
             get
             {
@@ -83,7 +83,8 @@ namespace SimpleECS
             archetype_count = 0;
             return this;
         }
-
+        
+        #pragma warning disable
         public override string ToString()
         {
             Update();

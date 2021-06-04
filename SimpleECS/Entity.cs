@@ -2,6 +2,9 @@ namespace SimpleECS
 {
     using System;
 
+    /// <summary>
+    /// Basic container of components
+    /// </summary>
     public partial struct Entity : IEquatable<Entity>, IComparable<Entity>
     {
         internal Entity(int id, int version)
@@ -19,6 +22,7 @@ namespace SimpleECS
         /// </summary>
         public readonly int version;
 
+        #pragma warning disable
         public static implicit operator bool(Entity entity)
             => World.IsValid(entity);
 

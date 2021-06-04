@@ -9,7 +9,7 @@ Min C# Framework 4.7
 * Very simple and easy to use queries
 
 ## Entities
-An Entity is simply an ID associates a group of components together.
+An Entity is simply an ID that associates a group of components together.
 To create an entity use Entity.Create() with the components you want grouped.
 ```C#
 Entity.Create("my entity", 3, 5f);    // creates a new entity with components

@@ -49,7 +49,7 @@ if (entity.TryGet(out int value)) // gets the component's value on entity, retur
 }
 
 entity.Remove<T>();   // removes the component on entity if found.
-                      // if component was removed, will trigger on OnRemoveCallback event
+                      // if component was removed, will trigger the OnRemoveCallback event
                     
 entity.Destroy();     // destroys the entity leaving it invalid
                       // all components on the entity will trigger their respective OnRemoveCallback events

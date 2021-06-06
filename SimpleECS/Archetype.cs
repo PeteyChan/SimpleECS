@@ -9,7 +9,7 @@ namespace SimpleECS
     /// Entities and components are stored in contiguous arrays for fast iterations.
     /// Can iterate over entities and thier components just like with queries using Foreach()
     /// </summary>
-    public partial class Archetype : IReadOnlyList<Entity>
+    public partial class Archetype : IReadOnlyList<Entity>  // think I may change this to a struct in the future
     {
         int ID;
         internal TypeSignature signature;
@@ -310,28 +310,17 @@ namespace SimpleECS
             public Pool()
             {
                 array = Values;
-                if (EntityCallbacks<T>.OnSet != null)
+                SetValue = (in Entity e, int index, in T obj) =>
                 {
-                    SetValue = (in Entity entity, int index, in T obj) =>
-                    {
-                        Values[index] = obj;
-                        EntityCallbacks<T>.OnSet(entity, ref Values[index]);
-                    };
-
-                    SetObject = (in Entity entity, int index, in object obj) =>
-                    {
-                        Values[index] = (T)obj;
-                        EntityCallbacks<T>.OnSet(entity, ref Values[index]);
-                    };
-                }
-                else
+                    Values[index] = obj;
+                    SimpleECS.OnSet<T>.Callback?.Invoke(e, ref Values[index]);
+                };
+                SetObject = (in Entity e, int index, in object obj) =>
                 {
-                    SetValue = (in Entity e, int index, in T obj) => Values[index] = obj;
-                    SetObject = (in Entity e, int index, in object obj) => Values[index] = (T)obj;
-                }
-
-                if (EntityCallbacks<T>.OnRemove != null)
-                    remove_callback = e => EntityCallbacks<T>.OnRemove(e, ref removed);
+                    Values[index] = (T)obj;
+                    SimpleECS.OnSet<T>.Callback?.Invoke(e, ref Values[index]);
+                };
+                remove_callback = e => OnRemove<T>.Callback?.Invoke(e, ref removed);
             }
 
             T removed;

@@ -61,5 +61,29 @@ namespace SimpleECS
             if (version > other.version) return 1;
             return 0;
         }
+
+        /// <summary>
+        /// When an entity sets a component, the supplied callback will be invoked
+        /// </summary>
+        /// <param name="callback">The callback to Invoke</param>
+        /// <param name="register">Set to false to unregister the callback</param>
+        public static void OnSet<Component>(Delegates.ComponentCallback<Component> callback, bool register = true)
+        {
+            if (register)
+                SimpleECS.OnSet<Component>.Callback += callback;
+            else SimpleECS.OnSet<Component>.Callback -= callback;
+        }
+
+        /// <summary>
+        /// When an entity removes a component, the supplied callback will be invoked
+        /// </summary>
+        /// <param name="callback">The callback params are (Entity entity, ref Component component)</param>
+        /// <param name="register">Set to false to unregister the callback</param>
+        public static void OnRemove<Component>(Delegates.ComponentCallback<Component> callback, bool register = true)
+        {
+            if (register)
+                SimpleECS.OnRemove<Component>.Callback += callback;
+            else SimpleECS.OnRemove<Component>.Callback -= callback;
+        } 
     }
 }

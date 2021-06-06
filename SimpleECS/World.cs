@@ -139,6 +139,12 @@ namespace SimpleECS
             => entity.version == entity_data[entity.index].version;
 
         /// <summary>
+        /// Returns false if archetype is not valid or Removed by World.RemoveEmptyArchetypes()
+        /// </summary>
+        public static bool IsValid(this Archetype archetype)
+            => archetype?.entity_pool == null ? false : true;
+
+        /// <summary>
         /// Gets component on entity by reference.
         /// Throws an exception if the entity is invalid or does not have
         /// the component

@@ -14,7 +14,7 @@ To create an entity use Entity.Create() with the components you want grouped.
 ```C#
 Entity.Create("my entity", 3, 5f);    // creates a new entity with components
                                       // components added this way will trigger
-                                      // the OnSetCallback event
+                                      // their respective Entity.OnSet() callbacks
                                       // setting the entity's string component
                                       // will change the entity's ToString() value
 ```
@@ -51,37 +51,32 @@ if (entity.TryGet(out int value)) // gets the component's value on entity, retur
 }
 
 entity.Remove<T>();   // removes the component on entity if found.
-                      // if component was removed, will trigger the OnRemoveCallback event
+                      // if component was removed, will trigger any registered Entity.OnRemove() callbacks
                     
 entity.Destroy();     // destroys the entity leaving it invalid
-                      // all components on the entity will trigger their respective OnRemoveCallback events
+                      // all components on the entity will trigger their respective Entity.OnRemove() callbacks
 
 ```
 ## Component Callbacks
-There are 2 component callbacks in SimpleECS. Below is a small example on how to use them.
+There are 2 component callbacks in SimpleECS, Entity.OnSet() and Entity.OnRemove().
 ```C#
-class Callbacks // class implemnting the callbacks needs to be a non generic class
+Entity.OnSet((Entity entity, ref int value) =>    // use Entity.OnSet to get a callback whenever an entity 
+  Console.WriteLine($"{entity} added {value}"));  // sets a component's value
+
+Entity.OnRemove((Entity entity, ref int value) => // use Entity.OnRemove to get a callback whenever an entity
+  Console.WriteLine($"{entity} removed {value})); // removes a component
+                                                  // If entity was destroyed, entity.IsValid() will return false 
+                                                  // during the callback
+
+void MyCallback(Entity entity, ref int value)     // additionally you can name your callbacks
 {
-  // on set will be called anytime an entity sets a component
-  // the method needs to be static with the parameters as (entity, ref component)
-  [OnSetCallback]
-  static void OnSetInt(Entity entity, ref int value)
-  {
-    Console.WriteLine($"{entity} set an int with a value of {value}");
-  }
-  
-  // likewise on remove will be invoked anytime an entity removes a component.
-  // when an entity is destroyed all components are removed.
-  // if destroyed the entity will be invalid during the callback
-  [OnRemoveCallback]
-  static void OnRemoveInt(Entity entity, ref int value)
-  {
-    Console.WriteLine($"{entity} removed an int");  
-  }
+  Console.WriteLine($"{} added int {value}");
 }
 
+Entity.OnSet(MyCallback);         // this will register the callback
+Entity.OnSet(MyCallback, false);  // and by passing false as the second parameter you can unregister the callback
+  
 ```
-
 
 ## Queries
 

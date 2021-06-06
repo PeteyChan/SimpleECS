@@ -7,7 +7,7 @@ namespace SimpleECS
     /// <summary>
     /// Allows for efficient filtering and iterating of entities and their components
     /// </summary>
-    public partial class Query : IReadOnlyList<Archetype>, IEnumerable<Entity>
+    public sealed partial class Query : IReadOnlyList<Archetype>, IEnumerable<Entity>
     {
         /// <summary>
         /// Types archetypes need to have to pass the filter

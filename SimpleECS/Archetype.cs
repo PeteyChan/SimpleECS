@@ -9,7 +9,7 @@ namespace SimpleECS
     /// Entities and components are stored in contiguous arrays for fast iterations.
     /// Can iterate over entities and thier components just like with queries using Foreach()
     /// </summary>
-    public partial class Archetype : IReadOnlyList<Entity>  // think I may change this to a struct in the future
+    public sealed partial class Archetype : IReadOnlyList<Entity>  // think I may change this to a struct in the future
     {
         int ID;
         internal TypeSignature signature;
@@ -107,12 +107,12 @@ namespace SimpleECS
             entity_pool[component_index] = entity_pool[--entity_count];
 
             for (int i = 0; i < component_count; ++i)
-                data_map[i].pool.remove_callback?.Invoke(entity);
+                data_map[i].pool.RemoveCallback(entity);
         }
 
         internal void GetAllComponents(int component_index, List<object> components)
         {
-            for(int i = 0;i < component_count; ++ i)
+            for (int i = 0; i < component_count; ++i)
                 components.Add(data_map[i].pool.Get(component_index));
         }
 
@@ -244,7 +244,7 @@ namespace SimpleECS
                 data_map[i].pool.Resize(length);
         }
 
-        #pragma warning disable
+#pragma warning disable
 
         public override int GetHashCode() => ID;
 
@@ -287,22 +287,13 @@ namespace SimpleECS
 
         internal abstract class Pool
         {
-            internal delegate void set_by_object(in Entity entity, int index, in object obj);
-            internal delegate void set_by_value<T>(in Entity entity, int index, in T obj);
-
-            internal abstract void Remove(int index, int entity_count);
-
-            internal set_by_object SetObject;
-
             internal abstract object Get(int index);
-
+            internal abstract void SetObject(in Entity entity, int index, in object obj);
             internal abstract void Resize(int capcity);
-
             internal abstract void Move(int index, Archetype archetype, int new_index);
-
             internal object array;
-
-            internal Action<Entity> remove_callback;
+            internal abstract void Remove(int index, int entity_count);
+            internal abstract void RemoveCallback(Entity entity);
         }
 
         internal sealed class Pool<T> : Pool
@@ -310,17 +301,6 @@ namespace SimpleECS
             public Pool()
             {
                 array = Values;
-                SetValue = (in Entity e, int index, in T obj) =>
-                {
-                    Values[index] = obj;
-                    SimpleECS.OnSet<T>.Callback?.Invoke(e, ref Values[index]);
-                };
-                SetObject = (in Entity e, int index, in object obj) =>
-                {
-                    Values[index] = (T)obj;
-                    SimpleECS.OnSet<T>.Callback?.Invoke(e, ref Values[index]);
-                };
-                remove_callback = e => OnRemove<T>.Callback?.Invoke(e, ref removed);
             }
 
             T removed;
@@ -336,7 +316,22 @@ namespace SimpleECS
                 Values[entity_count - 1] = default;
             }
 
-            internal set_by_value<T> SetValue;
+            internal override void RemoveCallback(Entity entity)
+            {
+                OnRemove<T>.Callback?.Invoke(entity, ref removed);
+            }
+
+            internal override void SetObject(in Entity entity, int index, in object obj)
+            {
+                Values[index] = (T)obj;
+                SimpleECS.OnSet<T>.Callback?.Invoke(entity, ref Values[index]);
+            }
+
+            internal void SetValue(in Entity entity, int index, in T obj)
+            {
+                Values[index] = obj;
+                SimpleECS.OnSet<T>.Callback?.Invoke(entity, ref Values[index]);
+            }
 
             internal override void Resize(int capacity)
             {
@@ -344,7 +339,7 @@ namespace SimpleECS
                 array = Values;
             }
 
-            internal override void Move(int index, Archetype archetype, int target_index)
+            internal sealed override void Move(int index, Archetype archetype, int target_index)
             {
                 if (archetype.TryGetArray<T>(out var pool))
                     pool[target_index] = Values[index];

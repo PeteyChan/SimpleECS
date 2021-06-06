@@ -139,7 +139,7 @@ namespace SimpleECS
             => entity.version == entity_data[entity.index].version;
 
         /// <summary>
-        /// Returns false if archetype is not valid or Removed by World.RemoveEmptyArchetypes()
+        /// Returns false if archetype is not valid or Destroyed by World.DestroyEmptyArchetypes()
         /// </summary>
         public static bool IsValid(this Archetype archetype)
             => archetype?.entity_pool == null ? false : true;
@@ -265,7 +265,7 @@ namespace SimpleECS
                     data.archetype.MoveEntity(data.component_index, target_arch, target_index);
                     data.component_index = target_index;
                     data.archetype = target_arch;
-                    pool.remove_callback?.Invoke(entity);
+                    pool.RemoveCallback(entity);
                 }
             }
             return entity;
@@ -388,9 +388,9 @@ namespace SimpleECS
         internal static int Version; // version updates whenever archetypes are destroyed
 
         /// <summary>
-        /// Removes all archetypes with no entities.
+        /// Destroys all archetypes with no entities.
         /// </summary>
-        public static void RemoveEmptyArchetypes()
+        public static void DestroyEmptyArchetypes()
         {
             List<Archetype> kept_archs = new List<Archetype>();
             foreach (var pending in archetypes)
@@ -423,11 +423,11 @@ namespace SimpleECS
         }
 
         /// <summary>
-        /// Removes all empty archetypes, resizes all backing arrays then does a GC.Collect();
+        /// Destroys all empty archetypes, resizes all backing arrays then does a GC.Collect();
         /// </summary>
         public static void Compact()
         {
-            RemoveEmptyArchetypes();
+            DestroyEmptyArchetypes();
             ResizeBackingArrays();
             GC.Collect();
         }

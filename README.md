@@ -165,7 +165,7 @@ if (entity.TryGetArchetype(out var archetype))  // gets archetype that the entit
   archetype.CreateEntity(); // creates an entity with a signature matching the archetype's
                             // entities created this way will have components with default values
                             // i.e. ref types as null and value types as 0
-                            // Since the components were not set explicitly they will not trigger OnSetCallback
+                            // Since the components were not set explicitly they will not trigger Entity.OnSet() callbacks
                             // This is the most performant way to create an entity
 
   archetype.Foreach((ref int value) => value ++); // you can iterate over components in an
@@ -196,11 +196,11 @@ World.AllowStructuralChanges = true;  // set to false to start caching structura
                                       // query.Foreach() internally sets this to false before starting
                                       // the query and true once complete
                                       
+World.DestroyEmptyArchetypes();       // Use to remove archetypes that have no entities. Useful when
+                                      // changing scenes in game engines.
+                                      // Any archetypes destroyed in this process will become invalid
+
 World.ResizeBackingArrays();          // if a large amount of entities and components were recently deleted, 
                                       // use this to resize the archetype backing arrays. This can be
                                       // followed up with System.GC.Collect() to reclaim memory.
-
-World.RemoveEmptyArchetypes();        // Use to remove archetypes that have no entities. Useful when
-                                      // changing scenes in game engines.
-                                      // Any archetypes removed in this process will be invalid
 ```

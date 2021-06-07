@@ -73,9 +73,9 @@ void MyCallback(Entity entity, ref int value)     // additionally you can name y
   Console.WriteLine($"{} added int {value}");
 }
 
-Entity.OnSet(MyCallback);         // then register the callback
+Entity.OnSet<int>(MyCallback);         // then register the callback
 // do stuff...
-Entity.OnSet(MyCallback, false);  // and by passing false as the second parameter you can unregister the callback
+Entity.OnSet<int>(MyCallback, false);  // and by passing false as the second parameter you can unregister the callback
   
 ```
 

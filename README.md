@@ -160,7 +160,7 @@ if (entity.TryGetArchetype(out var archetype))  // gets archetype that the entit
 {                                               // will return false if entity is invalid
   if (archetype)  // use to check if archetype is valid
   {               // valid entities will always have valid archetypes
-    //...
+    //...         // shorthand for archetype.IsValid()
   }
   
   archetype.CreateEntity(); // creates an entity with a signature matching the archetype's

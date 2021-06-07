@@ -39,7 +39,7 @@ entity.Get<int>() += 4; // gets the entity's component by ref value.
 entity.Set(3)             // sets the entity's components to values.
       .Set("my entity");  // can be chained to set multiple components at once.
                           // if entity does not already contain the component it will be added
-                          // setting a component will trigger the OnSetCallback component event 
+                          // setting a component will trigger any registered Entity.OnSet() callbacks 
 
 if (enity.Has<int>())     // returns true if entity has component
 {
@@ -76,7 +76,7 @@ void MyCallback(Entity entity, ref int value)     // additionally you can name y
 
 Entity.OnSet<int>(MyCallback);         // then register the callback
 // do stuff...
-Entity.OnSet<int>(MyCallback, false);  // and by passing false as the second parameter you can unregister the callback
+Entity.OnSet<int>(MyCallback, false);  // and by passing false as the second parameter you can later unregister the callback
   
 ```
 
@@ -112,7 +112,7 @@ Queries are already very fast, but for maximum performance or control
 over iteration order, manual iteration is possible.
 ```C#
 for(int i = 0; i < query.MatchingArchetypes.Count; ++ i) // getting the matching archetypes count will 
-{                                                       // keep the query up-to-date
+{                                                        // keep the query up-to-date
   var archetype = query.MatchingArchetypes[i];
     if (archetype.Entities.Count > 0 && archetype.TryGetArray(out int[] int_pool))  // try get array gets the raw component backing array
       for(int index = 0; index < archetype.Entities.Count; ++ index)    // int pool's count is the same as the entity count NOT the pool's length
@@ -159,6 +159,9 @@ var entity = Entity.Create(3);
 
 if (entity.TryGetArchetype(out var archetype))  // gets archetype that the entity belongs to
 {                                               // will return false if entity is invalid
+                                                // an entity's archetype can change when a new 
+                                                // component is set or when a component is removed
+  
   if (archetype)  // use to check if archetype is valid
   {               // valid entities will always have valid archetypes
     //...         // shorthand for archetype.IsValid()
@@ -182,7 +185,7 @@ if (entity.TryGetArchetype(out var archetype))  // gets archetype that the entit
   {                                                     // returns false if entities don't have component
     for(int i = 0; i < archetype.Entities.Count; ++ i)  // the component count is not the array's length
     {                                                   // but the archetype's entity count. Be sure not to
-      int_values[i] ++;                                 // use the wrong values
+      int_values[i] ++;                                 // use the wrong count
     }
   }
 }

@@ -64,7 +64,7 @@ Entity.OnSet((Entity entity, ref int value) =>    // use Entity.OnSet to set a c
   Console.WriteLine($"{entity} added {value}"));  // whenever an entity sets a component's value
 
 Entity.OnRemove((Entity entity, ref int value) => // use Entity.OnRemove to set a callback  to invoke
-  Console.WriteLine($"{entity} removed {value})); // whenever an entity removes a component
+  Console.WriteLine($"{entity} removed {value}")); // whenever an entity removes a component
                                                   // If the entity was destroyed, entity.IsValid() will
                                                   // be false during the callback
 

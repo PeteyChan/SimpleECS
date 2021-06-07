@@ -60,20 +60,21 @@ entity.Destroy();     // destroys the entity leaving it invalid
 ## Component Callbacks
 There are 2 component callbacks in SimpleECS, Entity.OnSet() and Entity.OnRemove().
 ```C#
-Entity.OnSet((Entity entity, ref int value) =>    // use Entity.OnSet to get a callback whenever an entity 
-  Console.WriteLine($"{entity} added {value}"));  // sets a component's value
+Entity.OnSet((Entity entity, ref int value) =>    // use Entity.OnSet to set a callback to invoke
+  Console.WriteLine($"{entity} added {value}"));  // whenever an entity sets a component's value
 
-Entity.OnRemove((Entity entity, ref int value) => // use Entity.OnRemove to get a callback whenever an entity
-  Console.WriteLine($"{entity} removed {value})); // removes a component
-                                                  // If entity was destroyed, entity.IsValid() will return false 
-                                                  // during the callback
+Entity.OnRemove((Entity entity, ref int value) => // use Entity.OnRemove to set a callback  to invoke
+  Console.WriteLine($"{entity} removed {value})); // whenever an entity removes a component
+                                                  // If the entity was destroyed, entity.IsValid() will
+                                                  // be false during the callback
 
 void MyCallback(Entity entity, ref int value)     // additionally you can name your callbacks
 {
   Console.WriteLine($"{} added int {value}");
 }
 
-Entity.OnSet(MyCallback);         // this will register the callback
+Entity.OnSet(MyCallback);         // then register the callback
+// do stuff...
 Entity.OnSet(MyCallback, false);  // and by passing false as the second parameter you can unregister the callback
   
 ```
@@ -150,7 +151,7 @@ Entites are stored in archetypes. Archetypes are simply a container of arrays th
 store entities and their components. All arrays are contiguous and of a single type.
 i.e all entities are stored together, each component type is stored together.
 The entity in index 1 of the entity array owns the components in index 1 of each component
-array. Queries don't match against single entities but actually archetypes since all
+array. Queries don't match against single entities but archetypes since all
 entities within an archetype has the same component types by definition.
 ```C#
 var entity = Entity.Create(3);

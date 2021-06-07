@@ -12,7 +12,7 @@ Min C# Framework 4.7
 An Entity is simply an ID that associates a group of components together.
 To create an entity use Entity.Create() with the components you want grouped.
 ```C#
-Entity.Create("my entity", 3, 5f);    // creates a new entity with components
+var entity = Entity.Create("my entity", 3, 5f);    // creates a new entity with components
                                       // components added this way will trigger
                                       // their respective Entity.OnSet() callbacks
                                       // setting the entity's string component
@@ -64,7 +64,7 @@ Entity.OnSet((Entity entity, ref int value) =>    // use Entity.OnSet to set a c
   Console.WriteLine($"{entity} added {value}"));  // whenever an entity sets a component's value
 
 Entity.OnRemove((Entity entity, ref int value) => // use Entity.OnRemove to set a callback  to invoke
-  Console.WriteLine($"{entity} removed {value}")); // whenever an entity removes a component
+  Console.WriteLine($"{entity} removed {value}"));// whenever an entity removes a component
                                                   // If the entity was destroyed, entity.IsValid() will
                                                   // be false during the callback
 

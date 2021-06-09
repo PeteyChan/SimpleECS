@@ -3,12 +3,21 @@ namespace SimpleECS
     using System;
     using System.Collections;
     using System.Collections.Generic;
-
+    using Delegates;
     /// <summary>
     /// Allows for efficient filtering and iterating of entities and their components
     /// </summary>
-    public sealed partial class Query : IReadOnlyList<Archetype>, IEnumerable<Entity>
+    public sealed partial class Query : IReadOnlyList<World.Archetype>, IEnumerable<Entity>   // queries iterate backwards because for some reason it does so faster
     {
+        /// <summary>
+        /// Creates new Query
+        /// </summary>
+        /// <param name="world">The world the query operates on</param>
+        public Query(World world)
+        {
+            this.world = world;
+        }
+        World world;
         /// <summary>
         /// Types archetypes need to have to pass the filter
         /// </summary>
@@ -17,11 +26,11 @@ namespace SimpleECS
         /// Types archetypes cannot have to pass the filter
         /// </summary>
         public IReadOnlyList<Type> NotTypes => not;
-        Archetype[] matching_archetypes = new Archetype[8];
+        World.Archetype[] matching_archetypes = new World.Archetype[8];
         /// <summary>
         /// Archetypes currently matching query's filter
         /// </summary>
-        public IReadOnlyList<Archetype> MatchingArchetypes => this;
+        public IReadOnlyList<World.Archetype> MatchingArchetypes => this;
         /// <summary>
         /// Entities currently matching queries's filter
         /// </summary>
@@ -36,7 +45,7 @@ namespace SimpleECS
         /// <summary>
         /// Current count of entities matching the query
         /// </summary>
-        public int EntityCount 
+        public int EntityCount
         {
             get
             {
@@ -69,7 +78,7 @@ namespace SimpleECS
             not.Add<T>();
             return this;
         }
-        
+
         /// <summary>
         /// Clears the query's current filters and matches
         /// </summary>
@@ -83,8 +92,44 @@ namespace SimpleECS
             archetype_count = 0;
             return this;
         }
-        
-        #pragma warning disable
+
+        /// <summary>
+        /// Gets first entity that matches query
+        /// Returns false if query is empty
+        /// </summary>
+        public bool TryGetFirstEntity(out Entity entity) // because iteration is backwards, the first entity is the last one
+        {
+            Update();
+            for (int i = archetype_count - 1; i >= 0; --i)
+            {
+                var archetype = matching_archetypes[i];
+                if (archetype.entity_count == 0) continue;
+                entity = archetype.entity_pool[archetype.entity_count - 1];
+                return true;
+            }
+            entity = default;
+            return false;
+        }
+
+        /// <summary>
+        /// Gets last entity that matches query.
+        /// Returns false if query is empty
+        /// </summary>
+        public bool TryGetLastEntity(out Entity entity) // because iteration is backwards, the first entity is last
+        {
+            Update();
+            for (int i = 0; i < archetype_count; ++i)
+            {
+                var archetype = matching_archetypes[i];
+                if (archetype.entity_count == 0) continue;
+                entity = archetype.entity_pool[0];
+                return true;
+            }
+            entity = default;
+            return false;
+        }
+
+#pragma warning disable
         public override string ToString()
         {
             Update();
@@ -113,23 +158,23 @@ namespace SimpleECS
 
         void Update() // checks for any new archetypes since last run and updates accordingly
         {
-            
-            if (World.Version > current_version) // check to see if world's version changed, if so need to update
+
+            if (world.Version > current_version) // check to see if world's version changed, if so need to update
             {
-                for(int i = archetype_count-1; i>= 0; --i)
+                for (int i = archetype_count - 1; i >= 0; --i)
                     matching_archetypes[i] = default;
 
-                current_version = World.Version;
+                current_version = world.Version;
                 current_archetype_index = 0;
                 archetype_count = 0;
             }
 
-            if (current_archetype_index < World.Archetypes.Count)  // check for any new archetypes
+            if (current_archetype_index < world.Archetypes.Count)  // check for any new archetypes
             {
-                for (int i = current_archetype_index; i < World.Archetypes.Count; ++i)
+                for (int i = current_archetype_index; i < world.Archetypes.Count; ++i)
                 {
-                    var archetype = World.Archetypes[i];
-                    
+                    var archetype = world.Archetypes[i];
+
                     if (!archetype.signature.HasAll(has))
                         goto next_archetype;
 
@@ -144,7 +189,7 @@ namespace SimpleECS
                 next_archetype:
                     continue;
                 }
-                current_archetype_index = World.Archetypes.Count;
+                current_archetype_index = world.Archetypes.Count;
             }
         }
 
@@ -159,7 +204,7 @@ namespace SimpleECS
             }
         }
 
-        IEnumerator<Archetype> IEnumerable<Archetype>.GetEnumerator()
+        IEnumerator<World.Archetype> IEnumerable<World.Archetype>.GetEnumerator()
         {
             Update();
             for (int i = archetype_count - 1; i >= 0; --i)
@@ -176,7 +221,7 @@ namespace SimpleECS
                     yield return archetype.entity_pool[itr];
             }
         }
-        int IReadOnlyCollection<Archetype>.Count
+        int IReadOnlyCollection<World.Archetype>.Count
         {
             get
             {
@@ -185,6 +230,24 @@ namespace SimpleECS
             }
         }
 
-        Archetype IReadOnlyList<Archetype>.this[int index] => matching_archetypes[index];
+        World.Archetype IReadOnlyList<World.Archetype>.this[int index] => matching_archetypes[index];
+
+        public void Foreach(in entity_query action)
+        {
+            Update();
+            world.AllowStructuralChanges = false;
+            for (int i = archetype_count - 1; i >= 0; --i)
+            {
+                var archetype = matching_archetypes[i];
+                for (int e = archetype.entity_count - 1; e >= 0; --e)
+                    action(archetype.entity_pool[e]);
+            }
+            world.AllowStructuralChanges = true;
+        }
+    }
+
+    namespace Delegates
+    {
+        public delegate void entity_query(Entity entity);
     }
 }

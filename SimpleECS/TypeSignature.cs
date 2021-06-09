@@ -84,7 +84,7 @@ namespace SimpleECS
         /// Create a new type signature with the same signature as the supplied archetype
         /// </summary>
         /// <param name="archetype"></param>
-        public TypeSignature(Archetype archetype)
+        public TypeSignature(World.Archetype archetype)
         {
             type_ids = new int[archetype.signature.type_count + 1];
             this.Copy(archetype.signature);
@@ -149,7 +149,7 @@ namespace SimpleECS
         /// <summary>
         /// Makes this type signature the same as the archetype's type signature
         /// </summary>
-        public TypeSignature Copy(Archetype archetype)
+        public TypeSignature Copy(World.Archetype archetype)
             => this.Copy(archetype.signature);
 
         /// <summary>

@@ -6,47 +6,65 @@ namespace SimpleECS
     /// <summary>
     /// Manages all Entity and Archetype information
     /// </summary>
-    public static class World
+    public sealed partial class World
     {
-        const int INITIAL_CAPACITY = 1024;
+        #pragma warning disable
+        public override string ToString() => Name;
+        #pragma warning restore
 
-        static World()
+        static int count;
+
+        /// <summary>
+        /// Creates a new world
+        /// </summary>
+        public World() => Name = "World " + (++count).ToString();
+        
+        /// <summary>
+        /// Creates a new world with name
+        /// </summary>
+        public World(string name)
         {
-            entity_data[0].version = 1;    // so that the default entity is always invalid
+            Name = name;
         }
-
+        const int INITIAL_CAPACITY = 1024;
+        
+        /// <summary>
+        /// Name of the world
+        /// </summary>
+        /// <value></value>
+        public string Name {get; private set;}
         /// <summary>
         /// A list of all archetypes currently owned by the world
         /// </summary>
-        public static IReadOnlyList<Archetype> Archetypes => archetypes;
-        static List<Archetype> archetypes = new List<Archetype>();
-        static Dictionary<int, List<Archetype>> id_to_archetype = new Dictionary<int, List<Archetype>>();
-        static int[] free_entities = new int[INITIAL_CAPACITY];
-        static int free_entity_count = 0;
-        static Entity_Data[] entity_data = new Entity_Data[INITIAL_CAPACITY];
-        static int entity_data_count;
+        public IReadOnlyList<Archetype> Archetypes => archetypes;
+        List<Archetype> archetypes = new List<Archetype>();
+        Dictionary<int, List<Archetype>> id_to_archetype = new Dictionary<int, List<Archetype>>();
+        int[] free_entities = new int[INITIAL_CAPACITY];
+        int free_entity_count = 0;
+        (int version, Archetype archetype, int component_index)[] entity_data = new (int, Archetype, int)[INITIAL_CAPACITY];
+        int entity_data_count;
 
         /// <summary>
         /// The current total amount of entities in existance
         /// </summary>
-        public static int EntityCount => entity_data_count - free_entity_count;
+        public int EntityCount => entity_data_count - free_entity_count;
 
-        static bool allow_changes = true;
+        bool allow_changes = true;
 
         /// <summary>
         /// Use to enable or disable structural changes to entities.
         /// When disabled, structural changes caused by Set(), Remove() and Destroy() 
         /// are queued and applied when changes are once again enabled
         /// /// </summary>
-        public static bool AllowStructuralChanges
+        public bool AllowStructuralChanges
         {
             get => allow_changes;
             set
             {
                 allow_changes = value;
-                while (allow_changes && StructureEvent.queue.Count > 0)
+                while (allow_changes && queue.Count > 0)
                 {
-                    var item = StructureEvent.queue.Dequeue();
+                    var item = queue.Dequeue();
                     switch (item.event_type)
                     {
                         case StructureEvent.Type.Set:
@@ -62,19 +80,17 @@ namespace SimpleECS
                 }
             }
         }
-
+        Queue<StructureEvent> queue = new Queue<StructureEvent>(INITIAL_CAPACITY);
+        void CacheEvent(StructureEvent.Type event_type, Entity entity, int compID = 0, in object args = default)
+        {
+            queue.Enqueue(new StructureEvent { event_type = event_type, entity = entity, component_ID = compID, args = args });
+        }
 
         struct StructureEvent
         {
-            public static Queue<StructureEvent> queue = new Queue<StructureEvent>(INITIAL_CAPACITY);
-            public static void Post(Type event_type, Entity entity, int compID = 0, in object args = default)
-            {
-                queue.Enqueue(new StructureEvent { event_type = event_type, entity = entity, component_ID = compID, args = args });
-            }
-
             public enum Type
             {
-                Set, Remove, Destroy
+                Set, Remove, Destroy, Transfer
             }
 
             public Type event_type;
@@ -86,7 +102,7 @@ namespace SimpleECS
         /// <summary>
         /// Tries to get entity by index, returns false if entity is invalid
         /// </summary>
-        public static bool TryGetEntity(int index, out Entity entity)
+        public bool TryGetEntity(int index, out Entity entity)
         {
             if (index >= 0 && index < entity_data.Length)
             {
@@ -98,7 +114,7 @@ namespace SimpleECS
                         entity = data.archetype.entity_pool[comp_id];
                     else entity = default;
                     if (entity.index != index)
-                        entity =default;
+                        entity = default;
                     return entity;
                 }
             }
@@ -106,12 +122,27 @@ namespace SimpleECS
         }
 
         /// <summary>
-        /// Creates an entity in the archetype with default components
+        /// Creates a query that operates on this world
         /// </summary>
-        public static Entity CreateEntity(this Archetype archetype)
+        public Query CreateQuery() => new Query(this);
+
+        /// <summary>
+        /// Creates a new Entity
+        /// </summary>
+        public Entity CreateEntity()
+        {
+            signature.Clear();
+            return CreateEntityWithArchetype(GetArchetype(signature));
+        }
+
+        /// <summary>
+        /// Creates an entity with the provided archetype with default components.
+        /// This method does not trigger OnSet()
+        /// </summary>
+        public Entity CreateEntityWithArchetype(Archetype archetype)
         {
             if (!archetype)
-                throw new Exception("Archetype is invalid, cannot create Entities");
+                throw new Exception("An invalid archetype cannot create Entities");
 
             int entity_index;
             if (free_entity_count > 0)
@@ -127,21 +158,21 @@ namespace SimpleECS
             ref var data = ref entity_data[entity_index];
             data.archetype = archetype;
             data.component_index = data.archetype.entity_count;
-            var entity = new Entity(entity_index, data.version);
+            var entity = new Entity(entity_index, data.version, this);
             archetype.AddEntity(entity);
             return entity;
         }
 
         /// <summary>
-        /// Returns false if entity was destroyed or not valid
+        /// Returns true if entity is valid
         /// </summary>
-        public static bool IsValid(this Entity entity)
-            => entity.version == entity_data[entity.index].version;
+        public static bool IsValid(Entity entity)
+            => entity.world != null && entity.version == entity.world.entity_data[entity.index].version;
 
         /// <summary>
         /// Returns false if archetype is not valid or Destroyed by World.DestroyEmptyArchetypes()
         /// </summary>
-        public static bool IsValid(this Archetype archetype)
+        public static bool IsValid(Archetype archetype)
             => archetype?.entity_pool == null ? false : true;
 
         /// <summary>
@@ -149,11 +180,11 @@ namespace SimpleECS
         /// Throws an exception if the entity is invalid or does not have
         /// the component
         /// </summary>
-        public static ref Component Get<Component>(this in Entity entity)
+        internal static ref Component Get<Component>(in Entity entity)
         {
             if (IsValid(entity))
             {
-                ref var data = ref entity_data[entity.index];
+                ref var data = ref entity.world.entity_data[entity.index];
                 if (data.archetype.TryGetArray<Component>(out var pool))
                     return ref pool[data.component_index];
                 throw new Exception($"{entity} does not have {typeof(Component).FullName}");
@@ -161,18 +192,14 @@ namespace SimpleECS
             throw new Exception($"{entity} has been destroyed or is not valid, cannot get component");
         }
 
-        static TypeSignature signature = new TypeSignature(64);
+        TypeSignature signature = new TypeSignature(32);
 
-        /// <summary>
-        /// Sets the component on entity to value, if the entity does not already have
-        /// the component it will add it to the entity. Methods marked with OnSetCallback 
-        /// with this type will be invoked
-        /// </summary>
-        public static Entity Set<Component>(this in Entity entity, in Component component)
+        internal static Entity Set<Component>(in Entity entity, in Component component)
         {
             if (IsValid(entity))
             {
-                ref var data = ref entity_data[entity.index];
+                var world = entity.world;
+                ref var data = ref world.entity_data[entity.index];
 
                 if (data.archetype.TryGetPool<Component>(out var pool)) // if component exists set it and return
                 {
@@ -180,18 +207,18 @@ namespace SimpleECS
                     return entity;
                 }
 
-                if (!allow_changes) // if changes are not allowed, queue them and apply the actions later
+                if (!world.allow_changes) // if changes are not allowed, queue them and apply the actions later
                 {
-                    StructureEvent.Post(StructureEvent.Type.Set, entity, TypeID<Component>.Value, component);
+                    world.CacheEvent(StructureEvent.Type.Set, entity, TypeID<Component>.Value, component);
                     return entity;
                 }
 
                 // otherwise create and return one
-                var target_arch = GetArchetype(signature.Copy(data.archetype.signature).Add<Component>());
+                var target_arch = world.GetArchetype(world.signature.Copy(data.archetype.signature).Add<Component>());
                 var target_index = target_arch.entity_count;
 
                 // updating archetype entity component information
-                entity_data[data.archetype.entity_pool[data.archetype.entity_count - 1].index]
+                world.entity_data[data.archetype.entity_pool[data.archetype.entity_count - 1].index]
                     .component_index = data.component_index;
                 data.archetype.MoveEntity(data.component_index, target_arch, target_index);
                 data.component_index = target_index;
@@ -206,7 +233,30 @@ namespace SimpleECS
             return entity;
         }
 
-        static Entity Set(Entity entity, int component_ID, object component)
+        internal static Entity Transfer(in Entity entity, World target_world)   // I don't think this needs to be cached when 
+        {                                                                       // iterating since unlike set, remove and destroy
+            if (IsValid(entity) && entity.world != target_world)                // no events are fired which could potentially 
+            {                                                                   // break iterator structure.
+                ref var data = ref entity.world.entity_data[entity.index];      // If I'm wrong though it's simple to implement
+                var world = entity.world;
+                var target_archetype = target_world.GetArchetype(data.archetype.signature);
+                var target_entity = target_world.CreateEntityWithArchetype(target_archetype);
+                var target_data = target_world.entity_data[target_entity.index];
+
+                data.archetype.TransferEntity(data.component_index, target_archetype, target_data.component_index);
+                data.version++;
+
+                if (world.free_entity_count == world.free_entities.Length)
+                    Array.Resize(ref world.free_entities, world.free_entities.Length * 2);
+
+                world.free_entities[world.free_entity_count] = entity.index;
+                world.free_entity_count++;
+                return target_entity;
+            }
+            return entity;
+        }
+
+        Entity Set(Entity entity, int component_ID, object component)
         {
             if (IsValid(entity))
             {
@@ -220,7 +270,7 @@ namespace SimpleECS
 
                 if (!allow_changes) // if changes are not allowed, queue them and apply the actions later
                 {
-                    StructureEvent.Post(StructureEvent.Type.Set, entity, component_ID, component);
+                    CacheEvent(StructureEvent.Type.Set, entity, component_ID, component);
                     return entity;
                 }
 
@@ -248,20 +298,21 @@ namespace SimpleECS
         {
             if (IsValid(entity))
             {
-                if (!allow_changes)
+                var world = entity.world;
+                if (!world.allow_changes)
                 {
-                    StructureEvent.Post(StructureEvent.Type.Remove, entity, comp_id);
+                    world.CacheEvent(StructureEvent.Type.Remove, entity, comp_id);
                     return entity;
                 }
 
-                ref var data = ref entity_data[entity.index];
+                ref var data = ref world.entity_data[entity.index];
                 if (data.archetype.TryGetPool(comp_id, out var pool))
                 {
-                    var target_arch = GetArchetype(signature.Copy(data.archetype.signature).Remove(comp_id)); // get target archetype
+                    var target_arch = world.GetArchetype(world.signature.Copy(data.archetype.signature).Remove(comp_id)); // get target archetype
                     var target_index = target_arch.entity_count;
 
                     // updating entity
-                    entity_data[data.archetype.entity_pool[data.archetype.entity_count - 1].index].component_index = data.component_index;
+                    world.entity_data[data.archetype.entity_pool[data.archetype.entity_count - 1].index].component_index = data.component_index;
                     data.archetype.MoveEntity(data.component_index, target_arch, target_index);
                     data.component_index = target_index;
                     data.archetype = target_arch;
@@ -271,73 +322,56 @@ namespace SimpleECS
             return entity;
         }
 
-        /// <summary>
-        /// Removes the component type from entity if entity has one.
-        /// Methods marked with the OnRemoveCallback attribute with this component will be invoked if it was removed
-        /// </summary>
-        public static Entity Remove<Component>(this Entity entity) => RemoveComponent(entity, TypeID<Component>.Value);
+        internal static Entity Remove<Component>(Entity entity) => RemoveComponent(entity, TypeID<Component>.Value);
 
-        /// <summary>
-        /// Destroys the entity. Methods marked with OnRemoveCallback of any of the components destroyed will 
-        /// be invoked. The entity will be invalid during the callback.
-        /// </summary>
-        public static void Destroy(this Entity entity)
+        internal static void Destroy(in Entity entity)
         {
             if (IsValid(entity))
             {
-                if (!allow_changes)
+                var world = entity.world;
+                if (!world.allow_changes)
                 {
-                    StructureEvent.Post(StructureEvent.Type.Destroy, entity);
+                    world.CacheEvent(StructureEvent.Type.Destroy, entity);
                     return;
                 }
 
-                ref var data = ref entity_data[entity.index];
+                ref var data = ref world.entity_data[entity.index];
                 data.version++;
 
-                if (free_entity_count == free_entities.Length)
-                    Array.Resize(ref free_entities, free_entities.Length * 2);
+                if (world.free_entity_count == world.free_entities.Length)
+                    Array.Resize(ref world.free_entities, world.free_entities.Length * 2);
 
-                free_entities[free_entity_count] = entity.index;
-                free_entity_count++;
+                world.free_entities[world.free_entity_count] = entity.index;
+                world.free_entity_count++;
 
-                entity_data[data.archetype.entity_pool[data.archetype.entity_count - 1].index]
+                world.entity_data[data.archetype.entity_pool[data.archetype.entity_count - 1].index]
                                 .component_index = data.component_index;
 
                 data.archetype.DestroyEntity(data.component_index);
             }
         }
 
-        /// <summary>
-        /// Returns all components on entity.
-        /// Pass in your own storage to avoid allocations
-        /// </summary>
-        public static List<Object> GetAllComponents(this Entity entity, List<object> storage = null)
+        internal static List<Object> GetAllComponents(Entity entity, List<object> storage = null)
         {
             if (storage == null) storage = new List<object>();
             else storage.Clear();
 
             if (IsValid(entity))
             {
-                var data = entity_data[entity.index];
+                var data = entity.world.entity_data[entity.index];
                 data.archetype.GetAllComponents(data.component_index, storage);
             }
             return storage;
         }
 
-        /// <summary>
-        /// Returns true if this entity has the component
-        /// </summary>
-        public static bool Has<T>(this Entity entity)
-            => IsValid(entity) && entity_data[entity.index].archetype.Has<T>();
+        internal static bool Has<T>(Entity entity)
+            => IsValid(entity) && entity.world.entity_data[entity.index].archetype.Has<T>();
 
-        /// <summary>
-        /// Tries to get the component, if the entity doesn't have one it will return false
-        /// </summary>
-        public static bool TryGet<T>(this Entity entity, out T value)
+        internal static bool TryGet<T>(Entity entity, out T value)
         {
             if (IsValid(entity))
             {
-                var data = entity_data[entity.index];
+                var data = entity.world.entity_data[entity.index];
                 if (data.archetype.TryGetArray<T>(out var pool))
                 {
                     value = pool[data.component_index];
@@ -348,27 +382,37 @@ namespace SimpleECS
             return false;
         }
 
-        /// <summary>
-        /// Tries to get the entity's archetype
-        /// Returns false if entity is destroyed or invalid
-        /// </summary>
-        public static bool TryGetArchetype(this Entity entity, out Archetype archetype)
+        internal static bool TryGetArchetype(in Entity entity, out Archetype archetype)
         {
             if (IsValid(entity))
             {
-                archetype = entity_data[entity.index].archetype;
+                archetype = entity.world.entity_data[entity.index].archetype;
                 return true;
             }
             archetype = default;
             return false;
         }
 
+        internal static bool TryGetData(in Entity entity, out (int version, Archetype archetype, int component_index) data)
+        {
+            data = entity.world.entity_data[entity.index];
+            return entity.version == data.version;
+        }
+
         /// <summary>
         /// Gets the archetype with the associated type signature 
         /// </summary>
-        /// <returns></returns>
-        public static Archetype GetArchetype(TypeSignature signature)
+        public Archetype GetArchetype(TypeSignature signature)
         {
+            /*
+            if (!archeToHash.TryGetValue(signature.GetHashCode(), out var archetype))
+            {
+                archeToHash[signature.GetHashCode()] = archetype = new Archetype(this, signature);
+                archetypes.Add(archetype);
+            }
+            return archetype;
+            */
+
             if (!id_to_archetype.TryGetValue(signature.GetHashCode(), out var stored_archetypes))
                 id_to_archetype[signature.GetHashCode()] = stored_archetypes = new List<Archetype>();
 
@@ -379,18 +423,18 @@ namespace SimpleECS
                 if (archetype.signature.Equals(signature))
                     return archetype;
             }
-            archetype = new Archetype(signature);
+            archetype = new Archetype(this, signature);
             stored_archetypes.Add(archetype);
             archetypes.Add(archetype);
             return archetype;
         }
 
-        internal static int Version; // version updates whenever archetypes are destroyed
+        internal int Version; // version updates whenever archetypes are destroyed
 
         /// <summary>
         /// Destroys all archetypes with no entities.
         /// </summary>
-        public static void DestroyEmptyArchetypes()
+        public void DestroyEmptyArchetypes()
         {
             List<Archetype> kept_archs = new List<Archetype>();
             foreach (var pending in archetypes)
@@ -416,7 +460,7 @@ namespace SimpleECS
         /// Resizes all archetype backing arrays to the minimum power of 2 needed to hold their components.
         /// Useful after deleting large amounts of entities or transitioning to other scenes in game engines.
         /// </summary>
-        public static void ResizeBackingArrays()
+        public void ResizeBackingArrays()
         {
             for (int i = 0; i < archetypes.Count; ++i)
                 archetypes[i].ResizeBackingArrays();
@@ -425,11 +469,62 @@ namespace SimpleECS
         /// <summary>
         /// Destroys all empty archetypes, resizes all backing arrays then does a GC.Collect();
         /// </summary>
-        public static void Compact()
+        public void Compact()
         {
             DestroyEmptyArchetypes();
             ResizeBackingArrays();
             GC.Collect();
+        }
+
+        Dictionary<int, object> ComponentCallbacks = new Dictionary<int, object>();
+
+        class Component_Event<T>
+        {
+            public Delegates.ComponentCallback<T> callback;
+        }
+
+        /// <summary>
+        /// When an entity sets the Component, the supplied callback will be invoked
+        /// </summary>
+        /// <param name="callback">delegate params (Entity entity, ref Component component)</param>
+        /// <param name="register">Set to false to unregister the callback</param>
+        public void OnSet<Component>(Delegates.ComponentCallback<Component> callback, bool register = true)
+        {
+            if (!ComponentCallbacks.TryGetValue(TypeID<Component>.Value, out var value))
+                ComponentCallbacks[TypeID<Component>.Value] = value = new Component_Event<Component>();
+
+            var e = (Component_Event<Component>)value;
+            if (register)
+                e.callback += callback;
+            else e.callback -= callback;/**/
+        }
+
+        /// <summary>
+        /// When an entity removes the Component, the supplied callback will be invoked
+        /// </summary>
+        /// <param name="callback">delegate params (Entity entity, ref Component component)</param>
+        /// <param name="register">Set to false to unregister the callback</param>
+        public void OnRemove<Component>(Delegates.ComponentCallback<Component> callback, bool register = true)
+        {
+            if (!ComponentCallbacks.TryGetValue(-TypeID<Component>.Value, out var value))
+                ComponentCallbacks[-TypeID<Component>.Value] = value = new Component_Event<Component>();
+
+            var e = (Component_Event<Component>)value;
+            if (register)
+                e.callback += callback;
+            else e.callback -= callback;/**/
+        }
+
+        void InvokeSetEvent<T>(in Entity entity, ref T component)
+        {
+            if (ComponentCallbacks.TryGetValue(TypeID<T>.Value, out var val))
+                ((Component_Event<T>)val).callback.Invoke(entity, ref component);
+        }
+
+        void InvokeRemoveEvent<T>(in Entity entity, ref T component)
+        {
+            if (ComponentCallbacks.TryGetValue(-TypeID<T>.Value, out var val))
+                ((Component_Event<T>)val).callback.Invoke(entity, ref component);
         }
 
         struct Entity_Data
@@ -438,5 +533,15 @@ namespace SimpleECS
             public int component_index;
             public Archetype archetype;
         }
+    }
+
+    namespace Delegates
+    {
+        /// <summary>
+        /// Delegate used for Component Events
+        /// </summary>
+        /// <param name="entity">Entity calling the event</param>
+        /// <param name="component">Component used in the event</param>
+        public delegate void ComponentCallback<T>(Entity entity, ref T component);
     }
 }

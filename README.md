@@ -57,10 +57,10 @@ if (entity.TryGet(out int value)) // gets the component's value on entity, retur
 }
 
 entity.Remove<T>();   // removes the component on entity if found.
-                      // if component was removed, will trigger any registered Entity.OnRemove() callbacks
+                      // if component was removed, will trigger any callbacks registered  with world.OnRemove()
                     
 entity.Destroy();     // destroys the entity leaving it invalid
-                      // all components on the entity will trigger their respective Entity.OnRemove() callbacks
+                      // all components on the entity will trigger their respective world.OnRemove() callbacks
 
 var newWorld = new World("new World");
 Entity newWorldEntity = entity.Transfer(new_world); // transfer moves entity to the specified woorld and

@@ -115,7 +115,7 @@ query.Foreach( (Entity entity, ref int value ) =>         // you can access the 
   Console.WriteLine($"{entity} value is {value}");        // afterwards
 });
 
-var all_entities = wrold.CreateQuery();                       // a simple way to match against all entities is to make a query with no filters
+var all_entities = world.CreateQuery();                       // a simple way to match against all entities is to make a query with no filters
 all_entities.Foreach( entity => entity.Destroy());    // a simple way to delete all entities
 ```
 
@@ -198,7 +198,7 @@ if (entity.TryGetArchetype(out var archetype))  // gets archetype that the entit
 ```
 
 ## World
-The world what manages all the underlying archetypes and their entities.
+The world class is what manages all the underlying archetypes and their entities.
 Apart from making entities and queries there are a couple other useful features of this class.
 
 ```C#

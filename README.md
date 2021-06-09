@@ -43,7 +43,8 @@ entity.Get<int>() += 4; // gets the entity's component by ref value.
 entity.Set(3)             // sets the entity's components to values.
       .Set("my entity");  // can be chained to set multiple components at once.
                           // if entity does not already contain the component it will be added
-                          // setting a component will trigger any registered Entity.OnSet() callbacks 
+                          // setting a component will trigger any callbacks registered
+                          // with wrold.OnSet() 
 
 if (enity.Has<int>())     // returns true if entity has component
 {

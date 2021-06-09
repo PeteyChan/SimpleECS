@@ -10,21 +10,25 @@ Min C# Framework 4.7
 
 ## Entities
 An Entity is simply an ID that associates a group of components together.
-To create an entity use Entity.Create() with the components you want grouped.
+To create an entity you first need to create a new world,
+then using that world create your entity with it's components as arguments.
 ```C#
-var entity = Entity.Create("my entity", 3, 5f);    // creates a new entity with components
+var world = new World("My World");    // naming the world is optional
+var entity = world.CreateEntity("my entity", 3, 5f);    
+                                      // creates a new entity with components
                                       // components added this way will trigger
-                                      // their respective Entity.OnSet() callbacks
+                                      // callbacks registered with world.OnSet()
                                       // setting the entity's string component
                                       // will change the entity's ToString() value
 ```
 Anything that can be put into a list can be a component.
 Only one component of each type can be associated with an entity, 
-however if you need more than one, there's nothing stopping you having 
-a List or array of that component as a component.
+however there's nothing stopping you having a List or array a component.
 Setting more than one component of the same type will simply overwrite the old one.
 The function can take up to 64 components, but entities themselves have 
 no component limit.
+Due to how entities are structured, it's more efficient to set all components upfront
+during creation than adding them one at a time with entity.Set().
 
 Manipulating entities is pretty simple
 ```C#
@@ -57,15 +61,20 @@ entity.Remove<T>();   // removes the component on entity if found.
 entity.Destroy();     // destroys the entity leaving it invalid
                       // all components on the entity will trigger their respective Entity.OnRemove() callbacks
 
+var newWorld = new World("new World");
+Entity newWorldEntity = entity.Transfer(new_world); // transfer moves entity to the specified woorld and
+                                                    // returns the entity's new value
+                                                    // the transfered entity will be invalid in the old world
+                                                    // after the move
 ```
 ## Component Callbacks
-There are 2 component callbacks in SimpleECS, Entity.OnSet() and Entity.OnRemove().
+There are 2 component callbacks in SimpleECS, world.OnSet() and world.OnRemove().
 ```C#
-Entity.OnSet((Entity entity, ref int value) =>    // use Entity.OnSet to set a callback to invoke
-  Console.WriteLine($"{entity} added {value}"));  // whenever an entity sets a component's value
+world.OnSet((Entity entity, ref int value) =>     // use world.OnSet to set a callback to invoke
+  Console.WriteLine($"{entity} added {value}"));  // whenever an entity sets that component in that world
 
-Entity.OnRemove((Entity entity, ref int value) => // use Entity.OnRemove to set a callback  to invoke
-  Console.WriteLine($"{entity} removed {value}"));// whenever an entity removes a component
+world.OnRemove((Entity entity, ref int value) =>  // use world.OnRemove to set a callback  to invoke
+  Console.WriteLine($"{entity} removed {value}"));// whenever an entity removes a component in that world
                                                   // If the entity was destroyed, entity.IsValid() will
                                                   // be false during the callback
 
@@ -74,9 +83,9 @@ void MyCallback(Entity entity, ref int value)     // additionally you can name y
   Console.WriteLine($"{} added int {value}");
 }
 
-Entity.OnSet<int>(MyCallback);         // then register the callback
+world.OnSet<int>(MyCallback);         // then register the callback
 // do stuff...
-Entity.OnSet<int>(MyCallback, false);  // and by passing false as the second parameter you can later unregister the callback
+world.OnSet<int>(MyCallback, false);  // and by passing false as the second parameter you can later unregister the callback
   
 ```
 
@@ -87,10 +96,11 @@ You can specify up to 16 components to iterate over.
 Queries cache their results and only update when new archetypes are created.
 
 ```C#
-var query = new Query().Has<int>().Has<float>()       // Has() filters entities to those with components
-                       .Not<string>().Not<double>();  // Not() filters for those that do not
-                                                      // there's no limit to the amount of filters you can add
-                                                      // infact the more specific the better
+var query = world.CreateQuery()                 // Queries operate on the world they are created with
+                 .Has<int>().Has<float>()       // Has() filters entities to those with components
+                 .Not<string>().Not<double>();  // Not() filters for those that do not
+                                                // there's no limit to the amount of filters you can add
+                                                // infact the more specific the better
 
 query.Foreach( (ref int int_value, ref float float_value) =>  // you then use the foreach function to update your components
 {                                                             // components must be prefaced with the ref modifier
@@ -126,7 +136,7 @@ invalidation. You can still create entities during foreach loops though as these
 do not affect archetype structures.
 
 ```C#
-var entity = Entity.Create("my entity", 3);
+var entity = world.Create("my entity", 3);
 entity.Remove<string>();
 entity.Has<string>();       // this will return false
 
@@ -155,7 +165,7 @@ The entity in index 1 of the entity array owns the components in index 1 of each
 array. Queries don't match against single entities but archetypes since all
 entities within an archetype has the same component types by definition.
 ```C#
-var entity = Entity.Create(3);
+var entity = world.Create(3);
 
 if (entity.TryGetArchetype(out var archetype))  // gets archetype that the entity belongs to
 {                                               // will return false if entity is invalid
@@ -166,22 +176,16 @@ if (entity.TryGetArchetype(out var archetype))  // gets archetype that the entit
   {               // valid entities will always have valid archetypes
     //...         // shorthand for archetype.IsValid()
   }
-  
-  archetype.CreateEntity(); // creates an entity with a signature matching the archetype's
-                            // entities created this way will have components with default values
-                            // i.e. ref types as null and value types as 0
-                            // Since the components were not set explicitly they will not trigger Entity.OnSet() callbacks
-                            // This is the most performant way to create an entity
 
-  archetype.Foreach((ref int value) => value ++); // you can iterate over components in an
-                                                  // archetype just like you can with queries
+  archetype.Foreach((ref int value) => value ++); // you can iterate over components and entities
+                                                  //  in an archetype just like you can with queries
                                                   
-  foreach(var entity in archetype.Entities) // you can get the entities in an archetype
+  foreach(var entity in archetype.Entities) // you can get just the entities in an archetype
   {                                         // with the Entities property
     Console.WriteLine(entity);
   }
                                                   
-  if (archetype.TryGetArray(out int[] int_values))      // you can get the component arrays using TryGetArray()
+  if (archetype.TryGetArray(out int[] int_values))      // you can get the raw component arrays using TryGetArray()
   {                                                     // returns false if entities don't have component
     for(int i = 0; i < archetype.Entities.Count; ++ i)  // the component count is not the array's length
     {                                                   // but the archetype's entity count. Be sure not to
@@ -193,19 +197,32 @@ if (entity.TryGetArchetype(out var archetype))  // gets archetype that the entit
 ```
 
 ## World
-The world static class is what manages all the underlying archetypes and their entities. 
-Normally you won't need to do much with this class but there are a couple of useful features.
+The world what manages all the underlying archetypes and their entities.
+Apart from making entities and queries there are a couple other useful features of this class.
+
 ```C#
-World.AllowStructuralChanges = true;  // set to false to start caching structural changes
+world.AllowStructuralChanges = true;  // this field controls entity caching behaviour
+                                      // set to false to start caching structural changes
                                       // changes will be appiled when set back to true.
                                       // query.Foreach() internally sets this to false before starting
                                       // the query and true once complete
                                       
-World.DestroyEmptyArchetypes();       // Use to remove archetypes that have no entities. Useful when
+world.DestroyEmptyArchetypes();       // Use to remove archetypes that have no entities. Useful when
                                       // changing scenes in game engines.
                                       // Any archetypes destroyed in this process will become invalid
 
-World.ResizeBackingArrays();          // if a large amount of entities and components were recently deleted, 
+world.ResizeBackingArrays();          // if a large amount of entities and components were recently deleted, 
                                       // use this to resize the archetype backing arrays. This can be
                                       // followed up with System.GC.Collect() to reclaim memory.
+
+var archetypes = world.Archetypes;    // returns a list of all currently active archetypes
+
+world.CreateEntityWithArchetype(archetypes[0]);
+                                      // creates an entity using the supplied archetype
+                                      // entities created this way will have the same components
+                                      // as those in the archetype with defaulted values
+                                      // i.e null for classes and 0 for structs
+                                      // world.OnSet() is not for those components since they were
+                                      // not explicitly set. This is the most performant way to
+                                      // make entities
 ```

@@ -8,14 +8,6 @@ namespace SimpleECS
     /// </summary>
     public partial struct Entity : IEquatable<Entity>, IComparable<Entity>
     {
-        /// <summary>
-        /// Creates a new entity in world
-        /// </summary>
-        public Entity(World world)
-        {
-            this = world.CreateEntity();
-        }
-
         internal Entity(int id, int version, World world)
         {
             this.index = id; this.version = version; this.world = world;

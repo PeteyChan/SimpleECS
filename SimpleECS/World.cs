@@ -8,6 +8,11 @@ namespace SimpleECS
     /// </summary>
     public sealed partial class World
     {
+        /// <summary>
+        /// Default World
+        /// </summary>
+        public readonly static World Default = new World("Default World");
+
 #pragma warning disable
         public override string ToString() => Name;
 #pragma warning restore
@@ -193,7 +198,7 @@ namespace SimpleECS
 
         internal ref Component Get<Component>(int index, int version )
         {
-            if (entity_data[index].version != version)
+            if (entity_data[index].version == version)
             {
                 ref var data = ref entity_data[index];
                 if (data.archetype.TryGetArray<Component>(out var pool))

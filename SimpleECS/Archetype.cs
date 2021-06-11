@@ -262,7 +262,6 @@ namespace SimpleECS
             }
 
 #pragma warning disable
-
             public override int GetHashCode() => ID;
 
             internal void Destroy()
@@ -308,7 +307,7 @@ namespace SimpleECS
                 internal abstract void SetObject(in Entity entity, int index, in object obj);
                 internal abstract void Resize(int capcity);
                 internal abstract void Move(int index, Archetype archetype, int new_index);
-                internal abstract void Transfer(int index, Pool pool, int new_index);
+                internal abstract void Transfer(int index, Pool pool, int target_index);
                 internal object array;
                 internal abstract void Remove(int index, int entity_count);
                 internal abstract void RemoveCallback(Entity entity);
@@ -363,13 +362,13 @@ namespace SimpleECS
                         pool[target_index] = Values[index];
                 }
 
-                internal override void Transfer(int index, Pool pool, int new_index)
+                internal override void Transfer(int index, Pool pool, int target_index)
                 {
-                    ((T[])pool.array)[new_index] = Values[index];
+                    ((T[])pool.array)[target_index] = Values[index];
                 }
             }
             
-            public void Foreach(in entity_query action)
+            public void Foreach(in query_e action)
             {
                 if (entity_count > 0)
                     for (int i = entity_count - 1; i >= 0; --i)

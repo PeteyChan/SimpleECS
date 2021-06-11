@@ -32,58 +32,49 @@ namespace SimpleECS
         /// Gets a reference to the component.
         /// Throws an exception if entity is invalid or fails to get the component.
         /// </summary>
-        public ref Component Get<Component>()
-        {
-            if (World.TryGetData(this, out var data))
-            {
-                if (data.archetype.TryGetArray(out Component[] pool))
-                    return ref pool[data.component_index];
-                throw new Exception($"{this} does not have a {typeof(Component).Name}");
-            }
-            throw new Exception($"{this} is invalid, cannot get {typeof(Component).Name}");
-        }
+        public ref Component Get<Component>() => ref world.Get<Component>(index, version);
 
         /// <summary>
         /// Returns true if entity has component
         /// </summary>
-        public bool Has<Component>() => World.Has<Component>(this);
+        public bool Has<Component>() => world.Has<Component>(this);
         
         /// <summary>
         /// Sets the component on Entity.
         /// If Entity does not have component, the component is added instead.
         /// Will trigger callbacks registered with World.OnSet()
         /// </summary>
-        public Entity Set<Component>(in Component component) => World.Set(this, component);
+        public Entity Set<Component>(in Component component) => world.Set(this, component);
         
         /// <summary>
         /// Tries to get the component, returns if sucessful.
         /// </summary>
-        public bool TryGet<Component>(out Component component) => World.TryGet(this, out component);
+        public bool TryGet<Component>(out Component component) => world.TryGet(this, out component);
         
         /// <summary>
         /// Removes the component from Entity.
         /// Will trigger callbacks registered with World.OnRemove();
         /// </summary>
-        public Entity Remove<Component>() => World.Remove<Component>(this);
+        public Entity Remove<Component>() => world.Remove<Component>(this);
 
         /// <summary>
         /// Destroys the entity.
         /// All components on entity will trigger their respective World.OnRemove() callbacks.
         /// </summary>
-        public void Destroy() => World.Destroy(this);
+        public void Destroy() => world.Destroy(this);
 
         /// <summary>
         /// Returns the archetype this entity belongs to.
         /// Returns false if the entity is invalid.
         /// </summary>
-        public bool TryGetArchetype(out World.Archetype archetype) => World.TryGetArchetype(this, out archetype);
+        public bool TryGetArchetype(out World.Archetype archetype) => world.TryGetArchetype(this, out archetype);
         
         /// <summary>
         /// Gets a list of all components currently on the entity.
         /// </summary>
         /// <param name="storage">where to store the components otherwise creates a new List if null</param>
         /// <returns></returns>
-        public List<object> GetAllComponents(List<object> storage = null) => World.GetAllComponents(this, storage);
+        public List<object> GetAllComponents(List<object> storage = null) => world.GetAllComponents(this, storage);
         
         /// <summary>
         /// Transfers this entity to the specified world.
@@ -92,7 +83,12 @@ namespace SimpleECS
         /// </summary>
         /// <param name="world"></param>
         /// <returns></returns>
-        public Entity Transfer(World world) => World.Transfer(this, world);
+        public Entity Transfer(World world) => this.world.Transfer(this, world);
+
+        /// <summary>
+        /// Returns true if entity is valid, false if entity is invalid or destroyed
+        /// </summary>
+        public bool IsValid() => World.IsValid(this);
 
 #pragma warning disable
         public static implicit operator bool(Entity entity)

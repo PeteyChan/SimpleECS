@@ -5,7 +5,7 @@ namespace SimpleECS
     using System.Collections.Generic;
     
     internal static class TypeID<T>{ public static readonly int Value = TypeID.Get(typeof(T)); }
-    internal static class TypeID
+    internal static class TypeID    // class to map types to ids
     {
         static Dictionary<Type, int> newIDs = new Dictionary<Type, int>();
         static Type[] id_to_type = new Type[64];

@@ -4,6 +4,7 @@ namespace SimpleECS
     using System.Collections;
     using System.Collections.Generic;
     using Delegates;
+    
     /// <summary>
     /// Allows for efficient filtering and iterating of entities and their components
     /// </summary>
@@ -232,7 +233,10 @@ namespace SimpleECS
 
         World.Archetype IReadOnlyList<World.Archetype>.this[int index] => matching_archetypes[index];
 
-        public void Foreach(in entity_query action)
+        /// <summary>
+        /// Iterates over entities that matches query.
+        /// </summary>
+        public void Foreach(in query_e action)
         {
             Update();
             world.AllowStructuralChanges = false;
@@ -248,6 +252,6 @@ namespace SimpleECS
 
     namespace Delegates
     {
-        public delegate void entity_query(Entity entity);
+        public delegate void query_e(Entity entity);
     }
 }

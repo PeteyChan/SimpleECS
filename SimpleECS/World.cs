@@ -150,9 +150,8 @@ namespace SimpleECS
         /// </summary>
         public Entity CreateEntityWithArchetype(Archetype archetype)
         {
-            if (!archetype)
-                throw new Exception("An invalid archetype cannot create Entities");
-
+            if (!archetype) throw new Exception("An invalid archetype cannot create Entities");
+            
             int entity_index;
             if (free_entity_count > 0)
                 entity_index = free_entities[--free_entity_count];

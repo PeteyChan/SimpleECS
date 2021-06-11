@@ -105,7 +105,7 @@ var query = world.CreateQuery()                 // Queries operate on the world 
 
 query.Foreach( (ref int int_value, ref float float_value) =>  // you then use the foreach function to update your components
 {                                                             // components must be prefaced with the ref modifier
-    int_value ++;                                             // you can use up to 16 components as parameters
+    int_value ++;                                             // you can use up to 12 components as parameters
     float_value = int_value * 100;                            // queries operate only on entities that match both the query 
 }));                                                          // filter and contains all the foreach parameters
 
@@ -158,6 +158,27 @@ query.Foreach((Entity entity, ref int int_val) =>
 entity.Has<string>();   // this will now return true
 entity.Has<int>();      // and this will now return false
 ```
+## Singletons
+Instead of a singleton component or singleton entity, the way SimpleECS deals with
+singleton data is with a concept called World Data. World Data is just data belonging to the world.
+Each world stores it's own world data.
+
+```C#
+float deltaTime = Time.time;
+
+world.GetData<float>() = deltaTime; // you can get and assign world Data with world.GetData()
+                                    // GetData() returns a ref so you can assign or add to it directly
+
+world.SetData(deltaTime);   // you can also use SetData(), just like entity.Set() SetData() is chainable
+
+query.Foreach((Entity entity, in float deltaTime, ref float comp_time) => 
+{                           // you can get world data in foreach loops using the in modifier 
+  comp_time += deltaTime;   // world data goes after entity and before components
+  if (comp_time > 5f)       // you can add up to 8 world data
+    entity.Destroy();
+});
+```
+
 ## Archetype
 Entites are stored in archetypes. Archetypes are simply a container of arrays that
 store entities and their components. All arrays are contiguous and of a single type.
@@ -177,11 +198,8 @@ if (entity.TryGetArchetype(out var archetype))  // gets archetype that the entit
   {               // valid entities will always have valid archetypes
     //...         // shorthand for archetype.IsValid()
   }
-
-  archetype.Foreach((ref int value) => value ++); // you can iterate over components and entities
-                                                  //  in an archetype just like you can with queries
                                                   
-  foreach(var entity in archetype.Entities) // you can get just the entities in an archetype
+  foreach(var entity in archetype.Entities) // you can get the entities in an archetype
   {                                         // with the Entities property
     Console.WriteLine(entity);
   }
@@ -220,6 +238,7 @@ var archetypes = world.Archetypes;    // returns a list of all currently active 
 
 world.CreateEntityWithArchetype(archetypes[0]);
                                       // creates an entity using the supplied archetype
+                                      // will throw an exception if archetype is null or destroyed
                                       // entities created this way will have the same components
                                       // as those in the archetype with defaulted values
                                       // i.e null for classes and 0 for structs

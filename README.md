@@ -166,7 +166,7 @@ singleton data is with a concept called World Data. World Data is just data belo
 Each world stores it's own world data.
 
 ```C#
-float deltaTime = Time.time;
+float deltaTime = Time.delta;
 
 world.GetData<float>() = deltaTime; // you can get and assign world Data with world.GetData()
                                     // GetData() returns a ref so you can assign or add to it directly

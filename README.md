@@ -44,7 +44,7 @@ entity.Set(3)             // sets the entity's components to values.
       .Set("my entity");  // can be chained to set multiple components at once.
                           // if entity does not already contain the component it will be added
                           // setting a component will trigger any callbacks registered
-                          // with wrold.OnSet() 
+                          // with world.OnSet() 
 
 if (enity.Has<int>())     // returns true if entity has component
 {
@@ -93,7 +93,7 @@ world.OnSet<int>(MyCallback, false);  // and by passing false as the second para
 ## Queries
 
 Queries let you iterate over entities based on specified components.
-You can specify up to 16 components to iterate over.
+You can specify up to 12 components to iterate over.
 Queries cache their results and only update when new archetypes are created.
 
 ```C#
@@ -115,7 +115,7 @@ query.Foreach( (Entity entity, ref int value ) =>         // you can access the 
   Console.WriteLine($"{entity} value is {value}");        // afterwards
 });
 
-var all_entities = world.CreateQuery();                       // a simple way to match against all entities is to make a query with no filters
+var all_entities = world.CreateQuery();               // a simple way to match against all entities is to make a query with no filters
 all_entities.Foreach( entity => entity.Destroy());    // a simple way to delete all entities
 ```
 
@@ -131,10 +131,12 @@ for(int i = 0; i < query.MatchingArchetypes.Count; ++ i) // getting the matching
 }
 ```
 
-During Foreach structural changes made using Set(), Remove() and Destroy() are
-cached and applied after iteration is complete. This is to prevent iterator
-invalidation. You can still create entities during foreach loops though as these
-do not affect archetype structures.
+During Foreach structural changes are cached and applied after iteration is complete. 
+This is to prevent iterator invalidation. Functions that cause structural changes are:
+entity.Set(), entity.Remove(), entity.Transfer(), entity.Destroy() and world.CreateEntity();
+Entities created during query.Foreach() will be invalid during the function, but you can
+still use all entity functions on that entity, it will simply be applied when the 
+Foreach function completes.
 
 ```C#
 var entity = world.Create("my entity", 3);
@@ -242,7 +244,7 @@ world.CreateEntityWithArchetype(archetypes[0]);
                                       // entities created this way will have the same components
                                       // as those in the archetype with defaulted values
                                       // i.e null for classes and 0 for structs
-                                      // world.OnSet() is not for those components since they were
-                                      // not explicitly set. This is the most performant way to
-                                      // make entities
+                                      // world.OnSet() will not invoke registered callbacks since 
+                                      // they were not explicitly set. 
+                                      // This is the most performant way to create entities
 ```

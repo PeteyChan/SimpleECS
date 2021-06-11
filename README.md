@@ -43,7 +43,8 @@ entity.Get<int>() += 4; // gets the entity's component by ref value.
 entity.Set(3)             // sets the entity's components to values.
       .Set("my entity");  // can be chained to set multiple components at once.
                           // if entity does not already contain the component it will be added
-                          // setting a component will trigger any registered Entity.OnSet() callbacks 
+                          // setting a component will trigger any callbacks registered
+                          // with wrold.OnSet() 
 
 if (enity.Has<int>())     // returns true if entity has component
 {
@@ -56,10 +57,10 @@ if (entity.TryGet(out int value)) // gets the component's value on entity, retur
 }
 
 entity.Remove<T>();   // removes the component on entity if found.
-                      // if component was removed, will trigger any registered Entity.OnRemove() callbacks
+                      // if component was removed, will trigger any callbacks registered  with world.OnRemove()
                     
 entity.Destroy();     // destroys the entity leaving it invalid
-                      // all components on the entity will trigger their respective Entity.OnRemove() callbacks
+                      // all components on the entity will trigger their respective world.OnRemove() callbacks
 
 var newWorld = new World("new World");
 Entity newWorldEntity = entity.Transfer(new_world); // transfer moves entity to the specified woorld and
@@ -114,7 +115,7 @@ query.Foreach( (Entity entity, ref int value ) =>         // you can access the 
   Console.WriteLine($"{entity} value is {value}");        // afterwards
 });
 
-var all_entities = new Query();                       // a simple way to match against all entities is to make a query with no filters
+var all_entities = world.CreateQuery();                       // a simple way to match against all entities is to make a query with no filters
 all_entities.Foreach( entity => entity.Destroy());    // a simple way to delete all entities
 ```
 
@@ -197,7 +198,7 @@ if (entity.TryGetArchetype(out var archetype))  // gets archetype that the entit
 ```
 
 ## World
-The world what manages all the underlying archetypes and their entities.
+The world class is what manages all the underlying archetypes and their entities.
 Apart from making entities and queries there are a couple other useful features of this class.
 
 ```C#

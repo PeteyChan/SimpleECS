@@ -93,7 +93,7 @@ world.OnSet<int>(MyCallback, false);  // and by passing false as the second para
 ## Queries
 
 Queries let you iterate over entities based on specified components.
-You can specify up to 12 components to iterate over.
+You can specify up to 16 components to iterate over.
 Queries cache their results and only update when new archetypes are created.
 
 ```C#
@@ -159,26 +159,6 @@ query.Foreach((Entity entity, ref int int_val) =>
 
 entity.Has<string>();   // this will now return true
 entity.Has<int>();      // and this will now return false
-```
-## Singletons
-Instead of a singleton component or singleton entity, the way SimpleECS deals with
-singleton data is with a concept called World Data. World Data is just data belonging to the world.
-Each world stores it's own world data.
-
-```C#
-float deltaTime = Time.delta;
-
-world.GetData<float>() = deltaTime; // you can get and assign world Data with world.GetData()
-                                    // GetData() returns a ref so you can assign or add to it directly
-
-world.SetData(deltaTime);   // you can also use SetData(), just like entity.Set() SetData() is chainable
-
-query.Foreach((Entity entity, in float deltaTime, ref float comp_time) => 
-{                           // you can get world data in foreach loops using the in modifier 
-  comp_time += deltaTime;   // world data goes after entity and before components
-  if (comp_time > 5f)       // you can add up to 8 world data
-    entity.Destroy();
-});
 ```
 
 ## Archetype

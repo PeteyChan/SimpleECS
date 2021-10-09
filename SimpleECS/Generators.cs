@@ -97,7 +97,7 @@ namespace SimpleECS
             }
         }
 
-        public static void GenerateQueryFunctions(int data, int comp, string file_path)
+        public static void GenerateQueryFunctions(int comp, string file_path)
         {
             using (StreamWriter writer = new StreamWriter(file_path))
             {
@@ -147,52 +147,11 @@ namespace SimpleECS
                     writer.WriteLine("        }");
                 }
 
-                for (int w = 1; w <= data; ++w)
-                    for (int c = 1; c <= comp; ++c)
-                    {
-                        string w_val = Pattern("W#", w);
-                        string c_val = Pattern("C#", c);
-
-                        WriteDocumentation(writer);
-                        writer.WriteLine($"        public void Foreach<{w_val}, {c_val}>(in query_w{w}c{c}<{w_val}, {c_val}> query)");
-                        writer.WriteLine("        {");
-                        writer.WriteLine("            Update();");
-                        writer.WriteLine("            if (archetype_count == 0) return;");
-                        writer.WriteLine("            world.AllowStructuralChanges = false;");
-                        writer.WriteLine(Pattern("            ref var d# = ref world.GetData<W#>(); \n", w, false));
-                        writer.WriteLine("            for (int i = archetype_count - 1; i >= 0; --i)");
-                        writer.WriteLine("            {");
-                        writer.WriteLine("                var archetype = matching_archetypes[i];");
-                        var archs = Pattern("&& archetype.TryGetArray(out C#[] pool_c#)", c, false);
-                        writer.WriteLine($"                if (archetype.entity_count > 0 {archs})");
-                        writer.WriteLine("                    for (int e = archetype.entity_count - 1; e >= 0; --e)");
-                        writer.WriteLine($"                        query({Pattern("d#", w)}, {Pattern("ref pool_c#[e]", c)});");
-                        writer.WriteLine("            }");
-                        writer.WriteLine("            world.AllowStructuralChanges = true;");
-                        writer.WriteLine("        }");
-
-                        // entity
-                        WriteDocumentation(writer);
-                        writer.WriteLine($"        public void Foreach<{w_val}, {c_val}>(in query_ew{w}c{c}<{w_val}, {c_val}> query)");
-                        writer.WriteLine("        {");
-                        writer.WriteLine("            Update();");
-                        writer.WriteLine("            if (archetype_count == 0) return;");
-                        writer.WriteLine("            world.AllowStructuralChanges = false;");
-                        writer.WriteLine(Pattern("            ref var d# = ref world.GetData<W#>(); \n", w, false));
-                        writer.WriteLine("            for (int i = archetype_count - 1; i >= 0; --i)");
-                        writer.WriteLine("            {");
-                        writer.WriteLine("                var archetype = matching_archetypes[i];");
-                        writer.WriteLine($"                if (archetype.entity_count > 0 {archs})");
-                        writer.WriteLine("                    for (int e = archetype.entity_count - 1; e >= 0; --e)");
-                        writer.WriteLine($"                        query(archetype.entity_pool[e], {Pattern("d#", w)}, {Pattern("ref pool_c#[e]", c)});");
-                        writer.WriteLine("            }");
-                        writer.WriteLine("            world.AllowStructuralChanges = true;");
-                        writer.WriteLine("        }");
-                    }
                 writer.WriteLine("    }");
                 writer.WriteLine("");
                 writer.WriteLine("    namespace Delegates");
                 writer.WriteLine("    {");
+                writer.WriteLine("#pragma warning disable 1587");
 
                 for (int c = 1; c <= comp; ++c)
                 {
@@ -200,12 +159,7 @@ namespace SimpleECS
                     writer.WriteLine($"        public delegate void query_ec{c}<{Pattern("C#", c)}>(Entity entity, {Pattern("ref C# c#", c)});");
                 }
 
-                for (int w = 1; w <= data; ++w)
-                    for (int c = 1; c <= comp; ++c)
-                    {
-                        writer.WriteLine($"        public delegate void query_w{w}c{c}<{Pattern("W#", w)}, {Pattern("C#", c)}>({Pattern("in W# w#", w)}, {Pattern("ref C# c#", c)});");
-                        writer.WriteLine($"        public delegate void query_ew{w}c{c}<{Pattern("W#", w)}, {Pattern("C#", c)}>(Entity entity, {Pattern("in W# w#", w)}, {Pattern("ref C# c#", c)});");
-                    }
+                writer.WriteLine("#pragma warning restore 1587");
                 writer.WriteLine("    }");
                 writer.WriteLine("}");
             }
@@ -215,7 +169,6 @@ namespace SimpleECS
                 writer.WriteLine("/// <summary>");
                 writer.WriteLine("/// Iterates over entities that matches query.");
                 writer.WriteLine("/// Add Entity in First position to access Entity.");
-                writer.WriteLine($"/// Add (in W world_data) to access world data, can add up to {data} world data.");
                 writer.WriteLine($"/// Add (ref C component) to access entity components, can add up to {comp} components.");
                 writer.WriteLine("/// </summary>");
             }

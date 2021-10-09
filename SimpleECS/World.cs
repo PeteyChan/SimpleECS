@@ -36,6 +36,7 @@ namespace SimpleECS
         /// </summary>
         /// <value></value>
         public string Name { get; private set; }
+        
         /// <summary>
         /// A list of all archetypes currently owned by the world
         /// </summary>
@@ -533,34 +534,6 @@ namespace SimpleECS
         {
             if (ComponentCallbacks.TryGetValue(-TypeID<T>.Value, out var val))
                 ((Component_Event<T>)val).callback.Invoke(entity, ref component);
-        }
-
-        class WorldData<T>
-        {
-            public T data;
-        }
-        Dictionary<int, object> world_data = new Dictionary<int, object>();
-
-        /// <summary>
-        /// Gets a reference to set world data.
-        /// If world data is not set, returns default data.
-        /// </summary>
-        public ref T GetData<T>()
-        {
-            if (!world_data.TryGetValue(TypeID<T>.Value, out var obj))
-                world_data[TypeID<T>.Value] = obj = new WorldData<T>();
-            return ref ((WorldData<T>)obj).data;
-        }
-
-        /// <summary>
-        /// Sets world data to value
-        /// </summary>
-        public World SetData<T>(T data)
-        {
-            if (!world_data.TryGetValue(TypeID<T>.Value, out var obj))
-                world_data[TypeID<T>.Value] = obj = new WorldData<T>();
-            ((WorldData<T>)obj).data = data;
-            return this;
         }
     }
 

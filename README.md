@@ -46,7 +46,7 @@ entity.Set(3)             // sets the entity's components to values.
                           // setting a component will trigger any callbacks registered
                           // with world.OnSet() 
 
-if (enity.Has<int>())     // returns true if entity has component
+if (entity.Has<int>())     // returns true if entity has component
 {
   // do something
 }

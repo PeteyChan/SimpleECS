@@ -78,7 +78,7 @@ namespace SimpleECS
                 }
             }
 
-            internal void AddEntity(Entity entity)   // returns component id
+            internal void AddEntity(Entity entity)
             {
                 if (entity_pool.Length == entity_count)
                 {
@@ -135,7 +135,7 @@ namespace SimpleECS
 
             Pool CreatePool(Type type)
             {
-                return Activator.CreateInstance(typeof(Pool<>).MakeGenericType(type)) as Pool;
+                return Activator.CreateInstance(typeof(Pool<>).MakeGenericType(type), world) as Pool;
             }
 
             /// <summary>
@@ -315,16 +315,26 @@ namespace SimpleECS
 
             internal sealed class Pool<T> : Pool
             {
-                public Pool()
+                public Pool(World world)
                 {
                     array = Values;
+                    if (!world.ComponentCallbacks.TryGetValue(TypeID<T>.Value, out var set))
+                        world.ComponentCallbacks[TypeID<T>.Value] = set = new Component_Event<T>();
+                    if (!world.ComponentCallbacks.TryGetValue(-TypeID<T>.Value, out var remove))
+                        world.ComponentCallbacks[TypeID<T>.Value] = remove = new Component_Event<T>();
+                    set_event = (Component_Event<T>)set;
+                    remove_event = (Component_Event<T>)remove;
                 }
 
+                Component_Event<T> set_event;
+                Component_Event<T> remove_event;
                 T removed;
 
                 public T[] Values = new T[8];
 
                 internal override object Get(int index) => Values[index];
+
+
 
                 internal override void Remove(int index, int entity_count)
                 {
@@ -335,19 +345,19 @@ namespace SimpleECS
 
                 internal override void RemoveCallback(Entity entity)
                 {
-                    entity.world.InvokeRemoveEvent(entity, ref removed);
+                    remove_event.callback?.Invoke(entity, ref removed);
                 }
 
                 internal override void SetObject(in Entity entity, int index, in object obj)
                 {
                     Values[index] = (T)obj;
-                    entity.world.InvokeSetEvent(entity, ref Values[index]);
+                    set_event.callback?.Invoke(entity, ref Values[index]);
                 }
 
                 internal void SetValue(in Entity entity, int index, in T obj)
                 {
                     Values[index] = obj;
-                    entity.world.InvokeSetEvent(entity, ref Values[index]);
+                    set_event.callback?.Invoke(entity, ref Values[index]);
                 }
 
                 internal override void Resize(int capacity)

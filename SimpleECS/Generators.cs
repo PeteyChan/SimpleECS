@@ -29,12 +29,25 @@ namespace SimpleECS
                 writer.WriteLine("  {");
                 for (int i = 1; i <= count; ++i)
                 {
+                    /*
                     writer.WriteLine($"      public Entity CreateEntity<{Pattern("C#", i)}>({Pattern("in C# c#", i)})");
                     writer.WriteLine("      {");
                     writer.WriteLine("          signature.Clear();");
                     writer.WriteLine($"          signature{Pattern(".Add<C#>()", i, false)};");
                     writer.WriteLine($"          return CreateEntityWithArchetype(GetArchetype(signature)){Pattern(".Set(c#)", i, false)};");
                     writer.WriteLine("      }");
+                    writer.WriteLine("");
+*/
+                    writer.WriteLine($"     class Sig<{Pattern("C#", i)}>");
+                    writer.WriteLine("      {");
+                    writer.WriteLine($"          public static readonly TypeSignature signature = new TypeSignature(){Pattern(".Add<C#>()", i, false)};");
+                    writer.WriteLine("      }");
+                    writer.WriteLine("");
+                    writer.WriteLine("      ///<summary>");
+                    writer.WriteLine($"      ///creates a new entity, can add up to {count} components");
+                    writer.WriteLine("      ///</summary>");
+                    writer.WriteLine($"      public Entity CreateEntity<{Pattern("C#", i)}>({Pattern("in C# c#", i)}) =>");
+                    writer.WriteLine($"          CreateEntityWithArchetype(GetArchetype(Sig<{Pattern("C#", i)}>.signature)){Pattern(".Set(c#)", i, false)};");
                     writer.WriteLine("");
                 }
                 writer.WriteLine("  }");
@@ -112,6 +125,7 @@ namespace SimpleECS
                 for (int c = 1; c <= comp; ++c)
                 {
                     string c_val = Pattern("C#", c);
+                    // components only
                     WriteDocumentation(writer);
                     writer.WriteLine($"        public void Foreach<{c_val}>(in query_c{c}<{c_val}> query)");
                     writer.WriteLine("        {");
@@ -129,7 +143,7 @@ namespace SimpleECS
                     writer.WriteLine("            world.AllowStructuralChanges = true;");
                     writer.WriteLine("        }");
 
-                    // entity
+                    // entities and components
                     WriteDocumentation(writer);
                     writer.WriteLine($"        public void Foreach<{c_val}>(in query_ec{c}<{c_val}> query)");
                     writer.WriteLine("        {");
@@ -145,6 +159,40 @@ namespace SimpleECS
                     writer.WriteLine("            }");
                     writer.WriteLine("            world.AllowStructuralChanges = true;");
                     writer.WriteLine("        }");
+
+                    // world, entities and components
+                    WriteDocumentation(writer);
+                    writer.WriteLine($"        public void Foreach<{c_val}>(in query_wec{c}<{c_val}> query)");
+                    writer.WriteLine("        {");
+                    writer.WriteLine("            Update();");
+                    writer.WriteLine("            if (archetype_count == 0) return;");
+                    writer.WriteLine("            world.AllowStructuralChanges = false;");
+                    writer.WriteLine("            for (int i = archetype_count - 1; i >= 0; --i)");
+                    writer.WriteLine("            {");
+                    writer.WriteLine("                var archetype = matching_archetypes[i];");
+                    writer.WriteLine($"                if (archetype.entity_count > 0 {archs})");
+                    writer.WriteLine("                    for (int e = archetype.entity_count - 1; e >= 0; --e)");
+                    writer.WriteLine($"                        query(world, archetype.entity_pool[e], {Pattern("ref pool_c#[e]", c)});");
+                    writer.WriteLine("            }");
+                    writer.WriteLine("            world.AllowStructuralChanges = true;");
+                    writer.WriteLine("        }");
+
+                    // world and components
+                    WriteDocumentation(writer);
+                    writer.WriteLine($"        public void Foreach<{c_val}>(in query_wc{c}<{c_val}> query)");
+                    writer.WriteLine("        {");
+                    writer.WriteLine("            Update();");
+                    writer.WriteLine("            if (archetype_count == 0) return;");
+                    writer.WriteLine("            world.AllowStructuralChanges = false;");
+                    writer.WriteLine("            for (int i = archetype_count - 1; i >= 0; --i)");
+                    writer.WriteLine("            {");
+                    writer.WriteLine("                var archetype = matching_archetypes[i];");
+                    writer.WriteLine($"                if (archetype.entity_count > 0 {archs})");
+                    writer.WriteLine("                    for (int e = archetype.entity_count - 1; e >= 0; --e)");
+                    writer.WriteLine($"                        query(world, {Pattern("ref pool_c#[e]", c)});");
+                    writer.WriteLine("            }");
+                    writer.WriteLine("            world.AllowStructuralChanges = true;");
+                    writer.WriteLine("        }");
                 }
 
                 writer.WriteLine("    }");
@@ -157,6 +205,8 @@ namespace SimpleECS
                 {
                     writer.WriteLine($"        public delegate void query_c{c}<{Pattern("C#", c)}>({Pattern("ref C# c#", c)});");
                     writer.WriteLine($"        public delegate void query_ec{c}<{Pattern("C#", c)}>(Entity entity, {Pattern("ref C# c#", c)});");
+                    writer.WriteLine($"        public delegate void query_wec{c}<{Pattern("C#", c)}>(World world, Entity entity, {Pattern("ref C# c#", c)});");
+                    writer.WriteLine($"        public delegate void query_wc{c}<{Pattern("C#", c)}>(World world, {Pattern("ref C# c#", c)});");
                 }
 
                 writer.WriteLine("#pragma warning restore 1587");
@@ -168,8 +218,9 @@ namespace SimpleECS
             {
                 writer.WriteLine("/// <summary>");
                 writer.WriteLine("/// Iterates over entities that matches query.");
-                writer.WriteLine("/// Add Entity in First position to access Entity.");
-                writer.WriteLine($"/// Add (ref C component) to access entity components, can add up to {comp} components.");
+                writer.WriteLine("/// Add World in first position to access the world being queried");
+                writer.WriteLine("/// Add Entity after world to access the current entity.");
+                writer.WriteLine($"/// Add (ref C component) to access the current entity's component, can add up to {comp} components.");
                 writer.WriteLine("/// </summary>");
             }
         }

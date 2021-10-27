@@ -18,16 +18,74 @@ namespace SimpleECS
 #pragma warning restore
 
         static int count;
+        int world_Id;
+        static System.Action OnCreateWorld;
+
+        static int nextPow2(int value)
+        {
+            int v = value;
+            v--;
+            v |= v >> 1;
+            v |= v >> 2;
+            v |= v >> 4;
+            v |= v >> 8;
+            v |= v >> 16;
+            v++;
+            return v;
+        }
+
+        class Data<T>
+        {
+            static Data()
+            {
+                OnCreateWorld += () =>
+                {
+                    if (count >= data.Length)
+                    {
+                        System.Array.Resize(ref data, nextPow2(count));
+                    }
+                };
+            }
+
+            public static T[] data = new T[count];
+        }
+        
+        /// <summary>
+        /// Gets data associated with this world.
+        /// Used inplace of static data or singleton components
+        /// </summary>
+        public ref Data GetData<Data>() => ref Data<Data>.data[world_Id];
+        
+        /// <summary>
+        /// Allows setting of multiple world data at once
+        /// </summary>
+        public World SetData<Data>(Data data)
+        {
+            GetData<Data>() = data;
+            return this;
+        }
 
         /// <summary>
         /// Creates a new world
         /// </summary>
-        public World() => Name = "World " + (++count).ToString();
+        public World()
+        {
+            world_Id = count;
+            Name = "World " + (world_Id).ToString();
+            count++;
+            OnCreateWorld?.Invoke();
+        }
 
         /// <summary>
         /// Creates a new world with name
         /// </summary>
-        public World(string name) => Name = name;
+        public World(string name)
+        {
+            world_Id = count;
+            Name = name;
+            count++;
+            OnCreateWorld?.Invoke();
+        }
 
         const int INITIAL_CAPACITY = 1024;
 
@@ -36,13 +94,13 @@ namespace SimpleECS
         /// </summary>
         /// <value></value>
         public string Name { get; private set; }
-        
+
         /// <summary>
         /// A list of all archetypes currently owned by the world
         /// </summary>
         public IReadOnlyList<Archetype> Archetypes => archetypes;
         List<Archetype> archetypes = new List<Archetype>();
-        Dictionary<int, List<Archetype>> id_to_archetype = new Dictionary<int, List<Archetype>>();
+        Dictionary<TypeSignature, Archetype> signature_to_archetype = new Dictionary<TypeSignature, Archetype>();
         int[] free_entities = new int[INITIAL_CAPACITY];
         int free_entity_count = 0;
         (int version, Archetype archetype, int component_index)[] entity_data = new (int, Archetype, int)[INITIAL_CAPACITY];
@@ -157,7 +215,7 @@ namespace SimpleECS
         public Entity CreateEntityWithArchetype(Archetype archetype)
         {
             if (!archetype) throw new Exception("An invalid archetype cannot create Entities");
-            
+
             int entity_index;
             if (free_entity_count > 0)
                 entity_index = free_entities[--free_entity_count];
@@ -197,7 +255,7 @@ namespace SimpleECS
         public static bool IsValid(Archetype archetype)
             => archetype?.entity_pool == null ? false : true;
 
-        internal ref Component Get<Component>(int index, int version )
+        internal ref Component Get<Component>(int index, int version)
         {
             if (entity_data[index].version == version)
             {
@@ -254,7 +312,7 @@ namespace SimpleECS
                 CacheEvent(StructureEvent.Type.Transfer, entity, args: target_world);
                 return entity;
             }
-            
+
             if (IsValid(entity) && this != target_world)
             {
                 ref var data = ref entity_data[entity.index];
@@ -422,19 +480,11 @@ namespace SimpleECS
         /// </summary>
         public Archetype GetArchetype(TypeSignature signature)
         {
-            if (!id_to_archetype.TryGetValue(signature.GetHashCode(), out var stored_archetypes))
-                id_to_archetype[signature.GetHashCode()] = stored_archetypes = new List<Archetype>();
-
-            Archetype archetype;
-            for (int i = 0; i < stored_archetypes.Count; ++i)   // although the hash is good, there is always a slim chance for
-            {                                           // collisions. Although this is slower, it'll never fail
-                archetype = stored_archetypes[i];
-                if (archetype.signature.Equals(signature))
-                    return archetype;
+            if (!signature_to_archetype.TryGetValue(signature, out var archetype))
+            {
+                signature_to_archetype[signature] = archetype = new Archetype(this, signature);
+                archetypes.Add(archetype);
             }
-            archetype = new Archetype(this, signature);
-            stored_archetypes.Add(archetype);
-            archetypes.Add(archetype);
             return archetype;
         }
 
@@ -453,15 +503,10 @@ namespace SimpleECS
                     pending.Destroy();
 
             archetypes.Clear();
-            id_to_archetype.Clear();
+            signature_to_archetype.Clear();
             foreach (var archetype in kept_archs)
-            {
-                var id = archetype.signature.GetHashCode();
-                if (!id_to_archetype.TryGetValue(id, out var stored_archs))
-                    id_to_archetype[id] = stored_archs = new List<Archetype>();
-                stored_archs.Add(archetype);
-                archetypes.Add(archetype);
-            }
+                signature_to_archetype.Add(archetype.signature, archetype);
+
             Version++;
         }
 
@@ -522,18 +567,6 @@ namespace SimpleECS
             if (register)
                 e.callback += callback;
             else e.callback -= callback;/**/
-        }
-
-        void InvokeSetEvent<T>(in Entity entity, ref T component)
-        {
-            if (ComponentCallbacks.TryGetValue(TypeID<T>.Value, out var val))
-                ((Component_Event<T>)val).callback.Invoke(entity, ref component);
-        }
-
-        void InvokeRemoveEvent<T>(in Entity entity, ref T component)
-        {
-            if (ComponentCallbacks.TryGetValue(-TypeID<T>.Value, out var val))
-                ((Component_Event<T>)val).callback.Invoke(entity, ref component);
         }
     }
 

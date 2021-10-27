@@ -47,7 +47,7 @@ namespace SimpleECS
         public Entity Set<Component>(in Component component) => world.Set(this, component);
         
         /// <summary>
-        /// Tries to get the component, returns if sucessful.
+        /// Tries to get the component, returns true if successful.
         /// </summary>
         public bool TryGet<Component>(out Component component) => world.TryGet(this, out component);
         

@@ -8,6 +8,9 @@ Min C# Framework 4.7
 * Archetype based = fast component iteration
 * Very simple and easy to use queries
 
+> **Warning** - This project is a very much a hobby project to learn more about ECS. Although it's quite usuable in it's current state, the API is still very much in flux and breaking changes can occur in the future. 
+
+
 ## Entities
 An Entity is simply an ID that associates a group of components together.
 To create an entity you first need to create a new world,
@@ -23,7 +26,7 @@ var entity = world.CreateEntity("my entity", 3, 5f);
 ```
 Anything that can be put into a list can be a component.
 Only one component of each type can be associated with an entity, 
-however there's nothing stopping you having a List or array a component.
+however there's nothing stopping you having a List or array as a component.
 Setting more than one component of the same type will simply overwrite the old one.
 The function can take up to 64 components, but entities themselves have 
 no component limit.
@@ -63,8 +66,8 @@ entity.Destroy();     // destroys the entity leaving it invalid
                       // all components on the entity will trigger their respective world.OnRemove() callbacks
 
 var newWorld = new World("new World");
-Entity newWorldEntity = entity.Transfer(new_world); // transfer moves entity to the specified woorld and
-                                                    // returns the entity's new value
+Entity newWorldEntity = entity.Transfer(new_world); // transfer moves entity to the specified world and
+                                                    // returns the entity's new entity value
                                                     // the transfered entity will be invalid in the old world
                                                     // after the move
 ```

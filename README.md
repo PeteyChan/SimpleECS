@@ -8,6 +8,9 @@ Min C# Framework 4.7
 * Archetype based = fast component iteration
 * Very simple and easy to use queries
 
+> **Warning** - This project is a very much a hobby project to learn more about ECS. Although it's quite usuable in it's current state, the API is still very much in flux and breaking changes can occur in the future. 
+
+
 ## Entities
 An Entity is simply an ID that associates a group of components together.
 To create an entity you first need to create a new world,
@@ -23,7 +26,7 @@ var entity = world.CreateEntity("my entity", 3, 5f);
 ```
 Anything that can be put into a list can be a component.
 Only one component of each type can be associated with an entity, 
-however there's nothing stopping you having a List or array a component.
+however there's nothing stopping you having a List or array as a component.
 Setting more than one component of the same type will simply overwrite the old one.
 The function can take up to 64 components, but entities themselves have 
 no component limit.
@@ -46,7 +49,7 @@ entity.Set(3)             // sets the entity's components to values.
                           // setting a component will trigger any callbacks registered
                           // with world.OnSet() 
 
-if (enity.Has<int>())     // returns true if entity has component
+if (entity.Has<int>())     // returns true if entity has component
 {
   // do something
 }
@@ -63,8 +66,8 @@ entity.Destroy();     // destroys the entity leaving it invalid
                       // all components on the entity will trigger their respective world.OnRemove() callbacks
 
 var newWorld = new World("new World");
-Entity newWorldEntity = entity.Transfer(new_world); // transfer moves entity to the specified woorld and
-                                                    // returns the entity's new value
+Entity newWorldEntity = entity.Transfer(new_world); // transfer moves entity to the specified world and
+                                                    // returns the entity's new entity value
                                                     // the transfered entity will be invalid in the old world
                                                     // after the move
 ```
@@ -93,7 +96,7 @@ world.OnSet<int>(MyCallback, false);  // and by passing false as the second para
 ## Queries
 
 Queries let you iterate over entities based on specified components.
-You can specify up to 12 components to iterate over.
+You can specify up to 16 components to iterate over.
 Queries cache their results and only update when new archetypes are created.
 
 ```C#
@@ -159,26 +162,6 @@ query.Foreach((Entity entity, ref int int_val) =>
 
 entity.Has<string>();   // this will now return true
 entity.Has<int>();      // and this will now return false
-```
-## Singletons
-Instead of a singleton component or singleton entity, the way SimpleECS deals with
-singleton data is with a concept called World Data. World Data is just data belonging to the world.
-Each world stores it's own world data.
-
-```C#
-float deltaTime = Time.delta;
-
-world.GetData<float>() = deltaTime; // you can get and assign world Data with world.GetData()
-                                    // GetData() returns a ref so you can assign or add to it directly
-
-world.SetData(deltaTime);   // you can also use SetData(), just like entity.Set() SetData() is chainable
-
-query.Foreach((Entity entity, in float deltaTime, ref float comp_time) => 
-{                           // you can get world data in foreach loops using the in modifier 
-  comp_time += deltaTime;   // world data goes after entity and before components
-  if (comp_time > 5f)       // you can add up to 8 world data
-    entity.Destroy();
-});
 ```
 
 ## Archetype

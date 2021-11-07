@@ -16,7 +16,7 @@ An Entity is simply an ID that associates a group of components together.
 To create an entity you first need to create a new world,
 then using that world create your entity with it's components as arguments.
 ```C#
-var world = new World("My World");    // naming the world is optional
+var world = World.Create("My World");    // naming the world is optional
 var entity = world.CreateEntity("my entity", 3, 5f);    
                                       // creates a new entity with components
                                       // components added this way will trigger
@@ -28,7 +28,7 @@ Anything that can be put into a list can be a component.
 Only one component of each type can be associated with an entity, 
 however there's nothing stopping you having a List or array as a component.
 Setting more than one component of the same type will simply overwrite the old one.
-The function can take up to 64 components, but entities themselves have 
+The function can take up to 32 components, but entities themselves have 
 no component limit.
 Due to how entities are structured, it's more efficient to set all components upfront
 during creation than adding them one at a time with entity.Set().
@@ -65,11 +65,9 @@ entity.Remove<T>();   // removes the component on entity if found.
 entity.Destroy();     // destroys the entity leaving it invalid
                       // all components on the entity will trigger their respective world.OnRemove() callbacks
 
-var newWorld = new World("new World");
-Entity newWorldEntity = entity.Transfer(new_world); // transfer moves entity to the specified world and
-                                                    // returns the entity's new entity value
-                                                    // the transfered entity will be invalid in the old world
-                                                    // after the move
+var newWorld = World.Create("new World");
+entity.Transfer(new_world);   // transfer moves entity to the specified world
+                              // since the entity was moved, it's old value is now invalid
 ```
 ## Component Callbacks
 There are 2 component callbacks in SimpleECS, world.OnSet() and world.OnRemove().
@@ -113,30 +111,41 @@ query.Foreach( (ref int int_value, ref float float_value) =>  // you then use th
 }));                                                          // filter and contains all the foreach parameters
 
 
-query.Foreach( (Entity entity, ref int value ) =>         // you can access the owner entity by putting it in the first position
-{                                                         // without modifiers. You can then add any components you want to use
-  Console.WriteLine($"{entity} value is {value}");        // afterwards
+query.Foreach( (Entity entity, ref int value ) =>         // you can access the owner entity by putting it before the components
+{                                                         // without modifiers. 
+  Console.WriteLine($"{entity} value is {value}");        
 });
 
 var all_entities = world.CreateQuery();               // a simple way to match against all entities is to make a query with no filters
-all_entities.Foreach( entity => entity.Destroy());    // a simple way to delete all entities
+
+query.DestroyMatching();          // destroys all archtypes and their entities matching the query
+                                  // its the most efficient way to destroy entities
 ```
 
-Queries are already very fast, but for maximum performance or control
-over iteration order, manual iteration is possible.
+For maximum control over query iteration, manual iteration is possible.
 ```C#
-for(int i = 0; i < query.MatchingArchetypes.Count; ++ i) // getting the matching archetypes count will 
-{                                                        // keep the query up-to-date
-  var archetype = query.MatchingArchetypes[i];
-    if (archetype.Entities.Count > 0 && archetype.TryGetArray(out int[] int_pool))  // try get array gets the raw component backing array
-      for(int index = 0; index < archetype.Entities.Count; ++ index)    // int pool's count is the same as the entity count NOT the pool's length
-        int_pool[index]++;
+var archetypes = query.GetArchetypes();
+foreach(var archetype in archetypes)
+{
+    if (archetype.TryGetEntityBuffer(out Entity[] entity_buffer) &&
+        archetype.TryGetComponentBuffer(out int[] int_buffer))
+    {
+        for(int i = 0; i < archetype.EntityCount; ++ i)
+            System.Console.WriteLine($"{entity_buffer[i]} {int_buffer[i]}");
+    }
 }
 ```
 
-During Foreach structural changes are cached and applied after iteration is complete. 
+During query.Foreach structural changes are cached and applied after iteration is complete. 
 This is to prevent iterator invalidation. Functions that cause structural changes are:
-entity.Set(), entity.Remove(), entity.Transfer(), entity.Destroy() and world.CreateEntity();
+  -entity.Set()
+  -entity.Remove()
+  -entity.Transfer()
+  -entity.Destroy()
+  -archetype.CreateEntity()
+  -archetype.Destroy()
+  -world.CreateEntity()
+  -world.Destroy()
 Entities created during query.Foreach() will be invalid during the function, but you can
 still use all entity functions on that entity, it will simply be applied when the 
 Foreach function completes.
@@ -174,29 +183,33 @@ entities within an archetype has the same component types by definition.
 ```C#
 var entity = world.Create(3);
 
-if (entity.TryGetArchetype(out var archetype))  // gets archetype that the entity belongs to
-{                                               // will return false if entity is invalid
-                                                // an entity's archetype can change when a new 
-                                                // component is set or when a component is removed
+var archetype = entity.archetype;     // gets archetype that the entity belongs
+                                      // if entity is invalid, the archtype will also be invalid
+                                      // an entity's archetype changes when the component types it
+                                      // holds changes
   
-  if (archetype)  // use to check if archetype is valid
-  {               // valid entities will always have valid archetypes
-    //...         // shorthand for archetype.IsValid()
-  }
-                                                  
-  foreach(var entity in archetype.Entities) // you can get the entities in an archetype
-  {                                         // with the Entities property
-    Console.WriteLine(entity);
-  }
-                                                  
-  if (archetype.TryGetArray(out int[] int_values))      // you can get the raw component arrays using TryGetArray()
-  {                                                     // returns false if entities don't have component
-    for(int i = 0; i < archetype.Entities.Count; ++ i)  // the component count is not the array's length
-    {                                                   // but the archetype's entity count. Be sure not to
-      int_values[i] ++;                                 // use the wrong count
-    }
-  }
+if (archetype)  // use to check if archetype is valid
+{               // valid entities will always have valid archetypes
+  //...         // shorthand for archetype.IsValid()
 }
+                                                  
+foreach(var entity in archetype.Entities) // you can get the entities in an archetype
+{                                         // with the Entities property
+    Console.WriteLine(entity);
+}
+  
+archetype.GetEntities();    // returns a copy of all entities in the archetype
+
+if (archetype.TryGetEntityBuffer(out Entity[] entities))  // tries to get the raw entity storage buffer from
+{                                                         // the archetype. Should be treated as readonly as
+    for (int i = 0; i < archetype.EntityCount; ++ i)      // changing their values will break the ecs.
+        Console.WriteLine(entities[i]);                   // Valid indexes are only up to archetype.EntityCount
+}                                                         // not entities.Length
+
+if (archetype.TryGetComponentBuffer(out int[] int_buffer))
+{
+}
+
 
 ```
 

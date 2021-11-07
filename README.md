@@ -82,7 +82,7 @@ world.OnRemove((Entity entity, ref int value) =>  // use world.OnRemove to set a
 
 void MyCallback(Entity entity, ref int value)     // additionally you can name your callbacks
 {
-  Console.WriteLine($"{} added int {value}");
+  Console.WriteLine($"{entity} added int {value}");
 }
 
 world.OnSet<int>(MyCallback);         // then register the callback

@@ -140,14 +140,14 @@ namespace SimpleECS
         /// </summary>
         public void DestroyMatching()
         {
-            if (world.TryGetWorldInfo(out var info))
+            if (Update(out var world_info))
             {
                 for(int i = 0; i < archetype_count; ++ i)
                 {
                     var index = matching_archetypes[i];
-                    info.archetypes[i].data.archetype.Destroy();
+                    world_info.archetypes[i].data.archetype.Destroy();
                 }
-            }                
+            }      
         }
 
         // keeps the queried archtypes up to date, return false if the query is not valid

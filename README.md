@@ -66,8 +66,8 @@ entity.Destroy();     // destroys the entity leaving it invalid
                       // all components on the entity will trigger their respective world.OnRemove() callbacks
 
 var newWorld = World.Create("new World");
-entity.Transfer(new_world);   // transfer moves entity to the specified world
-                              // since the entity was moved, it's old value is now invalid
+entity.TransferTo(new_world);   // transfer moves entity to the specified world
+                                // since the entity was moved, it's old value is now invalid
 ```
 ## Component Callbacks
 There are 2 component callbacks in SimpleECS, world.OnSet() and world.OnRemove().
@@ -212,6 +212,24 @@ if (archetype.TryGetComponentBuffer(out int[] int_buffer))
 
 
 ```
+## World Data
+Instead of singletons, shared components or singleton components, Simple Ecs uses the concept of World Data.
+World data is simply data belonging to the world.
+```C#
+world.SetData(3)            // sets the world data to value
+     .SetData("My Value");  // can be chained
+     
+world.GetData<float>() = delta_time;    // alternately you can use GetData
+                                        // to get a reference and change it directly
+
+query.Foreach((in float delta_time, Entity entity, ref Vector3 velocity) => 
+{                                                     // you can access world data directly in queries using
+    velocity += delta_time * new Vector3(1, 0, 0);    // the 'in' modifier before any entity
+});                                                   // or component parameters
+                                                      // you can add up to 4 world data in queries
+```
+
+
 
 ## World
 The world class is what manages all the underlying archetypes and their entities.

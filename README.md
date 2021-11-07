@@ -145,6 +145,7 @@ This is to prevent iterator invalidation. Functions that cause structural change
   * archetype.Destroy()
   * world.CreateEntity()
   * world.Destroy()
+  
 Entities created during query.Foreach() will be invalid during the function, but you can
 still use all entity functions on that entity, it will simply be applied when the 
 Foreach function completes.
@@ -161,8 +162,9 @@ query.Foreach((Entity entity, ref int int_val) =>
   
   entity.Has<int>();        // since Remove() was cached, this will still return true
   
-  entity.Set("my entity");  // Since this was removed before the query, this is a 
-                            // structural operation and will also be cached
+  entity.Set("my entity");  // set is regarded as a structural event so will 
+                            // be cached regardless if the entity has the
+                            // component or not
   
   entity.Has<string>();     // so this will still return false
 });

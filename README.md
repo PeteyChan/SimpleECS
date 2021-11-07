@@ -3,7 +3,7 @@ A Simple and easy to use C# Entity Component System.
 Min C# Framework 4.7
 
 ### Features:
-* No Dependencies, just build and drop in however you want
+* No Dependencies, just build or drop in however you want
 * No setup or boilerplate like marking components or code generators
 * Archetype based = fast component iteration
 * Very simple and easy to use queries

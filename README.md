@@ -94,7 +94,7 @@ world.OnSet<int>(MyCallback, false);  // and by passing false as the second para
 ## Queries
 
 Queries let you iterate over entities based on specified components.
-You can specify up to 16 components to iterate over.
+You can specify up to 12 components to iterate over.
 Queries cache their results and only update when new archetypes are created.
 
 ```C#

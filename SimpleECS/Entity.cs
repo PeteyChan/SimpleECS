@@ -1,133 +1,203 @@
 namespace SimpleECS
 {
     using System;
-    using System.Collections.Generic;
+    using Internal;
 
     /// <summary>
-    /// Basic container of components
+    /// Acts as a container of a set of components. Can be filtered by queries to get entities that have speicified components.
     /// </summary>
-    public partial struct Entity : IEquatable<Entity>, IComparable<Entity>
+    public struct Entity : IEquatable<Entity>
     {
-        internal Entity(int id, int version, World world)
+        internal Entity(World world, int index, int version)
         {
-            this.index = id; this.version = version; this.world = world;
+            this.world = world; this.index = index; this.version = version;
         }
 
         /// <summary>
-        /// World entity belongs to
+        /// the world that the entity belongs to
         /// </summary>
         public readonly World world;
 
         /// <summary>
-        /// Identifier to map entity to components
+        /// the archetype that the entity belongs to
+        /// </summary>
+        public Archetype archetype => this.TryGetArchetypeInfo(out var archetype_info) ? archetype_info.archetype : default;
+
+        /// <summary>
+        /// the combination of the index and version act as a unique identifier for the entity
         /// </summary>
         public readonly int index;
 
         /// <summary>
-        /// Versioning to verify validity 
+        /// the combination of the index and version act as a unique identifier for the entity
         /// </summary>
         public readonly int version;
 
         /// <summary>
-        /// Gets a reference to the component.
-        /// Throws an exception if entity is invalid or fails to get the component.
+        /// returns entity's string value if set
         /// </summary>
-        public ref Component Get<Component>() => ref world.Get<Component>(index, version);
-
-        /// <summary>
-        /// Returns true if entity has component
-        /// </summary>
-        public bool Has<Component>() => world.Has<Component>(this);
-        
-        /// <summary>
-        /// Sets the component on Entity.
-        /// If Entity does not have component, the component is added instead.
-        /// Will trigger callbacks registered with World.OnSet()
-        /// </summary>
-        public Entity Set<Component>(in Component component) => world.Set(this, component);
-        
-        /// <summary>
-        /// Tries to get the component, returns true if successful.
-        /// </summary>
-        public bool TryGet<Component>(out Component component) => world.TryGet(this, out component);
-        
-        /// <summary>
-        /// Removes the component from Entity.
-        /// Will trigger callbacks registered with World.OnRemove();
-        /// </summary>
-        public Entity Remove<Component>() => world.Remove<Component>(this);
-
-        /// <summary>
-        /// Destroys the entity.
-        /// All components on entity will trigger their respective World.OnRemove() callbacks.
-        /// </summary>
-        public void Destroy() => world.Destroy(this);
-
-        /// <summary>
-        /// Returns the archetype this entity belongs to.
-        /// Returns false if the entity is invalid.
-        /// </summary>
-        public bool TryGetArchetype(out World.Archetype archetype) => world.TryGetArchetype(this, out archetype);
-        
-        /// <summary>
-        /// Gets a list of all components currently on the entity.
-        /// </summary>
-        /// <param name="storage">where to store the components otherwise creates a new List if null</param>
-        /// <returns></returns>
-        public List<object> GetAllComponents(List<object> storage = null) => world.GetAllComponents(this, storage);
-        
-        /// <summary>
-        /// Transfers this entity to the specified world.
-        /// The current Entity will be invalid.
-        /// Returns the Entity's value in the other world.
-        /// </summary>
-        /// <param name="world"></param>
-        /// <returns></returns>
-        public Entity Transfer(World world) => this.world.Transfer(this, world);
-
-        /// <summary>
-        /// Returns true if entity is valid, false if entity is invalid or destroyed
-        /// </summary>
-        public bool IsValid() => World.IsValid(this);
-
-#pragma warning disable
-        public static implicit operator bool(Entity entity)
-            => World.IsValid(entity);
-
-        public bool Equals(Entity other)
-            => other.index == index && other.version == version && other.world == world;
-
-        public static bool operator ==(Entity a, Entity b)
-            => a.index == b.index && a.version == b.version && a.world == b.world;
-
-        public static bool operator !=(Entity a, Entity b)
-            => !(a == b);
-
-
-        public override bool Equals(object obj)
+        public override string ToString()
         {
-            if (obj is Entity entity)
-                return this == entity;
+            string name;
+            if (!TryGet<string>(out name))
+            {
+                name = IsValid() ? "Entity" : "~Entity";
+                return $"{name} {index}.{version}";
+            }
+            return name;
+        }
+
+        /// <summary>
+        /// returns true if the the entity is not destroyed or null
+        /// </summary>
+        public bool IsValid() => World_Info.All[world.index].version == world.version && World_Info.All[world.index].data.entity_data[index].version == version;
+
+        /// <summary>
+        /// returns true if the entity has the component
+        /// </summary>
+        public bool Has<Component>()
+        {
+            if (this.TryGetArchetypeInfo(out var archetype_info))
+                return archetype_info.Has(TypeID<Component>.Value);
             return false;
         }
 
-        public override int GetHashCode()
-            => index;
-
-        public override string ToString()
+        /// <summary>
+        /// removes the component from the entity.
+        /// if component was removed will trigger the corresponding onremove component event
+        /// </summary>
+        public Entity Remove<Component>()
         {
-            if (!this.TryGet(out string name) || string.IsNullOrEmpty(name))
-                name = "Entity";
-            return $"{name} {index}.{version}";
+            if (world.TryGetWorldInfo(out var world_info))
+                world_info.StructureEvents.Remove(this, TypeID<Component>.Value);
+            return this;
         }
 
-        int IComparable<Entity>.CompareTo(Entity other)
+        /// <summary>
+        /// sets the entity's component to value. 
+        /// If the entity does not have the component, will move the entity to an archetype that does.
+        /// will trigger the onset component event if component was set
+        /// </summary>
+        public Entity Set<Component>(in Component component)
         {
-            if (index < other.index) return -1;
-            if (index > other.index) return 1;
-            if (version < other.version) return -1;
-            if (version > other.version) return 1;
-            return 0;
+            if (world.TryGetWorldInfo(out var world_info))
+                world_info.StructureEvents.Set(this, TypeID<Component>.Value, component);
+            return this;
+        }
+
+        /// <summary>
+        /// returns true if the entity has component, outputs the component
+        /// </summary>
+        public bool TryGet<Component>(out Component component)
+        {
+            if (world.TryGetWorldInfo(out var world_info))
+            {
+                var entity_data = world_info.entity_data[index];
+                if (entity_data.version == version)
+                {
+                    if (entity_data.archetype_data.TryGetArray<Component>(out var pool))
+                    {
+                        component = pool[entity_data.arch_index];
+                        return true;
+                    }
+                }
+            }
+            component = default;
+            return false;
+        }
+
+        /// <summary>
+        /// gets the reference to the component on the entity.
+        /// throws an exception if the entity is invalid or does not have the component
+        /// </summary>
+        public ref Component Get<Component>()
+        {
+            if (world.TryGetWorldInfo(out var world_info))
+            {
+                var entity_data = world_info.entity_data[index];
+                if (entity_data.version == version)
+                {
+                    if (entity_data.archetype_data.TryGetArray<Component>(out var pool))
+                        return ref pool[entity_data.arch_index];
+                    throw new Exception($"{this} does not contain a {typeof(Component).Name}");
+                }
+                throw new Exception($"{this} is invalid and cannot get {typeof(Component).Name}");
+            }
+            throw new Exception($"{this} world is not valid, cannot get {typeof(Component).Name}");
+        }
+
+        /// <summary>
+        /// transfers the entity to the target world
+        /// </summary>
+        public void TransferTo(World target_world)
+        {
+            if (world.TryGetWorldInfo(out var world_info))
+                world_info.StructureEvents.Transfer(this, target_world);
+        }
+
+        /// <summary>
+        /// destroys the entity
+        /// </summary>
+        public void Destroy()
+        {
+            if (world.TryGetWorldInfo(out var world_info))
+                world_info.StructureEvents.Destroy(this);
+        }
+
+        bool IEquatable<Entity>.Equals(Entity other) => index == other.index && version == other.version;
+
+        public override bool Equals(object obj) => obj is Entity e ? e == this : false;
+
+        public static bool operator ==(Entity a, Entity b) => a.world == b.world && a.index == b.index && a.version == b.version;
+
+        public static bool operator !=(Entity a, Entity b) => !(a == b);
+
+        public override int GetHashCode() => index;
+
+        public static implicit operator bool(Entity entity) => entity.IsValid();
+
+        /// <summary>
+        /// returns a copy of all the entity's components
+        /// </summary>
+        public object[] GetAllComponents()
+        {
+            if (world.TryGetWorldInfo(out var world_info))
+            {
+                var entity_info = world_info.entity_data[index];
+                if (entity_info.version == version)
+                    return entity_info.archetype_data.GetAllComponents(entity_info.arch_index);
+            }
+            return new object[0];
+        }
+
+        /// <summary>
+        /// returns the type of all the entity's components
+        /// </summary>
+        public Type[] GetAllComponentTypes()
+        {
+            if (this.TryGetArchetypeInfo(out var archetype_info))
+                return archetype_info.GetComponentTypes();
+            return new Type[0];
         }
     }
+}
+
+namespace SimpleECS.Internal
+{
+    public static partial class InternalExtensions
+    {
+        public static bool TryGetArchetypeInfo(this Entity entity, out Archetype_Info archetypeData)
+        {
+            if (entity.world.TryGetWorldInfo(out var world_Info))
+            {
+                if (world_Info.entity_data[entity.index].version == entity.version)
+                {
+                    archetypeData = world_Info.entity_data[entity.index].archetype_data;
+                    return true;
+                }
+            }
+            archetypeData = default;
+            return false;
+        }
+    }    
 }

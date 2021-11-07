@@ -1,7 +1,8 @@
-namespace SimpleECS
+namespace SimpleECS.Internal
 {
     using System.IO;
-    internal class Generator
+
+    public static class CodeGenerator
     {
         static string Pattern(string value, int count, bool comma_sep = true)
         {
@@ -16,39 +17,33 @@ namespace SimpleECS
         }
 
         /// <summary>
-        /// Generates the create entity functions to file located at path.
-        /// Count is the amount of functions to generate
+        /// Generates all world.CreateEntity functions
         /// </summary>
-        public static void EntityCreateFunctions(string file_path, int count)
+        /// <param name="count">Maximum number of components that can be used in CreateEntity Functions</param>
+        /// <param name="output_path">Path to EntityCreateFunctions.cs</param>
+        public static void CreateEntityFunctions(int count, string output_path)
         {
-            using (StreamWriter writer = new StreamWriter(file_path))
+            using (StreamWriter writer = new StreamWriter(output_path))
             {
                 writer.WriteLine($"namespace {nameof(SimpleECS)}");
                 writer.WriteLine("{");
-                writer.WriteLine("  public partial class World");
+                writer.WriteLine("  using Internal;");
+                writer.WriteLine("  public partial struct World");
                 writer.WriteLine("  {");
-                for (int i = 1; i <= count; ++i)
+
+                for (int i = 1; i < count + 1; ++i)
                 {
-                    /*
-                    writer.WriteLine($"      public Entity CreateEntity<{Pattern("C#", i)}>({Pattern("in C# c#", i)})");
+                    writer.WriteLine($"      public Entity CreateEntity<{Pattern("C#", i)}>({Pattern("C# c#", i)})");
                     writer.WriteLine("      {");
-                    writer.WriteLine("          signature.Clear();");
-                    writer.WriteLine($"          signature{Pattern(".Add<C#>()", i, false)};");
-                    writer.WriteLine($"          return CreateEntityWithArchetype(GetArchetype(signature)){Pattern(".Set(c#)", i, false)};");
+                    writer.WriteLine("          if (this.TryGetWorldInfo(out var data))");
+                    writer.WriteLine("          {");
+                    writer.WriteLine($"              data.buffer_signature.Clear(){Pattern(".Add<C#>()", i, false)};");
+                    writer.WriteLine("              var archetype = data.GetArchetypeData(data.buffer_signature);");
+                    writer.WriteLine("              return data.StructureEvents.CreateEntity(archetype)");
+                    writer.WriteLine($"                  {Pattern(".Set(c#)", i, false)};");
+                    writer.WriteLine("          }");
+                    writer.WriteLine("          return default;");
                     writer.WriteLine("      }");
-                    writer.WriteLine("");
-*/
-                    writer.WriteLine($"     class Sig<{Pattern("C#", i)}>");
-                    writer.WriteLine("      {");
-                    writer.WriteLine($"          public static readonly TypeSignature signature = new TypeSignature(){Pattern(".Add<C#>()", i, false)};");
-                    writer.WriteLine("      }");
-                    writer.WriteLine("");
-                    writer.WriteLine("      ///<summary>");
-                    writer.WriteLine($"      ///creates a new entity, can add up to {count} components");
-                    writer.WriteLine("      ///</summary>");
-                    writer.WriteLine($"      public Entity CreateEntity<{Pattern("C#", i)}>({Pattern("in C# c#", i)}) =>");
-                    writer.WriteLine($"          CreateEntityWithArchetype(GetArchetype(Sig<{Pattern("C#", i)}>.signature)){Pattern(".Set(c#)", i, false)};");
-                    writer.WriteLine("");
                 }
                 writer.WriteLine("  }");
                 writer.WriteLine("}");
@@ -56,172 +51,143 @@ namespace SimpleECS
         }
 
         /// <summary>
-        /// Generates foreach functions for archetypes
+        /// Generates all query.Foreach functions
         /// </summary>
-        public static void ForeachFunctionsArchetypes(string file_path, int count)
+        /// <param name="world_data_count">Maximum number of world data that can be used in queries</param>
+        /// <param name="component_count">Maximum number of components that can be used in queries</param>
+        /// <param name="output_path">Path to QueryForeachFunctions.cs</param>
+        public static void CreateQueryFunctions(int world_data_count, int component_count, string output_path)
         {
-            using (StreamWriter writer = new StreamWriter(file_path))
+            using (StreamWriter writer = new StreamWriter(output_path))
             {
-                writer.WriteLine("namespace SimpleECS");
+                writer.WriteLine($"namespace {nameof(SimpleECS)}");
                 writer.WriteLine("{");
-                {
+                writer.WriteLine("  public partial class Query");
+                writer.WriteLine("  {");
 
-                    writer.WriteLine("  using Delegates;");
-                    writer.WriteLine("");
-
-                    writer.WriteLine("public partial class World");
-                    writer.WriteLine("{");
-                    {
-                        writer.WriteLine("  public partial class Archetype");
-                        writer.WriteLine("  {");
-                        {
-                            for (int size = 1; size <= count; ++size)
-                            {
-                                writer.WriteLine("      /// <summary>");
-                                writer.WriteLine($"     /// Allows iteration of components in archetype, can add up to {count} components");
-                                writer.WriteLine("      /// </summary>");
-                                writer.WriteLine($"     public void Foreach<{Pattern("C#", size)}>(in query<{Pattern("C#", size)}> action)");
-                                writer.WriteLine("      {");
-                                writer.WriteLine("          if (entity_count > 0" + Pattern("&& TryGetArray<C#>(out var pool_c#)", size, false) + ")");
-                                writer.WriteLine("              for (int i = entity_count - 1; i >= 0; --i)");
-                                writer.WriteLine($"                 action({Pattern("ref pool_c#[i]", size)});");
-                                writer.WriteLine("      }");
-                                writer.WriteLine("");
-                            }
-
-                            for (int size = 1; size <= count; ++size)
-                            {
-                                writer.WriteLine("      /// <summary>");
-                                writer.WriteLine($"     /// Allows iteration of components in archetype, can add up to {count} components");
-                                writer.WriteLine("      /// </summary>");
-                                writer.WriteLine($"     public void Foreach<{Pattern("C#", size)}>(in {nameof(Delegates.query_e)}<{Pattern("C#", size)}> action)");
-                                writer.WriteLine("      {");
-                                writer.WriteLine("          if (entity_count > 0" + Pattern("&& TryGetArray<C#>(out var pool_c#)", size, false) + ")");
-                                writer.WriteLine("          for (int i = entity_count - 1; i >= 0; --i)");
-                                writer.WriteLine($"             action(entity_pool[i], {Pattern("ref pool_c#[i]", size)});");
-                                writer.WriteLine("      }");
-                                writer.WriteLine("");
-                            }
-                        }
-                        writer.WriteLine("}");
-                    }
-                    writer.WriteLine("}");
-                }
-            }
-        }
-
-        public static void GenerateQueryFunctions(int comp, string file_path)
-        {
-            using (StreamWriter writer = new StreamWriter(file_path))
-            {
-                writer.WriteLine("    namespace SimpleECS");
-                writer.WriteLine("{");
-                writer.WriteLine("    using Delegates;");
-                writer.WriteLine("    public partial class Query");
-                writer.WriteLine("    {");
-
-
-
-                for (int c = 1; c <= comp; ++c)
+                for (int c = 1; c < component_count + 1; ++c) // components
                 {
                     string c_val = Pattern("C#", c);
-                    // components only
-                    WriteDocumentation(writer);
-                    writer.WriteLine($"        public void Foreach<{c_val}>(in query_c{c}<{c_val}> query)");
-                    writer.WriteLine("        {");
-                    writer.WriteLine("            Update();");
-                    writer.WriteLine("            if (archetype_count == 0) return;");
-                    writer.WriteLine("            world.AllowStructuralChanges = false;");
-                    writer.WriteLine("            for (int i = archetype_count - 1; i >= 0; --i)");
-                    writer.WriteLine("            {");
-                    writer.WriteLine("                var archetype = matching_archetypes[i];");
-                    var archs = Pattern("&& archetype.TryGetArray(out C#[] pool_c#)", c, false);
-                    writer.WriteLine($"                if (archetype.entity_count > 0 {archs})");
-                    writer.WriteLine("                    for (int e = archetype.entity_count - 1; e >= 0; --e)");
-                    writer.WriteLine($"                        query({Pattern("ref pool_c#[e]", c)});");
-                    writer.WriteLine("            }");
-                    writer.WriteLine("            world.AllowStructuralChanges = true;");
-                    writer.WriteLine("        }");
+                    var arch_get = Pattern("&& archetype.TryGetArray(out C#[] c#)", c, false);
 
-                    // entities and components
-                    WriteDocumentation(writer);
-                    writer.WriteLine($"        public void Foreach<{c_val}>(in query_ec{c}<{c_val}> query)");
-                    writer.WriteLine("        {");
-                    writer.WriteLine("            Update();");
-                    writer.WriteLine("            if (archetype_count == 0) return;");
-                    writer.WriteLine("            world.AllowStructuralChanges = false;");
-                    writer.WriteLine("            for (int i = archetype_count - 1; i >= 0; --i)");
-                    writer.WriteLine("            {");
-                    writer.WriteLine("                var archetype = matching_archetypes[i];");
-                    writer.WriteLine($"                if (archetype.entity_count > 0 {archs})");
-                    writer.WriteLine("                    for (int e = archetype.entity_count - 1; e >= 0; --e)");
-                    writer.WriteLine($"                        query(archetype.entity_pool[e], {Pattern("ref pool_c#[e]", c)});");
-                    writer.WriteLine("            }");
-                    writer.WriteLine("            world.AllowStructuralChanges = true;");
-                    writer.WriteLine("        }");
-
-                    // world, entities and components
-                    WriteDocumentation(writer);
-                    writer.WriteLine($"        public void Foreach<{c_val}>(in query_wec{c}<{c_val}> query)");
-                    writer.WriteLine("        {");
-                    writer.WriteLine("            Update();");
-                    writer.WriteLine("            if (archetype_count == 0) return;");
-                    writer.WriteLine("            world.AllowStructuralChanges = false;");
-                    writer.WriteLine("            for (int i = archetype_count - 1; i >= 0; --i)");
-                    writer.WriteLine("            {");
-                    writer.WriteLine("                var archetype = matching_archetypes[i];");
-                    writer.WriteLine($"                if (archetype.entity_count > 0 {archs})");
-                    writer.WriteLine("                    for (int e = archetype.entity_count - 1; e >= 0; --e)");
-                    writer.WriteLine($"                        query(world, archetype.entity_pool[e], {Pattern("ref pool_c#[e]", c)});");
-                    writer.WriteLine("            }");
-                    writer.WriteLine("            world.AllowStructuralChanges = true;");
-                    writer.WriteLine("        }");
-
-                    // world and components
-                    WriteDocumentation(writer);
-                    writer.WriteLine($"        public void Foreach<{c_val}>(in query_wc{c}<{c_val}> query)");
-                    writer.WriteLine("        {");
-                    writer.WriteLine("            Update();");
-                    writer.WriteLine("            if (archetype_count == 0) return;");
-                    writer.WriteLine("            world.AllowStructuralChanges = false;");
-                    writer.WriteLine("            for (int i = archetype_count - 1; i >= 0; --i)");
-                    writer.WriteLine("            {");
-                    writer.WriteLine("                var archetype = matching_archetypes[i];");
-                    writer.WriteLine($"                if (archetype.entity_count > 0 {archs})");
-                    writer.WriteLine("                    for (int e = archetype.entity_count - 1; e >= 0; --e)");
-                    writer.WriteLine($"                        query(world, {Pattern("ref pool_c#[e]", c)});");
-                    writer.WriteLine("            }");
-                    writer.WriteLine("            world.AllowStructuralChanges = true;");
-                    writer.WriteLine("        }");
+                    writer.WriteLine($"       public delegate void c{c}_query<{c_val}>({Pattern("ref C# c#", c)});");
+                    WriteDocumentation();
+                    writer.WriteLine($"       public void Foreach<{c_val}>(in c{c}_query<{c_val}> action)");
+                    writer.WriteLine("       {");
+                    writer.WriteLine("           if (Update(out var world_info))");
+                    writer.WriteLine("           {");
+                    writer.WriteLine("               world_info.StructureEvents.EnqueueEvents++;");
+                    writer.WriteLine("               for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)");
+                    writer.WriteLine("               {");
+                    writer.WriteLine("                   var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;");
+                    writer.WriteLine($"                   if (archetype.entity_count > 0 {arch_get})");
+                    writer.WriteLine("                   {");
+                    writer.WriteLine("                       for (int e = 0; e < archetype.entity_count; ++e)");
+                    writer.WriteLine($"                       action({Pattern("ref c#[e]", c)});");
+                    writer.WriteLine("                   }");
+                    writer.WriteLine("               }");
+                    writer.WriteLine("               world_info.StructureEvents.EnqueueEvents--;");
+                    writer.WriteLine("           }");
+                    writer.WriteLine("       }");
                 }
 
-                writer.WriteLine("    }");
-                writer.WriteLine("");
-                writer.WriteLine("    namespace Delegates");
-                writer.WriteLine("    {");
-                writer.WriteLine("#pragma warning disable 1587");
-
-                for (int c = 1; c <= comp; ++c)
+                for (int c = 1; c < component_count + 1; ++c) // entity and components
                 {
-                    writer.WriteLine($"        public delegate void query_c{c}<{Pattern("C#", c)}>({Pattern("ref C# c#", c)});");
-                    writer.WriteLine($"        public delegate void query_ec{c}<{Pattern("C#", c)}>(Entity entity, {Pattern("ref C# c#", c)});");
-                    writer.WriteLine($"        public delegate void query_wec{c}<{Pattern("C#", c)}>(World world, Entity entity, {Pattern("ref C# c#", c)});");
-                    writer.WriteLine($"        public delegate void query_wc{c}<{Pattern("C#", c)}>(World world, {Pattern("ref C# c#", c)});");
+                    string c_val = Pattern("C#", c);
+                    var arch_get = Pattern("&& archetype.TryGetArray(out C#[] c#)", c, false);
+
+                    writer.WriteLine($"       public delegate void ec{c}_query<{c_val}>(Entity entity, {Pattern("ref C# c#", c)});");
+                    WriteDocumentation();
+                    writer.WriteLine($"       public void Foreach<{c_val}>(in ec{c}_query<{c_val}> action)");
+                    writer.WriteLine("       {");
+                    writer.WriteLine("           if (Update(out var world_info))");
+                    writer.WriteLine("           {");
+                    writer.WriteLine("               world_info.StructureEvents.EnqueueEvents++;");
+                    writer.WriteLine("               for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)");
+                    writer.WriteLine("               {");
+                    writer.WriteLine("                   var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;");
+                    writer.WriteLine("                   var entities = archetype.entities;");
+                    writer.WriteLine($"                   if (archetype.entity_count > 0 {arch_get})");
+                    writer.WriteLine("                   {");
+                    writer.WriteLine("                       for (int e = 0; e < archetype.entity_count; ++e)");
+                    writer.WriteLine($"                       action(entities[e], {Pattern("ref c#[e]", c)});");
+                    writer.WriteLine("                   }");
+                    writer.WriteLine("               }");
+                    writer.WriteLine("               world_info.StructureEvents.EnqueueEvents--;");
+                    writer.WriteLine("           }");
+                    writer.WriteLine("       }");
                 }
 
-                writer.WriteLine("#pragma warning restore 1587");
-                writer.WriteLine("    }");
-                writer.WriteLine("}");
-            }
+                for (int c = 1; c < component_count + 1; ++c) // world data and components
+                    for (int w = 1; w < world_data_count + 1; ++w)
+                    {
+                        string c_val = Pattern("C#", c);
+                        string w_val = Pattern("W#", w);
+                        var arch_get = Pattern("&& archetype.TryGetArray(out C#[] c#)", c, false);
 
-            void WriteDocumentation(StreamWriter writer)
-            {
-                writer.WriteLine("/// <summary>");
-                writer.WriteLine("/// Iterates over entities that matches query.");
-                writer.WriteLine("/// Add World in first position to access the world being queried");
-                writer.WriteLine("/// Add Entity after world to access the current entity.");
-                writer.WriteLine($"/// Add (ref C component) to access the current entity's component, can add up to {comp} components.");
-                writer.WriteLine("/// </summary>");
+                        writer.WriteLine($"       public delegate void w{w}c{c}_query<{w_val},{c_val}>({Pattern("in W# w#", w)}, {Pattern("ref C# c#", c)});");
+                        WriteDocumentation();
+                        writer.WriteLine($"       public void Foreach<{w_val},{c_val}>(in w{w}c{c}_query<{w_val},{c_val}> action)");
+                        writer.WriteLine("       {");
+                        writer.WriteLine("           if (Update(out var world_info))");
+                        writer.WriteLine("           {");
+                        writer.WriteLine($"{Pattern("               ref W# w# = ref world.GetData<W#>();\n", w, false)}");
+                        writer.WriteLine("               world_info.StructureEvents.EnqueueEvents++;");
+                        writer.WriteLine("               for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)");
+                        writer.WriteLine("               {");
+                        writer.WriteLine("                   var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;");
+                        writer.WriteLine($"                   if (archetype.entity_count > 0 {arch_get})");
+                        writer.WriteLine("                   {");
+                        writer.WriteLine("                       for (int e = 0; e < archetype.entity_count; ++e)");
+                        writer.WriteLine($"                       action({Pattern("in w#", w)}, {Pattern("ref c#[e]", c)});");
+                        writer.WriteLine("                   }");
+                        writer.WriteLine("               }");
+                        writer.WriteLine("               world_info.StructureEvents.EnqueueEvents--;");
+                        writer.WriteLine("           }");
+                        writer.WriteLine("       }");
+                    }
+
+                for (int c = 1; c < component_count + 1; ++c) // resource and components
+                    for (int w = 1; w < world_data_count + 1; ++w)
+                    {
+                        string c_val = Pattern("C#", c);
+                        string w_val = Pattern("W#", w);
+                        var arch_get = Pattern("&& archetype.TryGetArray(out C#[] c#)", c, false);
+
+                        writer.WriteLine($"       public delegate void w{w}ec{c}_query<{w_val},{c_val}>({Pattern("in W# w#", w)}, Entity entity, {Pattern("ref C# c#", c)});");
+                        WriteDocumentation();
+                        writer.WriteLine($"       public void Foreach<{w_val},{c_val}>(in w{w}ec{c}_query<{w_val},{c_val}> action)");
+                        writer.WriteLine("       {");
+                        writer.WriteLine("           if (Update(out var world_info))");
+                        writer.WriteLine("           {");
+                        writer.WriteLine($"{Pattern("               ref W# w# = ref world.GetData<W#>();\n", w, false)}");
+                        writer.WriteLine("               world_info.StructureEvents.EnqueueEvents++;");
+                        writer.WriteLine("               for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)");
+                        writer.WriteLine("               {");
+                        writer.WriteLine("                   var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;");
+                        writer.WriteLine("                   var entities = archetype.entities;");
+                        writer.WriteLine($"                   if (archetype.entity_count > 0 {arch_get})");
+                        writer.WriteLine("                   {");
+                        writer.WriteLine("                       for (int e = 0; e < archetype.entity_count; ++e)");
+                        writer.WriteLine($"                       action({Pattern("in w#", w)}, entities[e], {Pattern("ref c#[e]", c)});");
+                        writer.WriteLine("                   }");
+                        writer.WriteLine("               }");
+                        writer.WriteLine("               world_info.StructureEvents.EnqueueEvents--;");
+                        writer.WriteLine("           }");
+                        writer.WriteLine("       }");
+                    }
+
+                writer.WriteLine("  }");
+                writer.WriteLine("}");
+
+                void WriteDocumentation()
+                {
+                    writer.WriteLine("        /// <summary>");
+                    writer.WriteLine("        /// performs the action on all entities that match the query.");
+                    writer.WriteLine("        /// query must be in the form of '(in world_data', entity, ref components)'.");
+                    writer.WriteLine($"        /// query can add up to {world_data_count} world data and {component_count} components");
+                    writer.WriteLine("        /// </summary>");
+                }
             }
         }
     }

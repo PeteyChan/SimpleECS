@@ -3,50 +3,29 @@ namespace SimpleECS
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    
-    internal static class TypeID<T>{ public static readonly int Value = TypeID.Get(typeof(T)); }
-    internal static class TypeID    // class to map types to ids
-    {
-        static Dictionary<Type, int> newIDs = new Dictionary<Type, int>();
-        static Type[] id_to_type = new Type[64];
-        internal static Type Get(int type_id) => id_to_type[type_id];
-        public static int Get(Type type)
-        {
-            if (!newIDs.TryGetValue(type, out var id))
-            {
-                newIDs[type] = id = newIDs.Count + 1;
-                if (id == id_to_type.Length)
-                    Array.Resize(ref id_to_type, id_to_type.Length * 2);
-                id_to_type[id] = type;
-            }
-            return id;
-        }
-
-        public static List<Type> GetAssignedTypes()
-        {
-            var list = new List<Type>();
-            foreach(var type in newIDs)
-                list.Add(type.Key);
-            return list;
-        }
-    }
+    using Internal;
 
     /// <summary>
-    /// Aggregates types into a unique signature, use with World.GetArchetype to get a specific archetype
+    /// Aggregates types into a unique signature
     /// </summary>
     public sealed class TypeSignature : IEquatable<TypeSignature>, IReadOnlyList<Type>
     {
-        internal int[] type_ids;
-        internal int type_count;
-        internal TypeSignature(int capacity = 4)
+        int[] type_ids;
+        int type_count;
+
+        TypeSignature(int capacity = 4)
         {
             type_ids = new int[capacity];
         }
-        
+
+        /// <summary>
+        /// number of types that make up the signature
+        /// </summary>
+        public int Count => type_count;
+
         /// <summary>
         /// Creates a new type signature using the supplied types
         /// </summary>
-        /// <param name="types"></param>
         public TypeSignature(IEnumerable<Type> types)
         {
             type_ids = new int[4];
@@ -84,17 +63,25 @@ namespace SimpleECS
         /// Create a new type signature with the same signature as the supplied archetype
         /// </summary>
         /// <param name="archetype"></param>
-        public TypeSignature(World.Archetype archetype)
+        public TypeSignature(Archetype archetype)
         {
-            type_ids = new int[archetype.signature.type_count + 1];
-            this.Copy(archetype.signature);
+            if (archetype.IsValid())
+            {
+                var signature = archetype.GetTypeSignature();
+                type_ids = new int[signature.type_count + 1];
+                this.Copy(signature);
+            }
+            else type_ids = new int[2];
         }
 
         /// <summary>
         /// Clears signature to be an empty type
         /// </summary>
-        public void Clear()
-           => type_count = 0;
+        public TypeSignature Clear()
+        {
+            type_count = 0;
+            return this;
+        }
 
         internal TypeSignature Add(int type_id)
         {
@@ -149,8 +136,8 @@ namespace SimpleECS
         /// <summary>
         /// Makes this type signature the same as the archetype's type signature
         /// </summary>
-        public TypeSignature Copy(World.Archetype archetype)
-            => this.Copy(archetype.signature);
+        public TypeSignature Copy(Archetype archetype)
+            => this.Copy(archetype.GetTypeSignature());
 
         /// <summary>
         /// Adds type to the signature
@@ -229,8 +216,8 @@ namespace SimpleECS
             }
             return true;
         }
-        
-        #pragma warning disable
+
+#pragma warning disable
         public override int GetHashCode()
         {
             int prime = 53;
@@ -276,6 +263,19 @@ namespace SimpleECS
             return sig;
         }
 
+        public string TypesToString()
+        {
+            string sig = "[";
+            for (int i = 0; i < type_count; ++i)
+            {
+                var type = TypeID.Get(type_ids[i]);
+                sig += $" {type.Name}";
+            }
+            sig += "]";
+
+            return sig;
+        }
+
         /// <summary>
         /// All types that currently make up this signature
         /// </summary>
@@ -295,5 +295,49 @@ namespace SimpleECS
         }
 
         int IReadOnlyCollection<Type>.Count => type_count;
+    }
+}
+
+namespace SimpleECS.Internal
+{
+    using System;
+    using System.Collections.Generic;
+
+    /// <summary>
+    /// assigns ids to types
+    /// </summary>
+    public static class TypeID<T>
+    {
+        public static readonly int Value = TypeID.Get(typeof(T));
+    }
+
+    /// <summary>
+    /// assigns ids to types
+    /// </summary>
+    public static class TypeID    // class to map types to ids
+    {
+        static Dictionary<Type, int> newIDs = new Dictionary<Type, int>();
+        static Type[] id_to_type = new Type[64];
+        public static Type Get(int type_id) => id_to_type[type_id];
+        
+        public static int Get(Type type)
+        {
+            if (!newIDs.TryGetValue(type, out var id))
+            {
+                newIDs[type] = id = newIDs.Count + 1;
+                if (id == id_to_type.Length)
+                    Array.Resize(ref id_to_type, id_to_type.Length * 2);
+                id_to_type[id] = type;
+            }
+            return id;
+        }
+
+        public static List<Type> GetAssignedTypes()
+        {
+            var list = new List<Type>();
+            foreach (var type in newIDs)
+                list.Add(type.Key);
+            return list;
+        }
     }
 }

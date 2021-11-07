@@ -1,388 +1,437 @@
 namespace SimpleECS
 {
     using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using Delegates;
+    using Internal;
 
-    public sealed partial class World
+    /// <summary>
+    /// stores component data of entities that matches the archetype's type signature
+    /// </summary>
+    public struct Archetype : IEquatable<Archetype>
     {
-        /// <summary>
-        /// Stores all entities and their components that match it's signature.
-        /// Entities and components are stored in contiguous arrays for fast iterations.
-        /// Can iterate over entities and thier components just like with queries using Foreach()
-        /// </summary>
-        public sealed partial class Archetype : IReadOnlyList<Entity>  // think I may change this to a struct in the future
+        internal Archetype(World world, int index, int version)
         {
-            int ID;
-            internal TypeSignature signature;
-            internal Entity[] entity_pool = new Entity[8];
-            internal int entity_count;
-            Data[] data_map;
-            readonly int component_count;
+            this.world = world; this.index = index; this.version = version;
+        }
 
-            /// <summary>
-            /// Entities currently stored in this archetype
-            /// </summary>
-            public IReadOnlyList<Entity> Entities => this;
+        /// <summary>
+        /// returns a copy of archetype's type signature
+        /// </summary>
+        public TypeSignature GetTypeSignature()
+            => this.TryGetArchetypeInfo(out var archetype_Info) ? new TypeSignature(archetype_Info.signature) : new TypeSignature();
 
-            /// <summary>
-            /// Archetype's current type signature
-            /// </summary>
-            public IReadOnlyList<Type> TypeSignature => signature;
+        /// <summary>
+        /// the world this archetype belongs to
+        /// </summary>
+        public readonly World world;
 
-            World world;
+        /// <summary>
+        /// the index and version create a unique identifier for the archetype
+        /// </summary>
+        public readonly int index;
 
-            internal Archetype(World world, TypeSignature signature)
+        /// <summary>
+        /// the index and version create a unique identifier for the archetype
+        /// </summary>
+        public readonly int version;
+
+        /// <summary>
+        /// creates an entity that matches this archetype
+        /// </summary>
+        public Entity CreateEntity()
+        {
+            if (this.TryGetArchetypeInfo(out var world_info, out var archetype_info))
+                return world_info.StructureEvents.CreateEntity(archetype_info);
+            return default;
+        }
+
+        /// <summary>
+        /// returns a copy of all the entities stored in the archetype
+        /// </summary>
+        public Entity[] GetEntities()
+        {
+            Entity[] entities = new Entity[EntityCount];
+            if (this.TryGetArchetypeInfo(out var archetype_info))
+                for (int i = 0; i < EntityCount; ++i)
+                    entities[i] = archetype_info.entities[i];
+            return entities;
+        }
+
+        /// <summary>
+        /// returns the total amount of entities stored in the archetype
+        /// </summary>
+        public int EntityCount => this.TryGetArchetypeInfo(out var archetype_Info) ? archetype_Info.entity_count : 0;
+
+        /// <summary>
+        /// returns false if the archetype is invalid or destroyed.
+        /// outputs the raw entity storage buffer.
+        /// should be treated as readonly as changing values will break the ecs.
+        /// only entities up to archetype's EntityCount are valid, DO NOT use the length of the array
+        /// </summary>
+        public bool TryGetEntityBuffer(out Entity[] entity_buffer)
+        {
+            if (this.TryGetArchetypeInfo(out var data))
             {
-                this.world = world;
-                this.signature = new TypeSignature(signature);
-                ID = signature.GetHashCode();
+                entity_buffer = data.entities;
+                return true;
+            }
+            entity_buffer = default;
+            return false;
+        }
 
-                Stack<(int id, System.Type type)> to_allocate = new Stack<(int, System.Type)>();
-                data_map = new Data[signature.type_count == 0 ? 1 : signature.type_count];
-                component_count = signature.type_count;
+        /// <summary>
+        /// returns false if the archetype is invalid or does not store the component buffer
+        /// outputs the raw component storage buffer.
+        /// only components up to archetype's EntityCount are valid
+        /// entities in the entity buffer that share the same index as the component in the component buffer own that component
+        /// </summary>
+        public bool TryGetComponentBuffer<Component>(out Component[] comp_buffer)
+        {
+            if (this.TryGetArchetypeInfo(out var data))
+                return data.TryGetArray(out comp_buffer);
+            comp_buffer = default;
+            return false;
+        }
 
-                for (int i = 0; i < data_map.Length; ++i)
-                    data_map[i].next = -1;
+        /// <summary>
+        /// destroys the archetype along with all the entities within it
+        /// </summary>
+        public void Destroy()
+        {
+            if (this.TryGetArchetypeInfo(out var world_info, out var archetype_info))
+                world_info.StructureEvents.DestroyArchetype(archetype_info); //data.DestroyArchetype();
+        }
 
-                for (int i = 0; i < component_count; ++i)
+        /// <summary>
+        /// resizes the archetype's backing arrays to the minimum number of 2 needed to store the entities
+        /// </summary>
+        public void ResizeBackingArrays()
+        {
+            if (this.TryGetArchetypeInfo(out var arch_info))
+                arch_info.world_data.StructureEvents.ResizeBackingArrays(this);
+        }
+
+        bool IEquatable<Archetype>.Equals(Archetype other)
+            => world == other.world && index == other.index && version == other.version;
+ 
+        /// <summary>
+        /// returns true if the archetype is not null or destroyed
+        /// </summary>
+        public bool IsValid()
+            => world.TryGetWorldInfo(out var info) && info.archetypes[index].version == version;
+
+        public static implicit operator bool(Archetype archetype) => archetype.IsValid();
+
+        public override bool Equals(object obj) => obj is Archetype a ? a == this : false;
+
+        public static bool operator ==(Archetype a, Archetype b) => a.world == b.world && a.index == b.index && a.version == b.version;
+
+        public static bool operator !=(Archetype a, Archetype b) => !(a == b);
+
+        public override int GetHashCode() => index;
+
+        public override string ToString() => $"{(IsValid() ? "" : "~")}Arch {GetTypeString()}";
+
+        string GetTypeString()
+        {
+            string val = "";
+            if (this.TryGetArchetypeInfo(out var archetype_info))
+            {
+                val += "[";
+                for(int i = 0; i < archetype_info.component_count; ++ i)
                 {
-                    var value = signature.type_ids[i];
-                    var type = signature.Types[i];
-                    var index = value % data_map.Length;
-                    ref var pool = ref data_map[index];
-                    if (pool.ID == 0)
-                    {
-                        pool.ID = value;
-                        pool.pool = CreatePool(type);
-                    }
-                    else
-                        to_allocate.Push((value, type));
+                    val += " ";
+                    val += TypeID.Get(archetype_info.component_buffers[i].type_id).Name;
                 }
+                val += " ]";
+            }
+            return val;
+        }
+    }
+}
 
-                for (int index = 0; index < component_count; ++index)
+namespace SimpleECS.Internal
+{
+    using System;
+
+    public static partial class InternalExtensions
+    {
+        public static bool TryGetArchetypeInfo(this Archetype archetype, out World_Info world_info, out Archetype_Info arch_info)
+        {
+            if (archetype.world.TryGetWorldInfo(out  world_info))
+            {
+                var arch = world_info.archetypes[archetype.index];
+                if (arch.version == archetype.version)
                 {
-                    ref var data = ref data_map[index];
-                    if (data.ID != 0)
-                        continue;
-                    var values = to_allocate.Pop();
-                    data.ID = values.id;
-                    data.pool = CreatePool(values.type);
-                    var goalIndex = data.ID % data_map.Length;
-                    while (data_map[goalIndex].next >= 0)
-                        goalIndex = data_map[goalIndex].next;
-                    data_map[goalIndex].next = index;
-                    if (to_allocate.Count == 0)
-                        break;
-                }
-            }
-
-            internal void AddEntity(Entity entity)
-            {
-                if (entity_pool.Length == entity_count)
-                {
-                    int capacity = entity_pool.Length * 2;
-                    Array.Resize(ref entity_pool, capacity);
-                    for (int i = 0; i < component_count; ++i)
-                        data_map[i].pool.Resize(capacity);
-                }
-                entity_pool[entity_count] = entity;
-                entity_count++;
-            }
-
-            internal void MoveEntity(int component_index, Archetype archetype, int target_index)
-            {
-                archetype.AddEntity(entity_pool[component_index]);
-                entity_pool[component_index] = entity_pool[entity_count - 1];
-
-                for (int i = 0; i < component_count; ++i)
-                {
-                    data_map[i].pool.Move(component_index, archetype, target_index);
-                    data_map[i].pool.Remove(component_index, entity_count);
-                }
-                entity_count--;
-            }
-
-            internal void TransferEntity(int component_index, Archetype archetype, int target_index)
-            {
-                entity_pool[component_index] = entity_pool[entity_count - 1];
-                for (int i = 0; i < component_count; ++i)
-                {
-                    data_map[i].pool.Transfer(component_index, archetype.data_map[i].pool, target_index);
-                    data_map[i].pool.Remove(component_index, entity_count);
-                }
-                entity_count--;
-            }
-
-            internal void DestroyEntity(int component_index)
-            {
-                for (int i = 0; i < component_count; ++i)
-                    data_map[i].pool.Remove(component_index, entity_count);
-
-                var entity = entity_pool[component_index];
-                entity_pool[component_index] = entity_pool[--entity_count];
-
-                for (int i = 0; i < component_count; ++i)
-                    data_map[i].pool.RemoveCallback(entity);
-            }
-
-            internal void GetAllComponents(int component_index, List<object> components)
-            {
-                for (int i = 0; i < component_count; ++i)
-                    components.Add(data_map[i].pool.Get(component_index));
-            }
-
-            Pool CreatePool(Type type)
-            {
-                return Activator.CreateInstance(typeof(Pool<>).MakeGenericType(type), world) as Pool;
-            }
-
-            /// <summary>
-            /// Tries to retrieve the component array of the stored entities.
-            /// Returns false if stored entities don't have the component type.
-            /// The amount of components is equal to this archetype's Entities.Count NOT the length of the component array.
-            /// </summary>
-            public bool TryGetArray<Component>(out Component[] components)
-            {
-                int type_id = TypeID<Component>.Value;
-                var data = data_map[type_id % data_map.Length];
-                if (data.ID == type_id)
-                {
-                    components = (Component[])data.pool.array;
+                    arch_info = arch.data;
                     return true;
                 }
-                while (data.next >= 0)
-                {
-                    data = data_map[data.next];
-                    if (data.ID == type_id)
-                    {
-                        components = (Component[])data.pool.array;
-                        return true;
-                    }
-                }
-                components = default;
-                return false;
             }
+            arch_info = default;
+            world_info = default;
+            return false;
+        }
 
-            internal bool TryGetPool<T>(out Pool<T> pool)
+        public static bool TryGetArchetypeInfo(this Archetype archetype, out Archetype_Info arch_info)
+        {
+            if (archetype.world.TryGetWorldInfo(out var world_info))
             {
-                int type_id = TypeID<T>.Value;
-                var data = data_map[type_id % data_map.Length];
-                if (data.ID == type_id)
+                var arch = world_info.archetypes[archetype.index];
+                if (arch.version == archetype.version)
                 {
-                    pool = (Pool<T>)data.pool;
+                    arch_info = arch.data;
                     return true;
                 }
-                while (data.next >= 0)
-                {
-                    data = data_map[data.next];
-                    if (data.ID == type_id)
-                    {
-                        pool = (Pool<T>)data.pool;
-                        return true;
-                    }
-                }
-                pool = default;
-                return false;
             }
+            arch_info = default;
+            return false;
+        }
+    }
 
-            internal bool TryGetPool(int type_id, out Pool pool)
+    public class Archetype_Info
+    {
+        public Archetype_Info(World_Info world, TypeSignature signature, int arch_index, int arch_version)
+        {
+            this.world_data = world;
+            this.signature = signature;
+            this.archetype = new Archetype(world.world, arch_index, arch_version);
+
+            component_buffers = new CompBufferData[signature.Count == 0 ? 1 : signature.Count];
+            component_count = signature.Count;
+
+            for (int i = 0; i < component_buffers.Length; ++i)
+                component_buffers[i].next = -1;
+
+            for (int i = 0; i < component_count; ++i)
             {
-                var data = data_map[type_id % data_map.Length];
-                if (data.ID == type_id)
-                {
-                    pool = data.pool;
-                    return true;
-                }
-                while (data.next >= 0)
-                {
-                    data = data_map[data.next];
-                    if (data.ID == type_id)
-                    {
-                        pool = data.pool;
-                        return true;
-                    }
-                }
-                pool = default;
-                return false;
-            }
-
-            /// <summary>
-            /// Returns true if archetype's signature contains component type
-            /// </summary>
-            public bool Has<Component>()
-            {
-                var type_id = TypeID<Component>.Value;
-                var data = data_map[type_id % data_map.Length];
-                if (data.ID == type_id)
-                    return true;
-
-                while (data.next >= 0)
-                {
-                    data = data_map[data.next];
-                    if (data.ID == type_id)
-                        return true;
-                }
-                return false;
-            }
-
-            /// <summary>
-            /// Returns true if archetype's signature contains component type
-            /// </summary>
-            public bool Has(Type type)
-            {
+                var type = signature.Types[i];
                 var type_id = TypeID.Get(type);
-                var data = data_map[type_id % data_map.Length];
-                if (data.ID == type_id)
+                var index = GetEmptyIndex(type_id % component_buffers.Length);
+                ref var buffer_data = ref component_buffers[index];
+                buffer_data.buffer = CreatePool(type);
+                buffer_data.type_id = type_id;
+            }
+
+            int GetEmptyIndex(int current_index)
+            {
+                if (component_buffers[current_index].type_id == 0)
+                    return current_index;
+
+                while (component_buffers[current_index].next >= 0)
+                {
+                    current_index = component_buffers[current_index].next;
+                }
+
+                for (int i = 0; i < component_count; ++i)
+                    if (component_buffers[i].type_id == 0)
+                    {
+                        component_buffers[current_index].next = i;
+                        return i;
+                    }
+                throw new Exception("FRAMEWORK BUG: not enough components in archetype");
+            }
+
+            CompBuffer CreatePool(Type type)
+                => Activator.CreateInstance(typeof(CompBuffer<>).MakeGenericType(type)) as CompBuffer;
+        }
+
+
+        public int entity_count;
+        public Entity[] entities = new Entity[8];
+        public World_Info world_data;
+        public TypeSignature signature;
+        public readonly Archetype archetype;
+        public readonly int component_count;
+        public CompBufferData[] component_buffers;
+
+        public struct CompBufferData
+        {
+            public int next;
+            public int type_id;
+            public CompBuffer buffer;
+        }
+
+        /// <summary>
+        /// resizes all backing arrays to minimum power of 2
+        /// </summary>
+        public void ResizeBackingArrays()
+        {
+            int size = 8;
+            while (size <= entity_count)
+                size *= 2;
+            System.Array.Resize(ref entities, size);
+            for(int i = 0; i < component_count; ++ i)
+                component_buffers[i].buffer.Resize(size);
+        }
+
+        public void EnsureCapacity(int capacity)
+        {
+            if (capacity >= entities.Length)
+            {
+                int size = entities.Length;
+                while (capacity >= size)
+                    size *= 2;
+                System.Array.Resize(ref entities, size);
+                for (int i = 0; i < component_count; ++i)
+                    component_buffers[i].buffer.Resize(size);
+            }
+        }
+
+        public bool Has(int type_id)
+        {
+            var data = component_buffers[type_id % component_buffers.Length];
+            if (data.type_id == type_id)
+                return true;
+
+            while (data.next >= 0)
+            {
+                data = component_buffers[data.next];
+                if (data.type_id == type_id)
                     return true;
-
-                while (data.next >= 0)
-                {
-                    data = data_map[data.next];
-                    if (data.ID == type_id)
-                        return true;
-                }
-                return false;
             }
+            return false;
+        }
 
+        public bool TryGetArray<Component>(out Component[] components)
+        {
+            int type_id = TypeID<Component>.Value;
+            var data = component_buffers[type_id % component_buffers.Length];
+            if (data.type_id == type_id)
+            {
+                components = (Component[])data.buffer.array;
+                return true;
+            }
+            while (data.next >= 0)
+            {
+                data = component_buffers[data.next];
+                if (data.type_id == type_id)
+                {
+                    components = (Component[])data.buffer.array;
+                    return true;
+                }
+            }
+            components = default;
+            return false;
+        }
+
+        public bool TryGetCompBuffer(int type_id, out CompBuffer buffer)
+        {
+            var data = component_buffers[type_id % component_buffers.Length];
+            if (data.type_id == type_id)
+            {
+                buffer = data.buffer;
+                return true;
+            }
+            while (data.next >= 0)
+            {
+                data = component_buffers[data.next];
+                if (data.type_id == type_id)
+                {
+                    buffer = data.buffer;
+                    return true;
+                }
+            }
+            buffer = default;
+            return false;
+        }
+
+        public bool TryGetCompBuffer<Component>(out CompBuffer<Component> buffer)
+        {
+            var type_id = TypeID<Component>.Value;
+            var data = component_buffers[type_id % component_buffers.Length];
+            if (data.type_id == type_id)
+            {
+                buffer = (CompBuffer<Component>)data.buffer;
+                return true;
+            }
+            while (data.next >= 0)
+            {
+                data = component_buffers[data.next];
+                if (data.type_id == type_id)
+                {
+                    buffer = (CompBuffer<Component>)data.buffer;
+                    return true;
+                }
+            }
+            buffer = default;
+            return false;
+        }
+
+        public object[] GetAllComponents(int entity_arch_index)
+        {
+            object[] components = new object[component_count];
+
+            for (int i = 0; i < component_count; ++i)
+                components[i] = component_buffers[i].buffer.Get(entity_arch_index);
+            return components;
+        }
+
+        public Type[] GetComponentTypes()
+        {
+            Type[] components = new Type[component_count];
+            for (int i = 0; i < component_count; ++i)
+                components[i] = TypeID.Get(component_buffers[i].type_id);
+            return components;
+        }
+
+        public abstract class CompBuffer    //handles component data
+        {
+            public object array;
+            public abstract void Resize(int capacity);
             /// <summary>
-            /// Resizes archetype's backing arrays to minimum power of 2 needed to store components
+            /// returns removed component
             /// </summary>
-            public void ResizeBackingArrays()
+            public abstract object Remove(int entity_arch_index, int last);
+            public abstract void Move(int entity_arch_index, int last_entity_index, Archetype_Info target_archetype, int target_index);
+            public abstract void Move(int entity_arch_index, int last_entity_index, object buffer, int target_index);
+            public abstract void Set(int index, object value);
+            public abstract object Get(int entity_arch_index);
+        }
+
+        public sealed class CompBuffer<Component> : CompBuffer
+        {
+            public CompBuffer()
             {
-                int length = 8;
-                while (length < entity_count)
-                    length *= 2;
-                if (length == entity_pool.Length)
-                    return;
-                Array.Resize(ref entity_pool, length);
-                for (int i = 0; i < component_count; ++i)
-                    data_map[i].pool.Resize(length);
+                array = components;
             }
 
-#pragma warning disable
-            public override int GetHashCode() => ID;
+            public Component[] components = new Component[8];
 
-            internal void Destroy()
+            public override void Resize(int capacity)
             {
-                data_map = default;
-                signature = default;
-                entity_pool = default;
+                System.Array.Resize(ref components, capacity);
+                array = components;
             }
 
-            internal struct Data
+            public override object Get(int entity_arch_index) => components[entity_arch_index];
+
+            public override void Set(int entity_arch_index, object value)
             {
-                public int next;
-                public int ID;
-                public Pool pool;
+                components[entity_arch_index] = (Component)value;
             }
 
-            public override string ToString()
-                => $"Archetype [{signature}]";
-
-            public static implicit operator bool(Archetype archetype)
-                => archetype?.entity_pool == null ? false : true;
-
-            // pool readonly interface
-            IEnumerator<Entity> IEnumerable<Entity>.GetEnumerator()
+            public override object Remove(int entity_arch_index, int last)
             {
-                for (int i = 0; i < entity_count; ++i)
-                    yield return entity_pool[i];
+                var comp = components[entity_arch_index];
+                components[entity_arch_index] = components[last];
+                components[last] = default;
+                return comp;
             }
 
-            IEnumerator IEnumerable.GetEnumerator()
+            public override void Move(int entity_arch_index, int last_entity_index, Archetype_Info target_archetype, int target_index)
             {
-                for (int i = 0; i < component_count; ++i)
-                    yield return data_map[i].pool;
+                if (target_archetype.TryGetArray<Component>(out var target_array))
+                {
+                    target_array[target_index] = components[entity_arch_index];
+                }
+                components[entity_arch_index] = components[last_entity_index];
+                components[last_entity_index] = default;
             }
 
-            int IReadOnlyCollection<Entity>.Count => entity_count;
-
-            Entity IReadOnlyList<Entity>.this[int index] => entity_pool[index];
-
-            internal abstract class Pool
+            public override void Move(int entity_arch_index, int last_entity_index, object buffer, int target_index)
             {
-                internal abstract object Get(int index);
-                internal abstract void SetObject(in Entity entity, int index, in object obj);
-                internal abstract void Resize(int capcity);
-                internal abstract void Move(int index, Archetype archetype, int new_index);
-                internal abstract void Transfer(int index, Pool pool, int target_index);
-                internal object array;
-                internal abstract void Remove(int index, int entity_count);
-                internal abstract void RemoveCallback(Entity entity);
-            }
-
-            internal sealed class Pool<T> : Pool
-            {
-                public Pool(World world)
-                {
-                    array = Values;
-                    if (!world.ComponentCallbacks.TryGetValue(TypeID<T>.Value, out var set))
-                        world.ComponentCallbacks[TypeID<T>.Value] = set = new Component_Event<T>();
-                    if (!world.ComponentCallbacks.TryGetValue(-TypeID<T>.Value, out var remove))
-                        world.ComponentCallbacks[TypeID<T>.Value] = remove = new Component_Event<T>();
-                    set_event = (Component_Event<T>)set;
-                    remove_event = (Component_Event<T>)remove;
-                }
-
-                Component_Event<T> set_event;
-                Component_Event<T> remove_event;
-                T removed;
-
-                public T[] Values = new T[8];
-
-                internal override object Get(int index) => Values[index];
-
-
-
-                internal override void Remove(int index, int entity_count)
-                {
-                    removed = Values[index];
-                    Values[index] = Values[entity_count - 1];
-                    Values[entity_count - 1] = default;
-                }
-
-                internal override void RemoveCallback(Entity entity)
-                {
-                    remove_event.callback?.Invoke(entity, ref removed);
-                }
-
-                internal override void SetObject(in Entity entity, int index, in object obj)
-                {
-                    Values[index] = (T)obj;
-                    set_event.callback?.Invoke(entity, ref Values[index]);
-                }
-
-                internal void SetValue(in Entity entity, int index, in T obj)
-                {
-                    Values[index] = obj;
-                    set_event.callback?.Invoke(entity, ref Values[index]);
-                }
-
-                internal override void Resize(int capacity)
-                {
-                    Array.Resize(ref Values, capacity);
-                    array = Values;
-                }
-
-                internal sealed override void Move(int index, Archetype archetype, int target_index)
-                {
-                    if (archetype.TryGetArray<T>(out var pool))
-                        pool[target_index] = Values[index];
-                }
-
-                internal override void Transfer(int index, Pool pool, int target_index)
-                {
-                    ((T[])pool.array)[target_index] = Values[index];
-                }
-            }
-            
-            public void Foreach(in query_e action)
-            {
-                if (entity_count > 0)
-                    for (int i = entity_count - 1; i >= 0; --i)
-                        action(entity_pool[i]);
+                ((Component[])buffer)[target_index] = components[entity_arch_index];
+                components[entity_arch_index] = components[last_entity_index];
+                components[last_entity_index] = default;
             }
         }
     }

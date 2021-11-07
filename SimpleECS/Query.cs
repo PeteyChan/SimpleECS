@@ -1,257 +1,206 @@
+using System;
+
 namespace SimpleECS
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using Delegates;
-    
+    using Internal;
+
     /// <summary>
-    /// Allows for efficient filtering and iterating of entities and their components
+    /// Operates on all entities that match it's filters
     /// </summary>
-    public sealed partial class Query : IReadOnlyList<World.Archetype>, IEnumerable<Entity>   // queries iterate backwards because for some reason it does so faster
+    public partial class Query
     {
-        /// <summary>
-        /// Creates new Query
-        /// </summary>
-        /// <param name="world">The world the query operates on</param>
+        public Query() { }
+
         public Query(World world)
         {
             this.world = world;
         }
+
         World world;
-        /// <summary>
-        /// Types archetypes need to have to pass the filter
-        /// </summary>
-        public IReadOnlyList<Type> HasTypes => has;
-        /// <summary>
-        /// Types archetypes cannot have to pass the filter
-        /// </summary>
-        public IReadOnlyList<Type> NotTypes => not;
-        World.Archetype[] matching_archetypes = new World.Archetype[8];
-        /// <summary>
-        /// Archetypes currently matching query's filter
-        /// </summary>
-        public IReadOnlyList<World.Archetype> MatchingArchetypes => this;
-        /// <summary>
-        /// Entities currently matching queries's filter
-        /// </summary>
-        public IEnumerable<Entity> MatchingEntities => this;
-
-        TypeSignature has = new TypeSignature();
-        TypeSignature not = new TypeSignature();
-        int current_archetype_index; // index of last archetype in world that we checked for a match
-        int current_version;
-        int archetype_count;    // number of matching archetypes
 
         /// <summary>
-        /// Current count of entities matching the query
+        /// the world the query operates on
         /// </summary>
+        public World World
+        {
+            get => world;
+            set
+            {
+                structure_update = -1;
+                world = value;
+            }
+        }
+
+        public static implicit operator bool(Query query) => query == null ? false : query.world;
+
+        TypeSignature include = new TypeSignature(), exclude = new TypeSignature();
+
+        int[] matching_archetypes = new int[8];
+        int last_lookup, structure_update, archetype_count;
+
+
+        /// <summary>
+        /// Returns a copy of all archetypes matching the query
+        /// </summary>
+        public Archetype[] GetArchetypes()
+        {
+            if (Update(out World_Info world_info))
+            {
+                Archetype[] archetypes = new Archetype[archetype_count];
+                for (int i = 0; i < archetype_count; ++i)
+                    archetypes[i] = world_info.archetypes[matching_archetypes[i]].data.archetype;
+                return archetypes;
+            }
+            return new Archetype[0];
+        }
+
+        /// <summary>
+        /// Returns a copy of all entities matching the query
+        /// </summary>
+        public Entity[] GetEntities()
+        {
+            if (Update(out var world_info))
+            {
+                Entity[] entities = new Entity[EntityCount];
+                int count = 0;
+                for (int i = 0; i < archetype_count; ++i)
+                {
+                    var index = matching_archetypes[i];
+                    var archetype = world_info.archetypes;
+                    for (int e = 0; e < archetype[index].data.entity_count; ++e)
+                    {
+                        entities[count] = archetype[index].data.entities[e];
+                        count++;
+                    }
+                }
+                return entities;
+            }
+            return new Entity[0];
+        }
+
+        /// <summary>
+        /// filters entities to those that have component
+        /// </summary>
+        public Query Has<T>()
+        {
+            archetype_count = 0;
+            structure_update = -1;
+            include.Add<T>();
+            return this;
+        }
+
+        /// <summary>
+        /// filters entities to those that do not have component
+        /// </summary>
+        public Query Not<T>()
+        {
+            archetype_count = 0;
+            structure_update = -1;
+            exclude.Add<T>();
+            return this;
+        }
+
+        /// <summary>
+        /// clears all previous filters on the query
+        /// </summary>
+        public Query Clear()
+        {
+            include.Clear();
+            exclude.Clear();
+            archetype_count = 0;
+            structure_update = -1;
+            return this;
+        }
+        
+        /// <summary>
+        /// iterates and peforms action on all entities that match the query
+        /// </summary>
+        public void Foreach(in Action<Entity> action)
+        {
+            if (Update(out var world_info))
+            {
+                world_info.StructureEvents.EnqueueEvents++;
+                for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)
+                {
+                    var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;
+                    var entities = archetype.entities;
+                    if (archetype.entity_count > 0)
+                    {
+                        for (int e = 0; e < archetype.entity_count; ++e)
+                            action(entities[e]);
+                    }
+                }
+                world_info.StructureEvents.EnqueueEvents--;
+            }
+        }
+
+        /// <summary>
+        /// Destroys matching archetypes along with their entities.
+        /// Most efficient way to destroy entities.
+        /// </summary>
+        public void DestroyMatching()
+        {
+            if (world.TryGetWorldInfo(out var info))
+            {
+                for(int i = 0; i < archetype_count; ++ i)
+                {
+                    var index = matching_archetypes[i];
+                    info.archetypes[i].data.archetype.Destroy();
+                }
+            }                
+        }
+
+        // keeps the queried archtypes up to date, return false if the query is not valid
+        bool Update(out World_Info world_info)
+        {
+            if (world.TryGetWorldInfo(out world_info))
+            {
+                if (world_info.archetype_structure_update_count != structure_update)
+                {
+                    last_lookup = 0;
+                    archetype_count = 0;
+                    structure_update = world_info.archetype_structure_update_count;
+                }
+                for (; last_lookup < world_info.archetype_terminating_index; ++last_lookup)
+                {
+                    var arch = world_info.archetypes[last_lookup].data;
+                    if (arch == null) continue;
+                    if (arch.signature.HasAll(include) && !arch.signature.HasAny(exclude))
+                    {
+                        if (archetype_count == matching_archetypes.Length)
+                            System.Array.Resize(ref matching_archetypes, archetype_count * 2);
+                        matching_archetypes[archetype_count] = last_lookup;
+                        ++archetype_count;
+                    }
+                }
+                return true;
+            }
+            structure_update = -1;
+            archetype_count = 0;
+            return false;
+        }
+
+        /// <summary>
+        /// the total number of entities that currently match the query
+        /// </summary>
+        /// <value></value>
         public int EntityCount
         {
             get
             {
-                Update();
                 int count = 0;
-                for (int i = archetype_count - 1; i >= 0; --i)
-                    count += matching_archetypes[i].entity_count;
+                if (Update(out var world_Info))
+                    for (int i = 0; i < archetype_count; ++i)
+                        count += world_Info.archetypes[matching_archetypes[i]].data.entity_count;
                 return count;
             }
         }
 
-        /// <summary>
-        /// Filters entities to those that have component
-        /// </summary>
-        public Query Has<T>()
-        {
-            current_archetype_index = 0;
-            archetype_count = 0;
-            has.Add<T>();
-            return this;
-        }
-
-        /// <summary>
-        /// Filters entities to those without component
-        /// </summary>
-        public Query Not<T>()
-        {
-            current_archetype_index = 0;
-            archetype_count = 0;
-            not.Add<T>();
-            return this;
-        }
-
-        /// <summary>
-        /// Clears the query's current filters and matches
-        /// </summary>
-        public Query Clear()
-        {
-            has.Clear();
-            not.Clear();
-            for (int i = 0; i < archetype_count; ++i)
-                matching_archetypes[i] = default;
-            current_archetype_index = 0;
-            archetype_count = 0;
-            return this;
-        }
-
-        /// <summary>
-        /// Gets first entity that matches query
-        /// Returns false if query is empty
-        /// </summary>
-        public bool TryGetFirstEntity(out Entity entity) // because iteration is backwards, the first entity is the last one
-        {
-            Update();
-            for (int i = archetype_count - 1; i >= 0; --i)
-            {
-                var archetype = matching_archetypes[i];
-                if (archetype.entity_count == 0) continue;
-                entity = archetype.entity_pool[archetype.entity_count - 1];
-                return true;
-            }
-            entity = default;
-            return false;
-        }
-
-        /// <summary>
-        /// Gets last entity that matches query.
-        /// Returns false if query is empty
-        /// </summary>
-        public bool TryGetLastEntity(out Entity entity) // because iteration is backwards, the first entity is last
-        {
-            Update();
-            for (int i = 0; i < archetype_count; ++i)
-            {
-                var archetype = matching_archetypes[i];
-                if (archetype.entity_count == 0) continue;
-                entity = archetype.entity_pool[0];
-                return true;
-            }
-            entity = default;
-            return false;
-        }
-
-#pragma warning disable
         public override string ToString()
         {
-            Update();
-
-            var name = "Query ";
-            if (has.type_count > 0)
-            {
-                name += "[ HAS: ";
-
-                foreach (var type in has.Types)
-                    name += type.Name;
-                name += " ] ";
-            }
-            if (not.type_count > 0)
-            {
-                name += "[ NOT: ";
-                foreach (var type in not.Types)
-                    name += type.Name;
-                name += " ]";
-            }
-            if (has.type_count == 0 && not.type_count == 0)
-                name += "ALL";
-
-            return $"{name}";
+            return "Query" +
+            (include.Count > 0 ? $": Has {include.TypesToString()}" : "") +
+            (exclude.Count > 0 ? $": Not {exclude.TypesToString()}" : "");
         }
-
-        void Update() // checks for any new archetypes since last run and updates accordingly
-        {
-
-            if (world.Version > current_version) // check to see if world's version changed, if so need to update
-            {
-                for (int i = archetype_count - 1; i >= 0; --i)
-                    matching_archetypes[i] = default;
-
-                current_version = world.Version;
-                current_archetype_index = 0;
-                archetype_count = 0;
-            }
-
-            if (current_archetype_index < world.Archetypes.Count)  // check for any new archetypes
-            {
-                for (int i = current_archetype_index; i < world.Archetypes.Count; ++i)
-                {
-                    var archetype = world.Archetypes[i];
-
-                    if (!archetype.signature.HasAll(has))
-                        goto next_archetype;
-
-                    if (archetype.signature.HasAny(not))
-                        goto next_archetype;
-
-                    if (archetype_count == matching_archetypes.Length)
-                        Array.Resize(ref matching_archetypes, matching_archetypes.Length * 2);
-                    matching_archetypes[archetype_count] = archetype;
-                    archetype_count++;
-
-                next_archetype:
-                    continue;
-                }
-                current_archetype_index = world.Archetypes.Count;
-            }
-        }
-
-        IEnumerator<Entity> IEnumerable<Entity>.GetEnumerator()
-        {
-            Update();
-            for (int i = archetype_count - 1; i >= 0; --i)
-            {
-                var archetype = matching_archetypes[i];
-                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                    yield return archetype.entity_pool[itr];
-            }
-        }
-
-        IEnumerator<World.Archetype> IEnumerable<World.Archetype>.GetEnumerator()
-        {
-            Update();
-            for (int i = archetype_count - 1; i >= 0; --i)
-                yield return matching_archetypes[i];
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            Update();
-            for (int i = archetype_count - 1; i >= 0; --i)
-            {
-                var archetype = matching_archetypes[i];
-                for (int itr = archetype.entity_count - 1; itr >= 0; --itr)
-                    yield return archetype.entity_pool[itr];
-            }
-        }
-        int IReadOnlyCollection<World.Archetype>.Count
-        {
-            get
-            {
-                Update();
-                return archetype_count;
-            }
-        }
-
-        World.Archetype IReadOnlyList<World.Archetype>.this[int index] => matching_archetypes[index];
-
-        /// <summary>
-        /// Iterates over entities that matches query.
-        /// </summary>
-        public void Foreach(in query_e action)
-        {
-            Update();
-            world.AllowStructuralChanges = false;
-            for (int i = archetype_count - 1; i >= 0; --i)
-            {
-                var archetype = matching_archetypes[i];
-                for (int e = archetype.entity_count - 1; e >= 0; --e)
-                    action(archetype.entity_pool[e]);
-            }
-            world.AllowStructuralChanges = true;
-        }
-    }
-
-    namespace Delegates
-    {
-        public delegate void query_e(Entity entity);
     }
 }

@@ -1,520 +1,359 @@
 namespace SimpleECS
 {
-    public partial class World
-    {
-        #pragma warning disable
-        class Sig<C1>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>();
-        }
-
-        public Entity CreateEntity<C1>(in C1 c1) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1>.signature)).Set(c1);
-
-        class Sig<C1, C2>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>();
-        }
-
-        public Entity CreateEntity<C1, C2>(in C1 c1, in C2 c2) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2>.signature)).Set(c1).Set(c2);
-
-        class Sig<C1, C2, C3>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3>(in C1 c1, in C2 c2, in C3 c3) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3>.signature)).Set(c1).Set(c2).Set(c3);
-
-        class Sig<C1, C2, C3, C4>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4>(in C1 c1, in C2 c2, in C3 c3, in C4 c4) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4>.signature)).Set(c1).Set(c2).Set(c3).Set(c4);
-
-        class Sig<C1, C2, C3, C4, C5>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5);
-
-        class Sig<C1, C2, C3, C4, C5, C6>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>().Add<C46>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45).Set(c46);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>().Add<C46>().Add<C47>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45).Set(c46).Set(c47);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>().Add<C46>().Add<C47>().Add<C48>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45).Set(c46).Set(c47).Set(c48);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>().Add<C46>().Add<C47>().Add<C48>().Add<C49>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45).Set(c46).Set(c47).Set(c48).Set(c49);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>().Add<C46>().Add<C47>().Add<C48>().Add<C49>().Add<C50>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45).Set(c46).Set(c47).Set(c48).Set(c49).Set(c50);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>().Add<C46>().Add<C47>().Add<C48>().Add<C49>().Add<C50>().Add<C51>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45).Set(c46).Set(c47).Set(c48).Set(c49).Set(c50).Set(c51);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>().Add<C46>().Add<C47>().Add<C48>().Add<C49>().Add<C50>().Add<C51>().Add<C52>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45).Set(c46).Set(c47).Set(c48).Set(c49).Set(c50).Set(c51).Set(c52);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>().Add<C46>().Add<C47>().Add<C48>().Add<C49>().Add<C50>().Add<C51>().Add<C52>().Add<C53>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45).Set(c46).Set(c47).Set(c48).Set(c49).Set(c50).Set(c51).Set(c52).Set(c53);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>().Add<C46>().Add<C47>().Add<C48>().Add<C49>().Add<C50>().Add<C51>().Add<C52>().Add<C53>().Add<C54>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45).Set(c46).Set(c47).Set(c48).Set(c49).Set(c50).Set(c51).Set(c52).Set(c53).Set(c54);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>().Add<C46>().Add<C47>().Add<C48>().Add<C49>().Add<C50>().Add<C51>().Add<C52>().Add<C53>().Add<C54>().Add<C55>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45).Set(c46).Set(c47).Set(c48).Set(c49).Set(c50).Set(c51).Set(c52).Set(c53).Set(c54).Set(c55);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>().Add<C46>().Add<C47>().Add<C48>().Add<C49>().Add<C50>().Add<C51>().Add<C52>().Add<C53>().Add<C54>().Add<C55>().Add<C56>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55, in C56 c56) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45).Set(c46).Set(c47).Set(c48).Set(c49).Set(c50).Set(c51).Set(c52).Set(c53).Set(c54).Set(c55).Set(c56);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>().Add<C46>().Add<C47>().Add<C48>().Add<C49>().Add<C50>().Add<C51>().Add<C52>().Add<C53>().Add<C54>().Add<C55>().Add<C56>().Add<C57>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55, in C56 c56, in C57 c57) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45).Set(c46).Set(c47).Set(c48).Set(c49).Set(c50).Set(c51).Set(c52).Set(c53).Set(c54).Set(c55).Set(c56).Set(c57);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>().Add<C46>().Add<C47>().Add<C48>().Add<C49>().Add<C50>().Add<C51>().Add<C52>().Add<C53>().Add<C54>().Add<C55>().Add<C56>().Add<C57>().Add<C58>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55, in C56 c56, in C57 c57, in C58 c58) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45).Set(c46).Set(c47).Set(c48).Set(c49).Set(c50).Set(c51).Set(c52).Set(c53).Set(c54).Set(c55).Set(c56).Set(c57).Set(c58);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>().Add<C46>().Add<C47>().Add<C48>().Add<C49>().Add<C50>().Add<C51>().Add<C52>().Add<C53>().Add<C54>().Add<C55>().Add<C56>().Add<C57>().Add<C58>().Add<C59>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55, in C56 c56, in C57 c57, in C58 c58, in C59 c59) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45).Set(c46).Set(c47).Set(c48).Set(c49).Set(c50).Set(c51).Set(c52).Set(c53).Set(c54).Set(c55).Set(c56).Set(c57).Set(c58).Set(c59);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>().Add<C46>().Add<C47>().Add<C48>().Add<C49>().Add<C50>().Add<C51>().Add<C52>().Add<C53>().Add<C54>().Add<C55>().Add<C56>().Add<C57>().Add<C58>().Add<C59>().Add<C60>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55, in C56 c56, in C57 c57, in C58 c58, in C59 c59, in C60 c60) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45).Set(c46).Set(c47).Set(c48).Set(c49).Set(c50).Set(c51).Set(c52).Set(c53).Set(c54).Set(c55).Set(c56).Set(c57).Set(c58).Set(c59).Set(c60);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>().Add<C46>().Add<C47>().Add<C48>().Add<C49>().Add<C50>().Add<C51>().Add<C52>().Add<C53>().Add<C54>().Add<C55>().Add<C56>().Add<C57>().Add<C58>().Add<C59>().Add<C60>().Add<C61>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55, in C56 c56, in C57 c57, in C58 c58, in C59 c59, in C60 c60, in C61 c61) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45).Set(c46).Set(c47).Set(c48).Set(c49).Set(c50).Set(c51).Set(c52).Set(c53).Set(c54).Set(c55).Set(c56).Set(c57).Set(c58).Set(c59).Set(c60).Set(c61);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61, C62>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>().Add<C46>().Add<C47>().Add<C48>().Add<C49>().Add<C50>().Add<C51>().Add<C52>().Add<C53>().Add<C54>().Add<C55>().Add<C56>().Add<C57>().Add<C58>().Add<C59>().Add<C60>().Add<C61>().Add<C62>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61, C62>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55, in C56 c56, in C57 c57, in C58 c58, in C59 c59, in C60 c60, in C61 c61, in C62 c62) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61, C62>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45).Set(c46).Set(c47).Set(c48).Set(c49).Set(c50).Set(c51).Set(c52).Set(c53).Set(c54).Set(c55).Set(c56).Set(c57).Set(c58).Set(c59).Set(c60).Set(c61).Set(c62);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61, C62, C63>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>().Add<C46>().Add<C47>().Add<C48>().Add<C49>().Add<C50>().Add<C51>().Add<C52>().Add<C53>().Add<C54>().Add<C55>().Add<C56>().Add<C57>().Add<C58>().Add<C59>().Add<C60>().Add<C61>().Add<C62>().Add<C63>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61, C62, C63>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55, in C56 c56, in C57 c57, in C58 c58, in C59 c59, in C60 c60, in C61 c61, in C62 c62, in C63 c63) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61, C62, C63>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45).Set(c46).Set(c47).Set(c48).Set(c49).Set(c50).Set(c51).Set(c52).Set(c53).Set(c54).Set(c55).Set(c56).Set(c57).Set(c58).Set(c59).Set(c60).Set(c61).Set(c62).Set(c63);
-
-        class Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61, C62, C63, C64>
-        {
-            public static readonly TypeSignature signature = new TypeSignature().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>().Add<C33>().Add<C34>().Add<C35>().Add<C36>().Add<C37>().Add<C38>().Add<C39>().Add<C40>().Add<C41>().Add<C42>().Add<C43>().Add<C44>().Add<C45>().Add<C46>().Add<C47>().Add<C48>().Add<C49>().Add<C50>().Add<C51>().Add<C52>().Add<C53>().Add<C54>().Add<C55>().Add<C56>().Add<C57>().Add<C58>().Add<C59>().Add<C60>().Add<C61>().Add<C62>().Add<C63>().Add<C64>();
-        }
-
-        public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61, C62, C63, C64>(in C1 c1, in C2 c2, in C3 c3, in C4 c4, in C5 c5, in C6 c6, in C7 c7, in C8 c8, in C9 c9, in C10 c10, in C11 c11, in C12 c12, in C13 c13, in C14 c14, in C15 c15, in C16 c16, in C17 c17, in C18 c18, in C19 c19, in C20 c20, in C21 c21, in C22 c22, in C23 c23, in C24 c24, in C25 c25, in C26 c26, in C27 c27, in C28 c28, in C29 c29, in C30 c30, in C31 c31, in C32 c32, in C33 c33, in C34 c34, in C35 c35, in C36 c36, in C37 c37, in C38 c38, in C39 c39, in C40 c40, in C41 c41, in C42 c42, in C43 c43, in C44 c44, in C45 c45, in C46 c46, in C47 c47, in C48 c48, in C49 c49, in C50 c50, in C51 c51, in C52 c52, in C53 c53, in C54 c54, in C55 c55, in C56 c56, in C57 c57, in C58 c58, in C59 c59, in C60 c60, in C61 c61, in C62 c62, in C63 c63, in C64 c64) =>
-            CreateEntityWithArchetype(GetArchetype(Sig<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61, C62, C63, C64>.signature)).Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32).Set(c33).Set(c34).Set(c35).Set(c36).Set(c37).Set(c38).Set(c39).Set(c40).Set(c41).Set(c42).Set(c43).Set(c44).Set(c45).Set(c46).Set(c47).Set(c48).Set(c49).Set(c50).Set(c51).Set(c52).Set(c53).Set(c54).Set(c55).Set(c56).Set(c57).Set(c58).Set(c59).Set(c60).Set(c61).Set(c62).Set(c63).Set(c64);
-
-        #pragma warning restore
-    }
+  using Internal;
+  public partial struct World
+  {
+      public Entity CreateEntity<C1>(C1 c1)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2>(C1 c1, C2 c2)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3>(C1 c1, C2 c2, C3 c3)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4>(C1 c1, C2 c2, C3 c3, C4 c4)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31);
+          }
+          return default;
+      }
+      public Entity CreateEntity<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32>(C1 c1, C2 c2, C3 c3, C4 c4, C5 c5, C6 c6, C7 c7, C8 c8, C9 c9, C10 c10, C11 c11, C12 c12, C13 c13, C14 c14, C15 c15, C16 c16, C17 c17, C18 c18, C19 c19, C20 c20, C21 c21, C22 c22, C23 c23, C24 c24, C25 c25, C26 c26, C27 c27, C28 c28, C29 c29, C30 c30, C31 c31, C32 c32)
+      {
+          if (this.TryGetWorldInfo(out var data))
+          {
+              data.buffer_signature.Clear().Add<C1>().Add<C2>().Add<C3>().Add<C4>().Add<C5>().Add<C6>().Add<C7>().Add<C8>().Add<C9>().Add<C10>().Add<C11>().Add<C12>().Add<C13>().Add<C14>().Add<C15>().Add<C16>().Add<C17>().Add<C18>().Add<C19>().Add<C20>().Add<C21>().Add<C22>().Add<C23>().Add<C24>().Add<C25>().Add<C26>().Add<C27>().Add<C28>().Add<C29>().Add<C30>().Add<C31>().Add<C32>();
+              var archetype = data.GetArchetypeData(data.buffer_signature);
+              return data.StructureEvents.CreateEntity(archetype)
+                  .Set(c1).Set(c2).Set(c3).Set(c4).Set(c5).Set(c6).Set(c7).Set(c8).Set(c9).Set(c10).Set(c11).Set(c12).Set(c13).Set(c14).Set(c15).Set(c16).Set(c17).Set(c18).Set(c19).Set(c20).Set(c21).Set(c22).Set(c23).Set(c24).Set(c25).Set(c26).Set(c27).Set(c28).Set(c29).Set(c30).Set(c31).Set(c32);
+          }
+          return default;
+      }
+  }
 }

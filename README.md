@@ -72,15 +72,17 @@ entity.TransferTo(new_world);   // transfer moves entity to the specified world
 ## Component Callbacks
 There are 2 component callbacks in SimpleECS, world.OnSet() and world.OnRemove().
 ```C#
-world.OnSet((Entity entity, ref int value) =>     // use world.OnSet to set a callback to invoke
-  Console.WriteLine($"{entity} added {value}"));  // whenever an entity sets that component in that world
+world.OnSet((Entity entity, int old_value, ref int new_value) =>  // use world.OnSet to set a callback to invoke
+  Console.WriteLine($"{entity} added {value}"));                  // whenever an entity sets that component in that world
+                                                                  // old_value is the previous component's value
+                                                                  // new value is the component that was set
 
-world.OnRemove((Entity entity, ref int value) =>  // use world.OnRemove to set a callback  to invoke
-  Console.WriteLine($"{entity} removed {value}"));// whenever an entity removes a component in that world
-                                                  // If the entity was destroyed, entity.IsValid() will
-                                                  // be false during the callback
+world.OnRemove((Entity entity, int value) =>        // use world.OnRemove to set a callback  to invoke
+  Console.WriteLine($"{entity} removed {value}"));  // whenever an entity removes a component in that world
+                                                    // If the entity was destroyed, entity.IsValid() will
+                                                    // be false during the callback
 
-void MyCallback(Entity entity, ref int value)     // additionally you can name your callbacks
+void MyCallback(Entity entity, int old, ref int value)       // additionally you can name your callbacks
 {
   Console.WriteLine($"{entity} added int {value}");
 }
@@ -118,21 +120,13 @@ query.Foreach( (Entity entity, ref int value ) =>         // you can access the 
 
 var all_entities = world.CreateQuery();               // a simple way to match against all entities is to make a query with no filters
 
+foreach(var archetype in query)   // you can iterate over matching archetypes with foreach
+{
+  // do something
+}
+
 query.DestroyMatching();          // destroys all archtypes and their entities matching the query
                                   // its the most efficient way to destroy entities
-```
-
-For maximum control over query iteration, manual iteration is possible.
-```C#
-foreach(var archetype in query.GetArchetypes())
-{
-    if (archetype.TryGetEntityBuffer(out Entity[] entity_buffer) &&
-        archetype.TryGetComponentBuffer(out int[] int_buffer))
-    {
-        for(int i = 0; i < archetype.EntityCount; ++ i)
-            System.Console.WriteLine($"{entity_buffer[i]} {int_buffer[i]}");
-    }
-}
 ```
 
 During query.Foreach structural changes are cached and applied after iteration is complete. 
@@ -172,6 +166,21 @@ query.Foreach((Entity entity, ref int int_val) =>
 
 entity.Has<string>();   // this will now return true
 entity.Has<int>();      // and this will now return false
+```
+
+For maximum control over query iteration, manual iteration is possible.
+When iterating manually though, make sure not to do any structural changes as
+this may invalidate iterators.
+```C#
+foreach(var archetype in query)
+{
+    if (archetype.TryGetEntityBuffer(out Entity[] entity_buffer) &&
+        archetype.TryGetComponentBuffer(out int[] int_buffer))
+    {
+        for(int i = 0; i < archetype.EntityCount; ++ i)
+            System.Console.WriteLine($"{entity_buffer[i]} {int_buffer[i]}");
+    }
+}
 ```
 
 ## Archetype
@@ -223,7 +232,8 @@ archetype.Destroy();    // destroys the archetype along with any entities it own
 ```
 ## World Data
 Instead of singletons, shared components or singleton components, Simple Ecs uses the concept of World Data.
-World data is simply data stored in the world.
+World data are basically components belonging to the world instead of an entity. 
+
 ```C#
 world.SetData(3)            // sets the world data to value
      .SetData("My Value");  // can be chained

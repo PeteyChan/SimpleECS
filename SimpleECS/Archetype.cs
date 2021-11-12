@@ -1,12 +1,14 @@
 namespace SimpleECS
 {
     using System;
+    using System.Collections;
+    using System.Collections.Generic;
     using Internal;
 
     /// <summary>
     /// stores component data of entities that matches the archetype's type signature
     /// </summary>
-    public struct Archetype : IEquatable<Archetype>
+    public struct Archetype : IEquatable<Archetype>, IEnumerable<Entity> 
     {
         internal Archetype(World world, int index, int version)
         {
@@ -97,8 +99,8 @@ namespace SimpleECS
         /// </summary>
         public void Destroy()
         {
-            if (this.TryGetArchetypeInfo(out var world_info, out var archetype_info))
-                world_info.StructureEvents.DestroyArchetype(archetype_info); //data.DestroyArchetype();
+            if (world.TryGetWorldInfo(out var world_info))
+                world_info.StructureEvents.DestroyArchetype(this);
         }
 
         /// <summary>
@@ -123,6 +125,8 @@ namespace SimpleECS
 
         public override bool Equals(object obj) => obj is Archetype a ? a == this : false;
 
+        public static implicit operator int(Archetype a) => a.index;
+
         public static bool operator ==(Archetype a, Archetype b) => a.world == b.world && a.index == b.index && a.version == b.version;
 
         public static bool operator !=(Archetype a, Archetype b) => !(a == b);
@@ -145,6 +149,20 @@ namespace SimpleECS
                 val += " ]";
             }
             return val;
+        }
+
+        IEnumerator<Entity> IEnumerable<Entity>.GetEnumerator()
+        {
+            if (this.TryGetArchetypeInfo(out var info))
+                for(int i = 0; i < info.entity_count; ++ i)
+                    yield return info.entities[i];
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            if (this.TryGetArchetypeInfo(out var info))
+                for(int i = 0; i < info.entity_count; ++ i)
+                    yield return info.entities[i];
         }
     }
 }

@@ -1,13 +1,14 @@
 namespace SimpleECS
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using Internal;
 
     /// <summary>
     /// manages all entities and archetype information
     /// </summary>
-    public partial struct World : IEquatable<World>
+    public partial struct World : IEquatable<World>, IEnumerable<Archetype>
     {
         World(int index, int version)
         {
@@ -189,7 +190,7 @@ namespace SimpleECS
         /// </summary>
         /// <param name="callback">callback to invoke</param>
         /// <param name="register">set true to add callback, false to remove the callback</param>
-        public World OnSet<Component>(ComponentEvent<Component> callback, bool register = true)
+        public World OnSet<Component>(SetComponentEvent<Component> callback, bool register = true)
         {
             if (this.TryGetWorldInfo(out var info))
             {
@@ -207,7 +208,7 @@ namespace SimpleECS
         /// </summary>
         /// <param name="callback">callback to invoke</param>
         /// <param name="register">set true to add callback, false to remove the callback</param>
-        public World OnRemove<Component>(ComponentEvent<Component> callback, bool register = true)
+        public World OnRemove<Component>(RemoveComponentEvent<Component> callback, bool register = true)
         {
             if (this.TryGetWorldInfo(out var world_info))
             {
@@ -296,6 +297,32 @@ namespace SimpleECS
             entity = default;
             return false;
         }
+
+        IEnumerator<Archetype> IEnumerable<Archetype>.GetEnumerator()
+        {
+            if (this.TryGetWorldInfo(out var info))
+            {
+                for (int i = 0; i < info.archetype_terminating_index; ++i)
+                {
+                    var arche_info = info.archetypes[i].data;
+                    if (arche_info != null)
+                        yield return arche_info.archetype;
+                }
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            if (this.TryGetWorldInfo(out var info))
+            {
+                for (int i = 0; i < info.archetype_terminating_index; ++i)
+                {
+                    var arche_info = info.archetypes[i].data;
+                    if (arche_info != null)
+                        yield return arche_info.archetype;
+                }
+            }
+        }
     }
 }
 
@@ -303,7 +330,8 @@ namespace SimpleECS.Internal
 {
     using System.Collections.Generic;
 
-    public delegate void ComponentEvent<T>(Entity entity, ref T component);
+    public delegate void SetComponentEvent<T>(Entity entity, T old_comp, ref T new_comp);
+    public delegate void RemoveComponentEvent<T>(Entity entity, T component);
 
     public static partial class InternalExtensions
     {
@@ -415,7 +443,7 @@ namespace SimpleECS.Internal
 
         public abstract class WorldData
         {
-            public abstract void InovkeSet(Entity entity, object comp_buffer, int entity_arch_index);
+            public abstract void InovkeSet(Entity entity, object original, object comp_buffer, int entity_arch_index);
             public abstract void InvokeRemove(Entity entity, object component);
             public bool has_remove_callback, has_set_callback;
         }
@@ -423,22 +451,22 @@ namespace SimpleECS.Internal
         public sealed class WorldData<T> : WorldData
         {
             public T data;
-            public ComponentEvent<T> set_callback, remove_callback;
+            public SetComponentEvent<T> set_callback;
+            public RemoveComponentEvent<T> remove_callback;
 
-            public override void InovkeSet(Entity entity, object comp_buffer, int entity_arch_index)
+            public override void InovkeSet(Entity entity, object original, object comp_buffer, int entity_arch_index)
             {
-                set_callback?.Invoke(entity, ref ((T[])comp_buffer)[entity_arch_index]);
+                set_callback?.Invoke(entity, (original == null ? default : (T)original), ref ((T[])comp_buffer)[entity_arch_index]);
             }
 
             public override void InvokeRemove(Entity entity, object component)
             {
-                T comp = (T)component;
-                remove_callback?.Invoke(entity, ref comp);
+                remove_callback?.Invoke(entity, (T)component);
             }
         }
 
         /// <summary>
-        /// Handles all structural changes to the world
+        /// Handles all structural changes to the ecs world
         /// </summary>
         public StructureEventHandler StructureEvents;
 
@@ -468,9 +496,9 @@ namespace SimpleECS.Internal
             {
                 public EventType type;
                 public Entity entity;
+                public int type_id;
                 public Archetype archetype;
                 public object obj_args;
-                public int type_id;
             }
 
             enum EventType
@@ -504,7 +532,7 @@ namespace SimpleECS.Internal
                         break;
 
                         case EventType.SetComponent:
-                            Set(e.entity, e.type_id, e.obj_args);
+                            world.StructureEvents.Set(e.entity, e.type_id, e.obj_args);
                             break;
 
                         case EventType.RemoveComponent:
@@ -520,8 +548,7 @@ namespace SimpleECS.Internal
                             break;
 
                         case EventType.DestroyArchetype:
-                            if (e.archetype.TryGetArchetypeInfo(out var info))
-                                DestroyArchetype(info);
+                            DestroyArchetype(e.archetype);
                             break;
 
                         case EventType.DestroyWorld:
@@ -535,35 +562,40 @@ namespace SimpleECS.Internal
                 }
             }
 
-            public void DestroyArchetype(Archetype_Info data)
+            public void DestroyArchetype(Archetype archetype)
             {
                 if (cache_events > 0)
-                    events.Enqueue(new EventData { type = EventType.DestroyArchetype, archetype = data.archetype });
+                {
+                    events.Enqueue(new EventData { type = EventType.DestroyArchetype, archetype = archetype });
+                }
                 else
                 {
-                    world.signature_to_archetype_index.Remove(data.signature);   // update archetype references
-                    world.archetypes[data.archetype.index].version++;
-                    world.archetypes[data.archetype.index].data = null;
-                    world.free_archetypes.Push(data.archetype.index);
-                    world.archetype_structure_update_count++;
-
-                    for (int i = 0; i < data.entity_count; ++i)
+                    if (archetype.TryGetArchetypeInfo(out var arch_info))
                     {
-                        var entity = data.entities[i];
-                        world.entity_data[entity.index].version++;
-                        world.entity_data[entity.index].archetype_data = null;
-                        world.free_entities.Push(entity.index);
-                    }
+                        world.signature_to_archetype_index.Remove(arch_info.signature);   // update archetype references
+                        world.archetypes[archetype.index].version++;
+                        world.archetypes[archetype.index].data = null;
+                        world.free_archetypes.Push(archetype.index);
+                        world.archetype_structure_update_count++;
 
-                    for (int i = 0; i < data.component_count; ++i)
-                    {
-                        var pool = data.component_buffers[i];
-                        var callback = world.GetData(pool.type_id);
-                        if (callback.has_remove_callback)
+                        for (int i = 0; i < arch_info.entity_count; ++i)
                         {
-                            for (int e = 0; e < data.entity_count; ++e)
+                            var entity = arch_info.entities[i];
+                            world.entity_data[entity.index].version++;
+                            world.entity_data[entity.index].archetype_data = null;
+                            world.free_entities.Push(entity.index);
+                        }
+
+                        for (int i = 0; i < arch_info.component_count; ++i)
+                        {
+                            var pool = arch_info.component_buffers[i];
+                            var callback = world.GetData(pool.type_id);
+                            if (callback.has_remove_callback)
                             {
-                                callback.InvokeRemove(data.entities[e], pool.buffer.Get(e));
+                                for (int e = 0; e < arch_info.entity_count; ++e)
+                                {
+                                    callback.InvokeRemove(arch_info.entities[e], pool.buffer.Get(e));
+                                }
                             }
                         }
                     }
@@ -640,7 +672,7 @@ namespace SimpleECS.Internal
 
             ref Entity_Info GetEntityData(Entity entity) => ref world.entity_data[entity.index];
 
-            public StructureEventHandler Set(Entity entity, int type_id, object component)
+            public StructureEventHandler Set(Entity entity, int type_id, object component)  // even with boxing, seems faster than the alternative
             {
                 if (cache_events > 0)
                 {
@@ -652,13 +684,13 @@ namespace SimpleECS.Internal
                     if (entity.version == entity_data.version)
                     {
                         var archetype = entity_data.archetype_data;
-                        if (archetype.TryGetCompBuffer(type_id, out var set_pool))
+                        if (archetype.TryGetCompBuffer(type_id, out var set_pool))  // if archetype already has component, just set and fire event
                         {
+                            var original = set_pool.Get(entity_data.arch_index);
                             set_pool.Set(entity_data.arch_index, component);
-
                             var data = world.GetData(type_id);
                             if (data.has_set_callback)
-                                data.InovkeSet(entity, set_pool.array, entity_data.arch_index);
+                                data.InovkeSet(entity, original, set_pool.array, entity_data.arch_index);
                         }
                         else
                         {
@@ -675,6 +707,7 @@ namespace SimpleECS.Internal
                             target_archetype.entity_count++;
                             target_archetype.entities[target_index] = entity;
 
+
                             // moving components over
                             for (int i = 0; i < archetype.component_count; ++i)
                                 archetype.component_buffers[i].buffer.Move(entity_index, archetype.entity_count, target_archetype, target_index);
@@ -685,7 +718,7 @@ namespace SimpleECS.Internal
                                 target_buffer.Set(target_index, component);
                                 var data = world.GetData(type_id);
                                 if (data.has_set_callback)
-                                    data.InovkeSet(entity, target_buffer.array, entity_data.arch_index);
+                                    data.InovkeSet(entity, null, target_buffer.array, entity_data.arch_index);
                             }
                             else
                                 throw new System.Exception("Frame Work Bug");
@@ -707,7 +740,7 @@ namespace SimpleECS.Internal
                     if (entity.version == entity_data.version)
                     {
                         var archetype = entity_data.archetype_data;
-                        if (archetype.TryGetCompBuffer(type_id, out var set_pool))
+                        if (archetype.TryGetCompBuffer(type_id, out var set_pool))  // only needs to be performed if entity actually has component
                         {
                             var target_archetype = entity_data.archetype_data = world.GetArchetypeData(world.buffer_signature.Copy(archetype.signature).Remove(type_id));
                             // removing entity from current archetype
@@ -728,6 +761,7 @@ namespace SimpleECS.Internal
                             for (int i = 0; i < archetype.component_count; ++i)
                                 archetype.component_buffers[i].buffer.Move(entity_arch_index, archetype.entity_count, target_archetype, target_index);
 
+                            // calling remove event if needed
                             var data = world.GetData(type_id);
                             if (data.has_remove_callback)
                                 world.GetData(type_id).InvokeRemove(entity, removed);
@@ -757,14 +791,15 @@ namespace SimpleECS.Internal
                         entity_archetype.entity_count--;
                         var last = entity_archetype.entities[entity_index] = entity_archetype.entities[entity_archetype.entity_count];
                         GetEntityData(last).arch_index = entity_index;
-                        for (int i = 0; i < entity_archetype.component_count; ++i)
+
+                        for (int i = 0; i < entity_archetype.component_count; ++i)  // move all components over to ntarget archetype
                         {
                             var entity_comp_buffer = entity_archetype.component_buffers[i].buffer;
                             var target_array = target_archtype.component_buffers[i].buffer.array;
                             entity_comp_buffer.Move(entity_index, entity_archetype.entity_count, target_array, target_index);
                         }
 
-                        // freeing transfered entity
+                        // freeing transfered entity in current world
                         entity_data.version++;
                         entity_data.archetype_data = default;
                         world.free_entities.Push(entity.index);
@@ -783,30 +818,30 @@ namespace SimpleECS.Internal
                         ref var entity_data = ref GetEntityData(entity);
                         var archetype_data = entity_data.archetype_data;
                         var entity_index = entity_data.arch_index;
-                        entity_data.version++;
+                        entity_data.version++;  // remove entity from world
                         entity_data.archetype_data = default;
                         archetype_data.entity_count--;
 
                         var last = archetype_data.entities[entity_index] = archetype_data.entities[archetype_data.entity_count];
-                        GetEntityData(last).arch_index = entity_index;
+                        GetEntityData(last).arch_index = entity_index;  //switch the entity in archetype with the last entity in archetype
 
                         int count = events.Count;
                         object[] removed = new object[archetype_data.component_count];
-                        for (int i = 0; i < archetype_data.component_count; ++i)
+                        for (int i = 0; i < archetype_data.component_count; ++i) // collect all removed components
                         {
                             var pool_data = archetype_data.component_buffers[i];
                             removed[i] = pool_data.buffer.Get(entity_index);
                             pool_data.buffer.Remove(entity_index, archetype_data.entity_count);
 
                         }
-                        world.free_entities.Push(entity.index);
+                        world.free_entities.Push(entity.index); // add entity to the free indexes so it can be reused
 
                         for (int i = 0; i < archetype_data.component_count; ++i)
                         {
                             var pool_data = archetype_data.component_buffers[i];
                             var data = world.GetData(pool_data.type_id);
                             if (data.has_remove_callback)
-                                data.InvokeRemove(entity, removed[i]);
+                                data.InvokeRemove(entity, removed[i]);  // call any remove callbacks that need to be invoked
                         }
                     }
                 }

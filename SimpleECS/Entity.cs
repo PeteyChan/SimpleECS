@@ -40,11 +40,8 @@ namespace SimpleECS
         {
             string name;
             if (!TryGet<string>(out name))
-            {
                 name = IsValid() ? "Entity" : "~Entity";
-                return $"{name} {index}.{version}";
-            }
-            return name;
+            return $"{name} {index}.{version}";
         }
 
         /// <summary>
@@ -63,6 +60,16 @@ namespace SimpleECS
         }
 
         /// <summary>
+        /// returns true if the entity has the component
+        /// </summary>
+        public bool Has(Type type)
+        {
+            if (this.TryGetArchetypeInfo(out var archetype_info))
+                return archetype_info.Has(TypeID.Get(type));
+            return false;
+        }
+
+        /// <summary>
         /// removes the component from the entity.
         /// if component was removed will trigger the corresponding onremove component event
         /// </summary>
@@ -70,6 +77,17 @@ namespace SimpleECS
         {
             if (world.TryGetWorldInfo(out var world_info))
                 world_info.StructureEvents.Remove(this, TypeID<Component>.Value);
+            return this;
+        }
+
+        /// <summary>
+        /// removes the component from the entity.
+        /// if component was removed will trigger the corresponding onremove component event
+        /// </summary>
+        public Entity Remove(Type type)
+        {
+            if (world.TryGetWorldInfo(out var world_info))
+                world_info.StructureEvents.Remove(this, TypeID.Get(type));
             return this;
         }
 
@@ -82,6 +100,19 @@ namespace SimpleECS
         {
             if (world.TryGetWorldInfo(out var world_info))
                 world_info.StructureEvents.Set(this, TypeID<Component>.Value, component);
+            return this;
+        }
+
+        /// <summary>
+        /// sets the entity's component to value. 
+        /// If the entity does not have the component, will move the entity to an archetype that does.
+        /// will trigger the onset component event if component was set
+        /// will trigger an exception if component_of_type is not of type
+        /// </summary>
+        public Entity Set(Type type, object component_of_type)
+        {
+            if (world.TryGetWorldInfo(out var world_info))
+                world_info.StructureEvents.Set(this, TypeID.Get(type), component_of_type);
             return this;
         }
 
@@ -106,6 +137,27 @@ namespace SimpleECS
             return false;
         }
 
+        /// <summary>
+        /// returns true if the entity has component, outputs the component
+        /// </summary>
+        public bool TryGet(Type type, out object component)
+        {
+            if (world.TryGetWorldInfo(out var world_info))
+            {
+                var entity_data = world_info.entity_data[index];
+                if (entity_data.version == version)
+                {
+                    if (entity_data.archetype_data.TryGetCompBuffer(TypeID.Get(type), out var pool))
+                    {
+                        component = pool.Get(entity_data.arch_index);
+                        return true;
+                    }
+                }
+            }
+            component = default;
+            return false;
+        }
+        
         /// <summary>
         /// gets the reference to the component on the entity.
         /// throws an exception if the entity is invalid or does not have the component
@@ -171,7 +223,7 @@ namespace SimpleECS
         }
 
         /// <summary>
-        /// returns the type of all the entity's components
+        /// returns a copy of all the types of components in the entity
         /// </summary>
         public Type[] GetAllComponentTypes()
         {

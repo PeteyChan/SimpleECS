@@ -1,13 +1,15 @@
-using System;
 
 namespace SimpleECS
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
     using Internal;
 
     /// <summary>
     /// Operates on all entities that match it's filters
     /// </summary>
-    public partial class Query
+    public partial class Query: IEnumerable<Archetype>
     {
         public Query() { }
 
@@ -35,7 +37,7 @@ namespace SimpleECS
 
         TypeSignature include = new TypeSignature(), exclude = new TypeSignature();
 
-        int[] matching_archetypes = new int[8];
+        Archetype[] matching_archetypes = new Archetype[8];
         int last_lookup, structure_update, archetype_count;
 
 
@@ -48,7 +50,7 @@ namespace SimpleECS
             {
                 Archetype[] archetypes = new Archetype[archetype_count];
                 for (int i = 0; i < archetype_count; ++i)
-                    archetypes[i] = world_info.archetypes[matching_archetypes[i]].data.archetype;
+                    archetypes[i] = matching_archetypes[i];
                 return archetypes;
             }
             return new Archetype[0];
@@ -65,12 +67,13 @@ namespace SimpleECS
                 int count = 0;
                 for (int i = 0; i < archetype_count; ++i)
                 {
-                    var index = matching_archetypes[i];
-                    var archetype = world_info.archetypes;
-                    for (int e = 0; e < archetype[index].data.entity_count; ++e)
+                    if (matching_archetypes[i].TryGetArchetypeInfo(out var arch_info))
                     {
-                        entities[count] = archetype[index].data.entities[e];
-                        count++;
+                        for(int e = 0; e < arch_info.entity_count; ++ e)
+                        {
+                            entities[count] = arch_info.entities[e];
+                            count++;
+                        }
                     }
                 }
                 return entities;
@@ -123,10 +126,11 @@ namespace SimpleECS
                 for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)
                 {
                     var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;
+                    int count = archetype.entity_count;
                     var entities = archetype.entities;
-                    if (archetype.entity_count > 0)
+                    if (count > 0)
                     {
-                        for (int e = 0; e < archetype.entity_count; ++e)
+                        for (int e = 0; e < count; ++e)
                             action(entities[e]);
                     }
                 }
@@ -142,12 +146,13 @@ namespace SimpleECS
         {
             if (Update(out var world_info))
             {
+                world_info.StructureEvents.EnqueueEvents++;
                 for(int i = 0; i < archetype_count; ++ i)
                 {
-                    var index = matching_archetypes[i];
-                    world_info.archetypes[i].data.archetype.Destroy();
+                    matching_archetypes[i].Destroy();
                 }
-            }      
+                world_info.StructureEvents.EnqueueEvents--;
+            }
         }
 
         // keeps the queried archtypes up to date, return false if the query is not valid
@@ -169,7 +174,7 @@ namespace SimpleECS
                     {
                         if (archetype_count == matching_archetypes.Length)
                             System.Array.Resize(ref matching_archetypes, archetype_count * 2);
-                        matching_archetypes[archetype_count] = last_lookup;
+                        matching_archetypes[archetype_count] = arch.archetype;
                         ++archetype_count;
                     }
                 }
@@ -201,6 +206,28 @@ namespace SimpleECS
             return "Query" +
             (include.Count > 0 ? $": Has {include.TypesToString()}" : "") +
             (exclude.Count > 0 ? $": Not {exclude.TypesToString()}" : "");
+        }
+
+        IEnumerator<Archetype> IEnumerable<Archetype>.GetEnumerator()
+        {
+            if (Update(out var info))
+            {
+                for(int i = 0; i < archetype_count; ++ i)
+                {
+                    yield return info.archetypes[matching_archetypes[i]].data.archetype;
+                }
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            if (Update(out var info))
+            {
+                for(int i = 0; i < archetype_count; ++ i)
+                {
+                    yield return info.archetypes[matching_archetypes[i]].data.archetype;
+                }
+            }
         }
     }
 }

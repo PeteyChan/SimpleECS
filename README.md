@@ -3,7 +3,7 @@ A Simple and easy to use C# Entity Component System.
 Min C# Framework 4.7
 
 ### Features:
-* No Dependencies, just build and drop in however you want
+* No Dependencies, just build or drop in however you want
 * No setup or boilerplate like marking components or code generators
 * Archetype based = fast component iteration
 * Very simple and easy to use queries
@@ -16,7 +16,7 @@ An Entity is simply an ID that associates a group of components together.
 To create an entity you first need to create a new world,
 then using that world create your entity with it's components as arguments.
 ```C#
-var world = new World("My World");    // naming the world is optional
+var world = World.Create("My World");    // naming the world is optional
 var entity = world.CreateEntity("my entity", 3, 5f);    
                                       // creates a new entity with components
                                       // components added this way will trigger
@@ -28,7 +28,7 @@ Anything that can be put into a list can be a component.
 Only one component of each type can be associated with an entity, 
 however there's nothing stopping you having a List or array as a component.
 Setting more than one component of the same type will simply overwrite the old one.
-The function can take up to 64 components, but entities themselves have 
+The function can take up to 32 components, but entities themselves have 
 no component limit.
 Due to how entities are structured, it's more efficient to set all components upfront
 during creation than adding them one at a time with entity.Set().
@@ -65,11 +65,9 @@ entity.Remove<T>();   // removes the component on entity if found.
 entity.Destroy();     // destroys the entity leaving it invalid
                       // all components on the entity will trigger their respective world.OnRemove() callbacks
 
-var newWorld = new World("new World");
-Entity newWorldEntity = entity.Transfer(new_world); // transfer moves entity to the specified world and
-                                                    // returns the entity's new entity value
-                                                    // the transfered entity will be invalid in the old world
-                                                    // after the move
+var newWorld = World.Create("new World");
+entity.TransferTo(new_world);   // transfer moves entity to the specified world
+                                // since the entity was moved, it's old value is now invalid
 ```
 ## Component Callbacks
 There are 2 component callbacks in SimpleECS, world.OnSet() and world.OnRemove().
@@ -84,7 +82,7 @@ world.OnRemove((Entity entity, ref int value) =>  // use world.OnRemove to set a
 
 void MyCallback(Entity entity, ref int value)     // additionally you can name your callbacks
 {
-  Console.WriteLine($"{} added int {value}");
+  Console.WriteLine($"{entity} added int {value}");
 }
 
 world.OnSet<int>(MyCallback);         // then register the callback
@@ -96,7 +94,7 @@ world.OnSet<int>(MyCallback, false);  // and by passing false as the second para
 ## Queries
 
 Queries let you iterate over entities based on specified components.
-You can specify up to 16 components to iterate over.
+You can specify up to 12 components to iterate over.
 Queries cache their results and only update when new archetypes are created.
 
 ```C#
@@ -113,30 +111,41 @@ query.Foreach( (ref int int_value, ref float float_value) =>  // you then use th
 }));                                                          // filter and contains all the foreach parameters
 
 
-query.Foreach( (Entity entity, ref int value ) =>         // you can access the owner entity by putting it in the first position
-{                                                         // without modifiers. You can then add any components you want to use
-  Console.WriteLine($"{entity} value is {value}");        // afterwards
+query.Foreach( (Entity entity, ref int value ) =>         // you can access the owner entity by putting it before the components
+{                                                         // without modifiers. 
+  Console.WriteLine($"{entity} value is {value}");        
 });
 
 var all_entities = world.CreateQuery();               // a simple way to match against all entities is to make a query with no filters
-all_entities.Foreach( entity => entity.Destroy());    // a simple way to delete all entities
+
+query.DestroyMatching();          // destroys all archtypes and their entities matching the query
+                                  // its the most efficient way to destroy entities
 ```
 
-Queries are already very fast, but for maximum performance or control
-over iteration order, manual iteration is possible.
+For maximum control over query iteration, manual iteration is possible.
 ```C#
-for(int i = 0; i < query.MatchingArchetypes.Count; ++ i) // getting the matching archetypes count will 
-{                                                        // keep the query up-to-date
-  var archetype = query.MatchingArchetypes[i];
-    if (archetype.Entities.Count > 0 && archetype.TryGetArray(out int[] int_pool))  // try get array gets the raw component backing array
-      for(int index = 0; index < archetype.Entities.Count; ++ index)    // int pool's count is the same as the entity count NOT the pool's length
-        int_pool[index]++;
+foreach(var archetype in query.GetArchetypes())
+{
+    if (archetype.TryGetEntityBuffer(out Entity[] entity_buffer) &&
+        archetype.TryGetComponentBuffer(out int[] int_buffer))
+    {
+        for(int i = 0; i < archetype.EntityCount; ++ i)
+            System.Console.WriteLine($"{entity_buffer[i]} {int_buffer[i]}");
+    }
 }
 ```
 
-During Foreach structural changes are cached and applied after iteration is complete. 
+During query.Foreach structural changes are cached and applied after iteration is complete. 
 This is to prevent iterator invalidation. Functions that cause structural changes are:
-entity.Set(), entity.Remove(), entity.Transfer(), entity.Destroy() and world.CreateEntity();
+  * entity.Set()
+  * entity.Remove()
+  * entity.Transfer()
+  * entity.Destroy()
+  * archetype.CreateEntity()
+  * archetype.Destroy()
+  * world.CreateEntity()
+  * world.Destroy()
+  
 Entities created during query.Foreach() will be invalid during the function, but you can
 still use all entity functions on that entity, it will simply be applied when the 
 Foreach function completes.
@@ -153,8 +162,9 @@ query.Foreach((Entity entity, ref int int_val) =>
   
   entity.Has<int>();        // since Remove() was cached, this will still return true
   
-  entity.Set("my entity");  // Since this was removed before the query, this is a 
-                            // structural operation and will also be cached
+  entity.Set("my entity");  // set is regarded as a structural event so will 
+                            // be cached regardless if the entity has the
+                            // component or not
   
   entity.Has<string>();     // so this will still return false
 });
@@ -174,60 +184,82 @@ entities within an archetype has the same component types by definition.
 ```C#
 var entity = world.Create(3);
 
-if (entity.TryGetArchetype(out var archetype))  // gets archetype that the entity belongs to
-{                                               // will return false if entity is invalid
-                                                // an entity's archetype can change when a new 
-                                                // component is set or when a component is removed
+var archetype = entity.archetype;     // gets archetype that the entity belongs
+                                      // if entity is invalid, the archtype will also be invalid
+                                      // an entity's archetype changes when the component types it
+                                      // holds changes
   
-  if (archetype)  // use to check if archetype is valid
-  {               // valid entities will always have valid archetypes
-    //...         // shorthand for archetype.IsValid()
-  }
+if (archetype)  // use to check if archetype is valid
+{               // valid entities will always have valid archetypes
+  //...         // shorthand for archetype.IsValid()
+}
                                                   
-  foreach(var entity in archetype.Entities) // you can get the entities in an archetype
-  {                                         // with the Entities property
+foreach(var entity in archetype.Entities) // you can get the entities in an archetype
+{                                         // with the Entities property
     Console.WriteLine(entity);
-  }
-                                                  
-  if (archetype.TryGetArray(out int[] int_values))      // you can get the raw component arrays using TryGetArray()
-  {                                                     // returns false if entities don't have component
-    for(int i = 0; i < archetype.Entities.Count; ++ i)  // the component count is not the array's length
-    {                                                   // but the archetype's entity count. Be sure not to
-      int_values[i] ++;                                 // use the wrong count
-    }
-  }
 }
 
+archetype.GetTypeSignature();   // returns a copy of the archetype's type signature
+  
+archetype.GetEntities();    // returns a copy of all entities in the archetype
+
+if (archetype.TryGetEntityBuffer(out Entity[] entity_buffer))  // tries to get the raw entity storage buffer from
+{                                                         // the archetype. Should be treated as readonly as
+    for (int i = 0; i < archetype.EntityCount; ++ i)      // changing their values will break the ecs.
+        Console.WriteLine(entity_buffer[i]);              // Valid indexes are only up to archetype.EntityCount
+}                                                         // not entities.Length
+
+if (archetype.TryGetComponentBuffer(out int[] int_buffer))  // tries to get the raw component storage buffer
+{                                                           // from the archetype. returns false if the archetype
+    for(int i = 0; i < archetype.EntityCount; ++ i)         // is invalid or does not store the component
+        int_buffer[i]++;                                    // entities in the entity buffer own the components in 
+}                                                           // the component buffer that share the same index
+                                                            // like the entity buffer, valid indexes are only up
+                                                            // to archetype.EntityCount
+                                                            
+archetype.Destroy();    // destroys the archetype along with any entities it owns
+                        // destroying the archetype is more efficient than destroying entities
+                        // one by one
 ```
+## World Data
+Instead of singletons, shared components or singleton components, Simple Ecs uses the concept of World Data.
+World data is simply data stored in the world.
+```C#
+world.SetData(3)            // sets the world data to value
+     .SetData("My Value");  // can be chained
+     
+world.GetData<float>() = delta_time;    // alternately you can use GetData
+                                        // to get a reference and change it directly
+
+query.Foreach((in float delta_time, Entity entity, ref Vector3 velocity) => 
+{                                                     // you can access world data directly in queries using
+    velocity += delta_time * new Vector3(1, 0, 0);    // the 'in' modifier before any entity
+});                                                   // or component parameters
+                                                      // you can add up to 4 world data in queries
+```
+
+
 
 ## World
 The world class is what manages all the underlying archetypes and their entities.
-Apart from making entities and queries there are a couple other useful features of this class.
 
 ```C#
-world.AllowStructuralChanges = true;  // this field controls entity caching behaviour
-                                      // set to false to start caching structural changes
-                                      // changes will be appiled when set back to true.
-                                      // query.Foreach() internally sets this to false before starting
-                                      // the query and true once complete
-                                      
-world.DestroyEmptyArchetypes();       // Use to remove archetypes that have no entities. Useful when
-                                      // changing scenes in game engines.
-                                      // Any archetypes destroyed in this process will become invalid
+World.GetAll();                         // returns a copy of all the current worlds
 
-world.ResizeBackingArrays();          // if a large amount of entities and components were recently deleted, 
-                                      // use this to resize the archetype backing arrays. This can be
-                                      // followed up with System.GC.Collect() to reclaim memory.
+var world = World.Create("My World");   
 
-var archetypes = world.Archetypes;    // returns a list of all currently active archetypes
+var count = world.EntityCount;          // how many current entities in the world
 
-world.CreateEntityWithArchetype(archetypes[0]);
-                                      // creates an entity using the supplied archetype
-                                      // will throw an exception if archetype is null or destroyed
-                                      // entities created this way will have the same components
-                                      // as those in the archetype with defaulted values
-                                      // i.e null for classes and 0 for structs
-                                      // world.OnSet() will not invoke registered callbacks since 
-                                      // they were not explicitly set. 
-                                      // This is the most performant way to create entities
+world.GetEntities();                    // returns a copy of all the entities currently in the world
+
+world.GetArchtypes();                   // returns a copy of all the current archetypes in the world
+
+world.ResizeBackingArrays();            // resizes all archetype backing arrays to the minimum power 
+                                        // of 2 needed to store their data
+world.DestroyEmptyArchetypes();         // destroys all archetypes that have no entities
+                                        // this can potentially speed up queries since they no longer
+                                        // have to iterate over those archetypes
+                                        
+world.Destroy();                        // destroys the world along with all the entities and
+                                        // archetypes associated with it
 ```

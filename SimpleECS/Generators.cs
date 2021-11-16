@@ -2,6 +2,10 @@ namespace SimpleECS.Internal
 {
     using System.IO;
 
+    /// <summary>
+    /// Generates the entity create and query foreach functions
+    /// Use to increase the default limits
+    /// </summary>
     public static class CodeGenerator
     {
         static string Pattern(string value, int count, bool comma_sep = true)
@@ -150,7 +154,7 @@ namespace SimpleECS.Internal
                         writer.WriteLine("       }");
                     }
 
-                for (int c = 1; c < component_count + 1; ++c) // resource and components
+                for (int c = 1; c < component_count + 1; ++c) // world data, entity and components
                     for (int w = 1; w < world_data_count + 1; ++w)
                     {
                         string c_val = Pattern("C#", c);

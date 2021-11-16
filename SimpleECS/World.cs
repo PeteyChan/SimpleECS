@@ -84,7 +84,38 @@ namespace SimpleECS
             return entities;
         }
 
+        /// <summary>
+        /// Creates a new world
+        /// </summary>
         public static World Create() => Create("World");
+
+        /// <summary>
+        /// Gets world with name, else creates and returns a world with name
+        /// </summary>
+        public static World GetOrCreate(string name)
+        {
+            if (!TryGetWorld(name, out var world))
+                return Create(name);
+            return world;
+        }
+
+        /// <summary>
+        /// Tries to get world with name
+        /// </summary>
+        /// <param name="name">name of the target world</param>
+        /// <param name="target_world">target world</param>
+        /// <returns>returns false if not found</returns>
+        public static bool TryGetWorld(string name, out World target_world)
+        {
+            foreach (var current in GetAll())
+                if (current.Name == name)
+                {
+                    target_world = current;
+                    return true;
+                }
+            target_world = default;
+            return false;
+        }
 
         /// <summary>
         /// Creates an new world with Name
@@ -163,8 +194,15 @@ namespace SimpleECS
         }
 
         /// <summary>
+        /// Tries to get an archetype that has the supplied types.
+        /// Returns false if the world is destroyed or null
+        /// </summary>
+        public bool TryGetArchetype(out Archetype archetype, params Type[] types)
+            => TryGetArchetype(out archetype, new TypeSignature(types));
+
+        /// <summary>
         /// WorldData is data unique to this world
-        /// Set's the world's data to alue.
+        /// Set's the world's data to value.
         /// </summary>
         public World SetData<WorldData>(WorldData world_data)
         {
@@ -215,19 +253,18 @@ namespace SimpleECS
                 var data = info.GetData<Component>();
                 if (register)
                 {
-                    if (data.set_ref_callback == null)  // if null add the callback to other callback
-                    {                                   // bit unoptimal but you can't remove the callback otherwise
-                        data.set_callback += (Entity e, Component c, ref Component c2) => data.set_ref_callback(e, ref c2);
-                        data.has_set_callback = true;
-                    }
+                    if (data.set_ref_callback == null)
+                        data.set_callback += data.CallSetRefCallback;
                     data.set_ref_callback += callback;
                 }
                 else
                 {
                     data.set_ref_callback -= callback;
                     if (data.set_ref_callback == null)
-                        data.set_ref_callback = delegate { };   // just makes sure that you don't get null reference when it fires
+                        data.set_callback -= data.CallSetRefCallback;
                 }
+
+                data.has_set_callback = data.set_callback != null;
             }
             return this;
         }
@@ -493,6 +530,11 @@ namespace SimpleECS.Internal
             public override void InvokeRemove(Entity entity, object component)
             {
                 remove_callback?.Invoke(entity, (T)component);
+            }
+
+            public void CallSetRefCallback(Entity entity, T old_comp, ref T new_comp)
+            {
+                set_ref_callback.Invoke(entity, ref new_comp);
             }
         }
 

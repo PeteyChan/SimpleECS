@@ -8,7 +8,8 @@ Min C# Framework 4.7
 * Archetype based = fast component iteration
 * Very simple and easy to use queries
 
-> **Warning** - This project is a very much a hobby project to learn more about ECS. Although it's quite usuable in it's current state, the API is still very much in flux and breaking changes can occur in the future. 
+> **Warning** - This project is a very much a hobby project to learn more about ECS.
+>   Because of this, breaking API changes may occur as I tinker on the framework.
 
 
 ## Entities

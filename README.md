@@ -76,6 +76,7 @@ There are 2 component callbacks in SimpleECS, world.OnSet() and world.OnRemove()
 world.OnSet((Entity entity, int old_value, ref int new_value) =>  // use world.OnSet to set a callback to invoke
   Console.WriteLine($"{entity} added {value}"));                  // whenever an entity sets that component in that world
                                                                   // old_value is the previous component's value
+                                                                  // the old_value parmeter is optional
                                                                   // new value is the component that was set
 
 world.OnRemove((Entity entity, int value) =>        // use world.OnRemove to set a callback  to invoke

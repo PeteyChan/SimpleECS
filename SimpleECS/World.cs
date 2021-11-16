@@ -204,6 +204,35 @@ namespace SimpleECS
         }
 
         /// <summary>
+        /// Adds a callback to be invoked whenever an entity sets a component of type
+        /// </summary>
+        /// <param name="callback">callback to invoke</param>
+        /// <param name="register">set true to add callback, false to remove the callback</param>
+        public World OnSet<Component>(SetComponentEventRefOnly<Component> callback, bool register = true)
+        {
+            if (this.TryGetWorldInfo(out var info))
+            {
+                var data = info.GetData<Component>();
+                if (register)
+                {
+                    if (data.set_ref_callback == null)  // if null add the callback to other callback
+                    {                                   // bit unoptimal but you can't remove the callback otherwise
+                        data.set_callback += (Entity e, Component c, ref Component c2) => data.set_ref_callback(e, ref c2);
+                        data.has_set_callback = true;
+                    }
+                    data.set_ref_callback += callback;
+                }
+                else
+                {
+                    data.set_ref_callback -= callback;
+                    if (data.set_ref_callback == null)
+                        data.set_ref_callback = delegate { };   // just makes sure that you don't get null reference when it fires
+                }
+            }
+            return this;
+        }
+
+        /// <summary>
         /// Adds a callback to be invoked whenever an entity removes a component of type
         /// </summary>
         /// <param name="callback">callback to invoke</param>
@@ -331,6 +360,7 @@ namespace SimpleECS.Internal
     using System.Collections.Generic;
 
     public delegate void SetComponentEvent<T>(Entity entity, T old_comp, ref T new_comp);
+    public delegate void SetComponentEventRefOnly<T>(Entity entity, ref T new_comp);
     public delegate void RemoveComponentEvent<T>(Entity entity, T component);
 
     public static partial class InternalExtensions
@@ -452,6 +482,7 @@ namespace SimpleECS.Internal
         {
             public T data;
             public SetComponentEvent<T> set_callback;
+            public SetComponentEventRefOnly<T> set_ref_callback;
             public RemoveComponentEvent<T> remove_callback;
 
             public override void InovkeSet(Entity entity, object original, object comp_buffer, int entity_arch_index)
@@ -672,7 +703,20 @@ namespace SimpleECS.Internal
 
             ref Entity_Info GetEntityData(Entity entity) => ref world.entity_data[entity.index];
 
-            public StructureEventHandler Set(Entity entity, int type_id, object component)  // even with boxing, seems faster than the alternative
+            public void Set<Component>(Entity entity, in Component component)
+            {
+                if (cache_events == 0 && entity.TryGetArchetypeInfo(out var info) && info.TryGetArray<Component>(out var buffer))
+                {
+                    int index = world.entity_data[entity.index].arch_index;
+                    Component old = buffer[index];
+                    buffer[index] = component;
+                    world.GetData<Component>().set_callback?.Invoke(entity, old, ref buffer[index]);
+                }
+                else
+                    Set(entity, TypeID<Component>.Value, component);
+            }
+
+            public void Set(Entity entity, int type_id, object component)  // even with boxing, seems faster than the alternative
             {
                 if (cache_events > 0)
                 {
@@ -707,7 +751,6 @@ namespace SimpleECS.Internal
                             target_archetype.entity_count++;
                             target_archetype.entities[target_index] = entity;
 
-
                             // moving components over
                             for (int i = 0; i < archetype.component_count; ++i)
                                 archetype.component_buffers[i].buffer.Move(entity_index, archetype.entity_count, target_archetype, target_index);
@@ -725,7 +768,6 @@ namespace SimpleECS.Internal
                         }
                     }
                 }
-                return this;
             }
 
             public void Remove(Entity entity, int type_id)

@@ -99,7 +99,7 @@ namespace SimpleECS
         public Entity Set<Component>(in Component component)
         {
             if (world.TryGetWorldInfo(out var world_info))
-                world_info.StructureEvents.Set(this, TypeID<Component>.Value, component);
+                world_info.StructureEvents.Set(this, component);
             return this;
         }
 

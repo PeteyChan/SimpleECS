@@ -8,7 +8,8 @@ Min C# Framework 4.7
 * Archetype based = fast component iteration
 * Very simple and easy to use queries
 
-> **Warning** - This project is a very much a hobby project to learn more about ECS. Although it's quite usuable in it's current state, the API is still very much in flux and breaking changes can occur in the future. 
+> **Warning** - This project is a very much a hobby project to learn more about ECS.
+>   Because of this, breaking API changes may occur as I tinker on the framework.
 
 
 ## Entities
@@ -75,6 +76,7 @@ There are 2 component callbacks in SimpleECS, world.OnSet() and world.OnRemove()
 world.OnSet((Entity entity, int old_value, ref int new_value) =>  // use world.OnSet to set a callback to invoke
   Console.WriteLine($"{entity} added {value}"));                  // whenever an entity sets that component in that world
                                                                   // old_value is the previous component's value
+                                                                  // the old_value parmeter is optional
                                                                   // new value is the component that was set
 
 world.OnRemove((Entity entity, int value) =>        // use world.OnRemove to set a callback  to invoke
@@ -168,7 +170,7 @@ entity.Has<string>();   // this will now return true
 entity.Has<int>();      // and this will now return false
 ```
 
-For maximum control over query iteration, manual iteration is possible.
+For maximum control over query iteration or a small performance boost, manual iteration is possible.
 When iterating manually though, make sure not to do any structural changes as
 this may invalidate iterators.
 ```C#
@@ -177,7 +179,7 @@ foreach(var archetype in query)
     if (archetype.TryGetEntityBuffer(out Entity[] entity_buffer) &&
         archetype.TryGetComponentBuffer(out int[] int_buffer))
     {
-        for(int i = 0; i < archetype.EntityCount; ++ i)
+        for(int i = 0; i < archetype.EntityCount; ++ i) // use the entity count not buffer length
             System.Console.WriteLine($"{entity_buffer[i]} {int_buffer[i]}");
     }
 }

@@ -145,14 +145,8 @@ namespace SimpleECS
         public void DestroyMatching()
         {
             if (Update(out var world_info))
-            {
-                world_info.StructureEvents.EnqueueEvents++;
-                for(int i = 0; i < archetype_count; ++ i)
-                {
-                    matching_archetypes[i].Destroy();
-                }
-                world_info.StructureEvents.EnqueueEvents--;
-            }
+                foreach(var archetype in GetArchetypes()) // using a copy is safer
+                    archetype.Destroy();
         }
 
         // keeps the queried archtypes up to date, return false if the query is not valid

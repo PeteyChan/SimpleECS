@@ -170,7 +170,7 @@ entity.Has<string>();   // this will now return true
 entity.Has<int>();      // and this will now return false
 ```
 
-For maximum control over query iteration, manual iteration is possible.
+For maximum control over query iteration or a small performance boost, manual iteration is possible.
 When iterating manually though, make sure not to do any structural changes as
 this may invalidate iterators.
 ```C#
@@ -179,7 +179,7 @@ foreach(var archetype in query)
     if (archetype.TryGetEntityBuffer(out Entity[] entity_buffer) &&
         archetype.TryGetComponentBuffer(out int[] int_buffer))
     {
-        for(int i = 0; i < archetype.EntityCount; ++ i)
+        for(int i = 0; i < archetype.EntityCount; ++ i) // use the entity count not buffer length
             System.Console.WriteLine($"{entity_buffer[i]} {int_buffer[i]}");
     }
 }

@@ -67,8 +67,8 @@ entity.Destroy();     // destroys the entity leaving it invalid
                       // all components on the entity will trigger their respective world.OnRemove() callbacks
 
 var newWorld = World.Create("new World");
-entity.TransferTo(new_world);   // transfer moves entity to the specified world
-                                // since the entity was moved, it's old value is now invalid
+entity.Transfer(new_world);   // transfer moves entity to the specified world
+
 ```
 ## Component Callbacks
 There are 2 component callbacks in SimpleECS, world.OnSet() and world.OnRemove().

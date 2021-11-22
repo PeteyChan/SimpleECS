@@ -8,20 +8,38 @@ namespace SimpleECS
     /// </summary>
     public struct Entity : IEquatable<Entity>
     {
-        internal Entity(World world, int index, int version)
+        internal Entity(int index, int version)
         {
-            this.world = world; this.index = index; this.version = version;
+            this.index = index; this.version = version;
         }
 
         /// <summary>
         /// the world that the entity belongs to
         /// </summary>
-        public readonly World world;
+        public World world
+        {
+            get
+            {
+                ref var info = ref Entities.All[index];
+                if (info.version == version)
+                    return info.arch_info.world_info.world;
+                return default;
+            }
+        }
 
         /// <summary>
         /// the archetype that the entity belongs to
         /// </summary>
-        public Archetype archetype => this.TryGetArchetypeInfo(out var archetype_info) ? archetype_info.archetype : default;
+        public Archetype archetype
+        {
+            get
+            {
+                ref var info = ref Entities.All[index];
+                if (info.version == version)
+                    return info.arch_info.archetype;
+                return default;
+            }
+        }
 
         /// <summary>
         /// the combination of the index and version act as a unique identifier for the entity
@@ -47,15 +65,16 @@ namespace SimpleECS
         /// <summary>
         /// returns true if the the entity is not destroyed or null
         /// </summary>
-        public bool IsValid() => World_Info.All[world.index].version == world.version && World_Info.All[world.index].data.entity_data[index].version == version;
+        public bool IsValid() => Entities.All[index].version == version;
 
         /// <summary>
         /// returns true if the entity has the component
         /// </summary>
         public bool Has<Component>()
         {
-            if (this.TryGetArchetypeInfo(out var archetype_info))
-                return archetype_info.Has(TypeID<Component>.Value);
+            ref var info = ref Entities.All[index];
+            if (info.version == version)
+                return info.arch_info.Has(TypeID<Component>.Value);
             return false;
         }
 
@@ -64,8 +83,9 @@ namespace SimpleECS
         /// </summary>
         public bool Has(Type type)
         {
-            if (this.TryGetArchetypeInfo(out var archetype_info))
-                return archetype_info.Has(TypeID.Get(type));
+            ref var info = ref Entities.All[index];
+            if (info.version == version)
+                return info.arch_info.Has(TypeID.Get(type));
             return false;
         }
 
@@ -75,8 +95,9 @@ namespace SimpleECS
         /// </summary>
         public Entity Remove<Component>()
         {
-            if (world.TryGetWorldInfo(out var world_info))
-                world_info.StructureEvents.Remove(this, TypeID<Component>.Value);
+            ref var info = ref Entities.All[index];
+            if (info.version == version)
+                info.arch_info.world_info.StructureEvents.Remove<Component>(this);//, TypeID<Component>.Value);
             return this;
         }
 
@@ -86,8 +107,10 @@ namespace SimpleECS
         /// </summary>
         public Entity Remove(Type type)
         {
-            if (world.TryGetWorldInfo(out var world_info))
-                world_info.StructureEvents.Remove(this, TypeID.Get(type));
+            ref var info = ref Entities.All[index];
+            if (info.version == version)
+                info.arch_info.world_info.GetData(TypeID.Get(type)).Remove(this, info.arch_info.world_info.StructureEvents);
+            //info.arch_info.world_info.StructureEvents.Remove(this, TypeID.Get(type));
             return this;
         }
 
@@ -98,8 +121,10 @@ namespace SimpleECS
         /// </summary>
         public Entity Set<Component>(in Component component)
         {
-            if (world.TryGetWorldInfo(out var world_info))
-                world_info.StructureEvents.Set(this, component);
+            ref var info = ref Entities.All[index];
+            if (info.version == version)
+                info.arch_info.world_info.StructureEvents.Set(this, component);
+            //info.arch_info.world_info.StructureEvents.Set(this, TypeID<Component>.Value, component);
             return this;
         }
 
@@ -111,8 +136,10 @@ namespace SimpleECS
         /// </summary>
         public Entity Set(Type type, object component_of_type)
         {
-            if (world.TryGetWorldInfo(out var world_info))
-                world_info.StructureEvents.Set(this, TypeID.Get(type), component_of_type);
+            ref var info = ref Entities.All[index];
+            if (info.version == version)
+                info.arch_info.world_info.GetData(TypeID.Get(type)).Set(this, component_of_type, info.arch_info.world_info.StructureEvents);
+            //info.arch_info.world_info.StructureEvents.Set(this, TypeID.Get(type), component_of_type);
             return this;
         }
 
@@ -121,16 +148,13 @@ namespace SimpleECS
         /// </summary>
         public bool TryGet<Component>(out Component component)
         {
-            if (world.TryGetWorldInfo(out var world_info))
+            ref var info = ref Entities.All[index];
+            if (info.version == version)
             {
-                var entity_data = world_info.entity_data[index];
-                if (entity_data.version == version)
+                if (info.arch_info.TryGetArray<Component>(out var buffer))
                 {
-                    if (entity_data.archetype_data.TryGetArray<Component>(out var pool))
-                    {
-                        component = pool[entity_data.arch_index];
-                        return true;
-                    }
+                    component = buffer[info.arch_index];
+                    return true;
                 }
             }
             component = default;
@@ -142,40 +166,33 @@ namespace SimpleECS
         /// </summary>
         public bool TryGet(Type type, out object component)
         {
-            if (world.TryGetWorldInfo(out var world_info))
+            ref var info = ref Entities.All[index];
+            if (info.version == version)
             {
-                var entity_data = world_info.entity_data[index];
-                if (entity_data.version == version)
+                if (info.arch_info.TryGetCompBuffer(TypeID.Get(type), out var buffer))
                 {
-                    if (entity_data.archetype_data.TryGetCompBuffer(TypeID.Get(type), out var pool))
-                    {
-                        component = pool.Get(entity_data.arch_index);
-                        return true;
-                    }
+                    component = buffer.Get(info.arch_index);
+                    return true;
                 }
             }
             component = default;
             return false;
         }
-        
+
         /// <summary>
         /// gets the reference to the component on the entity.
         /// throws an exception if the entity is invalid or does not have the component
         /// </summary>
         public ref Component Get<Component>()
         {
-            if (world.TryGetWorldInfo(out var world_info))
+            ref var entity_info = ref Entities.All[index];
+            if (entity_info.version == version)
             {
-                var entity_data = world_info.entity_data[index];
-                if (entity_data.version == version)
-                {
-                    if (entity_data.archetype_data.TryGetArray<Component>(out var pool))
-                        return ref pool[entity_data.arch_index];
-                    throw new Exception($"{this} does not contain a {typeof(Component).Name}");
-                }
-                throw new Exception($"{this} is invalid and cannot get {typeof(Component).Name}");
+                if (entity_info.arch_info.TryGetArray<Component>(out var buffer))
+                    return ref buffer[entity_info.arch_index];
+                throw new Exception($"{this} does not contain {typeof(Component).Name}");
             }
-            throw new Exception($"{this} world is not valid, cannot get {typeof(Component).Name}");
+            throw new Exception($"{this} is not valid entity, cannot get {typeof(Component).Name}");
         }
 
         /// <summary>
@@ -183,8 +200,10 @@ namespace SimpleECS
         /// </summary>
         public void TransferTo(World target_world)
         {
-            if (world.TryGetWorldInfo(out var world_info))
-                world_info.StructureEvents.Transfer(this, target_world);
+            ref var info = ref Entities.All[index];
+            if (info.version == version)
+                info.arch_info.world_info.StructureEvents.Transfer(this, target_world);
+
         }
 
         /// <summary>
@@ -192,15 +211,18 @@ namespace SimpleECS
         /// </summary>
         public void Destroy()
         {
-            if (world.TryGetWorldInfo(out var world_info))
-                world_info.StructureEvents.Destroy(this);
+            ref var info = ref Entities.All[index];
+            if (info.version == version)
+            {
+                info.arch_info.world_info.StructureEvents.Destroy(this);
+            }
         }
 
         bool IEquatable<Entity>.Equals(Entity other) => index == other.index && version == other.version;
 
         public override bool Equals(object obj) => obj is Entity e ? e == this : false;
 
-        public static bool operator ==(Entity a, Entity b) => a.world == b.world && a.index == b.index && a.version == b.version;
+        public static bool operator ==(Entity a, Entity b) => a.index == b.index && a.version == b.version;
 
         public static bool operator !=(Entity a, Entity b) => !(a == b);
 
@@ -213,43 +235,36 @@ namespace SimpleECS
         /// </summary>
         public object[] GetAllComponents()
         {
-            if (world.TryGetWorldInfo(out var world_info))
+            ref var info = ref Entities.All[index];
+            if (info.version == version)
             {
-                var entity_info = world_info.entity_data[index];
-                if (entity_info.version == version)
-                    return entity_info.archetype_data.GetAllComponents(entity_info.arch_index);
+                return info.arch_info.GetAllComponents(info.arch_index);
             }
             return new object[0];
         }
 
         /// <summary>
-        /// returns a copy of all the types of components in the entity
+        /// returns a copy of all the types of components attached to the entity
         /// </summary>
         public Type[] GetAllComponentTypes()
         {
-            if (this.TryGetArchetypeInfo(out var archetype_info))
-                return archetype_info.GetComponentTypes();
+            ref var info = ref Entities.All[index];
+            if (info.version == version)
+            {
+                return info.arch_info.GetComponentTypes();
+            }
             return new Type[0];
         }
-    }
-}
 
-namespace SimpleECS.Internal
-{
-    public static partial class InternalExtensions
-    {
-        public static bool TryGetArchetypeInfo(this Entity entity, out Archetype_Info archetypeData)
+        /// <summary>
+        /// returns how many components are attached to the entity
+        /// </summary>
+        public int GetComponentCount()
         {
-            if (entity.world.TryGetWorldInfo(out var world_Info))
-            {
-                if (world_Info.entity_data[entity.index].version == entity.version)
-                {
-                    archetypeData = world_Info.entity_data[entity.index].archetype_data;
-                    return true;
-                }
-            }
-            archetypeData = default;
-            return false;
+            ref var info = ref Entities.All[index];
+            if (info.version == version)
+                return info.arch_info.component_count;
+            return 0;
         }
-    }    
+    }
 }

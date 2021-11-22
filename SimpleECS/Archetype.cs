@@ -109,7 +109,7 @@ namespace SimpleECS
         public void ResizeBackingArrays()
         {
             if (this.TryGetArchetypeInfo(out var arch_info))
-                arch_info.world_data.StructureEvents.ResizeBackingArrays(this);
+                arch_info.world_info.StructureEvents.ResizeBackingArrays(this);
         }
 
         bool IEquatable<Archetype>.Equals(Archetype other)
@@ -209,7 +209,7 @@ namespace SimpleECS.Internal
     {
         public Archetype_Info(World_Info world, TypeSignature signature, int arch_index, int arch_version)
         {
-            this.world_data = world;
+            this.world_info = world;
             this.signature = signature;
             this.archetype = new Archetype(world.world, arch_index, arch_version);
 
@@ -219,16 +219,41 @@ namespace SimpleECS.Internal
             for (int i = 0; i < component_buffers.Length; ++i)
                 component_buffers[i].next = -1;
 
-            for (int i = 0; i < component_count; ++i)
+            // add components into empty bucket, skip if bucket is occupied
+            for(int i = 0 ; i < component_count; ++ i)
             {
                 var type = signature.Types[i];
                 var type_id = TypeID.Get(type);
-                var index = GetEmptyIndex(type_id % component_buffers.Length);
+                var index = type_id % component_buffers.Length;
                 ref var buffer_data = ref component_buffers[index];
-                buffer_data.buffer = CreatePool(type);
+                if (buffer_data.type_id == 0)
+                {
+                    buffer_data.type_id = type_id;
+                    buffer_data.buffer = CreatePool(type);
+                }
+            }
+            
+            // add skipped components into buckets not filled in first pass
+            // hopefully this minimizes lookup time
+            for(int i = 0; i < component_count; ++ i)   
+            {
+                var type = signature.Types[i];
+                var type_id = TypeID.Get(type);
+                if (ContainsType(type_id)) continue;
+                var index = GetEmptyIndex(type_id%component_buffers.Length);
+                ref var buffer_data = ref component_buffers[index];
                 buffer_data.type_id = type_id;
+                buffer_data.buffer = CreatePool(type);
             }
 
+            bool ContainsType(int type_id)
+            {
+                foreach(var val in component_buffers)
+                    if (val.type_id == type_id) return true;
+                return false;
+            }
+
+            // if current index is filled, will return an empty index with a way to get to that index from the provided one
             int GetEmptyIndex(int current_index)
             {
                 if (component_buffers[current_index].type_id == 0)
@@ -255,7 +280,7 @@ namespace SimpleECS.Internal
 
         public int entity_count;
         public Entity[] entities = new Entity[8];
-        public World_Info world_data;
+        public World_Info world_info;
         public TypeSignature signature;
         public readonly Archetype archetype;
         public readonly int component_count;

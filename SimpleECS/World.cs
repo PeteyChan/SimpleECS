@@ -5,6 +5,7 @@ namespace SimpleECS
     using System.Collections.Generic;
     using Internal;
 
+
     /// <summary>
     /// manages all entities and archetype information
     /// </summary>
@@ -347,16 +348,17 @@ namespace SimpleECS
         }
 
         /// <summary>
-        /// Tries to get the entity from the world by index
+        /// Tries to get the entity with index.
+        /// returns true if entity is valid
         /// </summary>
-        public bool TryGetEntity(int index, out Entity entity)
+        public static bool TryGetEntity(int index, out Entity entity)
         {
-            if (this.TryGetWorldInfo(out var world_info))
+            if (index <= Entities.Last)
             {
-                var entity_info = world_info.entity_data[index];
-                if (index > 0 && index < world_info.entity_count && entity_info.archetype_data != null)
+                var data = Entities.All[index];
+                if (data.arch_info != null)
                 {
-                    entity = new Entity(this, index, entity_info.version);
+                    entity = new Entity(index, data.version);
                     return true;
                 }
             }
@@ -417,8 +419,13 @@ namespace SimpleECS.Internal
 
     public partial class World_Info
     {
-        public static (World_Info data, int version)[] All =
-            new (World_Info data, int version)[] { (default, 1), default }; // added a version to the 0th index so that a default world will be invalid
+        static World_Info()
+        {
+            All = new (World_Info, int)[4];
+            All[0].version = 1; // added a version to the 0th index so that a default world will be invalid
+        }
+
+        public static (World_Info data, int version)[] All;
         public static int world_count;
 
         public string name;
@@ -428,32 +435,20 @@ namespace SimpleECS.Internal
             this.name = name;
             this.world = world;
             archetypes[0].version++;    // this is just to prevent default archetype and default entity from being valid
-            entity_data[0].version++;
             StructureEvents = new StructureEventHandler(this);
         }
 
-        public struct Entity_Info
-        {
-            public Archetype_Info archetype_data;
-            public int version;
-            public int arch_index;
-        }
-
         public int archetype_count => archetype_terminating_index - free_archetypes.Count;
-        public int entity_count => entity_data_count - free_entities.Count;
-        public Entity_Info[] entity_data = new Entity_Info[1024];
-        int entity_data_count;
-
+        public int entity_count;
         public int archetype_terminating_index;
         public int archetype_structure_update_count;
 
-        Stack<int> free_archetypes = new Stack<int>();
+        public Stack<int> free_archetypes = new Stack<int>();
         public WorldData[] world_data = new WorldData[32];
 
         public (Archetype_Info data, int version)[] archetypes = new (Archetype_Info, int)[32];
         public Dictionary<TypeSignature, int> signature_to_archetype_index = new Dictionary<TypeSignature, int>();
 
-        Stack<int> free_entities = new Stack<int>();
         public TypeSignature buffer_signature = new TypeSignature(); // just a scratch signature so that I'm not making new ones all the time
 
         public Archetype_Info GetArchetypeData(TypeSignature signature)
@@ -504,441 +499,495 @@ namespace SimpleECS.Internal
                 System.Array.Resize(ref world_data, size);
             }
             if (world_data[type_id] == null)
-                world_data[type_id] = (WorldData)System.Activator.CreateInstance(typeof(WorldData<>).MakeGenericType(TypeID.Get(type_id)));
+            {
+                var type = TypeID.Get(type_id);
+                world_data[type_id] = (WorldData)System.Activator.CreateInstance(typeof(WorldData<>).MakeGenericType(type));
+            }
             return world_data[type_id];
-        }
-
-        public abstract class WorldData
-        {
-            public abstract void InovkeSet(Entity entity, object original, object comp_buffer, int entity_arch_index);
-            public abstract void InvokeRemove(Entity entity, object component);
-            public bool has_remove_callback, has_set_callback;
-        }
-
-        public sealed class WorldData<T> : WorldData
-        {
-            public T data;
-            public SetComponentEvent<T> set_callback;
-            public SetComponentEventRefOnly<T> set_ref_callback;
-            public RemoveComponentEvent<T> remove_callback;
-
-            public override void InovkeSet(Entity entity, object original, object comp_buffer, int entity_arch_index)
-            {
-                set_callback?.Invoke(entity, (original == null ? default : (T)original), ref ((T[])comp_buffer)[entity_arch_index]);
-            }
-
-            public override void InvokeRemove(Entity entity, object component)
-            {
-                remove_callback?.Invoke(entity, (T)component);
-            }
-
-            public void CallSetRefCallback(Entity entity, T old_comp, ref T new_comp)
-            {
-                set_ref_callback.Invoke(entity, ref new_comp);
-            }
         }
 
         /// <summary>
         /// Handles all structural changes to the ecs world
         /// </summary>
         public StructureEventHandler StructureEvents;
+    }
 
-        public struct StructureEventHandler
+    public struct Entity_Info
+    {
+        public Archetype_Info arch_info;
+        public int version;
+        public int arch_index;
+    }
+
+    public static class Entities
+    {
+        static Entities()
         {
-            public StructureEventHandler(World_Info world)
+            All = new Entity_Info[1024];
+            Free = new Queue<int>(1024);
+            All[0].version++;
+        }
+
+        public static Entity_Info[] All;
+        public static Queue<int> Free;
+        public static int Last;
+    }
+
+    public abstract class WorldData
+    {
+        public bool has_remove_callback, has_set_callback;
+
+        public abstract void Set(in Entity entity, in StructureEventHandler handler);
+        public abstract void Set(in Entity entity, object component, in StructureEventHandler handler);
+        public abstract void Remove(in Entity entity, in StructureEventHandler handler);
+        public abstract void InvokeRemoveCallback(in Entity[] entities, in object buffer, int count);
+        public abstract void InvokeRemoveCallback(in Entity entity, in object obj);
+
+        public abstract void AddRemove(in Entity entity, object array, int index);
+        public abstract void PlayBackRemove();
+    }
+
+    public sealed class WorldData<T> : WorldData
+    {
+        public T data;
+        public SetComponentEvent<T> set_callback;
+        public SetComponentEventRefOnly<T> set_ref_callback;
+        public RemoveComponentEvent<T> remove_callback;
+
+        public Queue<T> set_queue = new Queue<T>();
+        public Queue<(Entity entity, T comp)> remove_queue = new Queue<(Entity entity, T comp)>();
+
+        public override void Set(in Entity entity, in StructureEventHandler handler)
+        {
+            handler.Set(entity, set_queue.Dequeue());
+        }
+
+        public override void Set(in Entity entity, object component, in StructureEventHandler handler)
+        {
+            handler.Set(entity, (T)component);
+        }
+
+        public override void Remove(in Entity entity, in StructureEventHandler handler) => handler.Remove<T>(entity); 
+        public override void InvokeRemoveCallback(in Entity[] entities, in object buffer, int count)
+        {
+            T[] array = (T[])buffer;
+            for(int i = 0; i < count; ++ i)
+                remove_callback?.Invoke(entities[i], array[i]);
+        }
+
+        public override void InvokeRemoveCallback(in Entity entity, in object obj)
+            => remove_callback?.Invoke(entity, (T)obj);
+
+        
+        public void CallSetRefCallback(Entity entity, T old_comp, ref T new_comp)
+        {
+            set_ref_callback.Invoke(entity, ref new_comp);
+        }
+
+        public override void AddRemove(in Entity entity, object array, int index)
+        {
+            remove_queue.Enqueue((entity, ((T[])array)[index]));
+        }
+
+        public override void PlayBackRemove()
+        {
+            while(remove_queue.Count > 0)
             {
-                cache_events = 0;
-                events = new Queue<EventData>();
-                this.world = world;
-            }
-
-            World_Info world;
-            int cache_events;
-            public int EnqueueEvents
-            {
-                get => cache_events;
-                set
-                {
-                    cache_events = value;
-                    ExecuteEventPlayback();
-                }
-            }
-            Queue<EventData> events;
-
-            struct EventData
-            {
-                public EventType type;
-                public Entity entity;
-                public int type_id;
-                public Archetype archetype;
-                public object obj_args;
-            }
-
-            enum EventType
-            {
-                CreateEntity,
-                DestroyEntity,
-                SetComponent,
-                RemoveComponent,
-                TransferEntity,
-                DestroyArchetype,
-                DestroyWorld,
-                ResizeBackingArrays
-            }
-
-            public void ExecuteEventPlayback()
-            {
-                while (cache_events == 0 && events.Count > 0)
-                {
-                    var e = events.Dequeue();
-                    switch (e.type)
-                    {
-                        case EventType.CreateEntity:
-                        {
-                            ref var data = ref world.entity_data[e.entity.index];
-                            if (e.archetype.IsValid())
-                            {
-                                SetUpEntity(e.entity, world.archetypes[e.archetype.index].data);
-                            }
-                            else world.free_entities.Push(e.entity.index);
-                        }
-                        break;
-
-                        case EventType.SetComponent:
-                            world.StructureEvents.Set(e.entity, e.type_id, e.obj_args);
-                            break;
-
-                        case EventType.RemoveComponent:
-                            Remove(e.entity, e.type_id);
-                            break;
-
-                        case EventType.DestroyEntity:
-                            Destroy(e.entity);
-                            break;
-
-                        case EventType.TransferEntity:
-                            Transfer(e.entity, (World)e.obj_args);
-                            break;
-
-                        case EventType.DestroyArchetype:
-                            DestroyArchetype(e.archetype);
-                            break;
-
-                        case EventType.DestroyWorld:
-                            DestroyWorld();
-                            break;
-
-                        case EventType.ResizeBackingArrays:
-                            ResizeBackingArrays(e.archetype);
-                            break;
-                    }
-                }
-            }
-
-            public void DestroyArchetype(Archetype archetype)
-            {
-                if (cache_events > 0)
-                {
-                    events.Enqueue(new EventData { type = EventType.DestroyArchetype, archetype = archetype });
-                }
-                else
-                {
-                    if (archetype.TryGetArchetypeInfo(out var arch_info))
-                    {
-                        world.signature_to_archetype_index.Remove(arch_info.signature);   // update archetype references
-                        world.archetypes[archetype.index].version++;
-                        world.archetypes[archetype.index].data = null;
-                        world.free_archetypes.Push(archetype.index);
-                        world.archetype_structure_update_count++;
-
-                        for (int i = 0; i < arch_info.entity_count; ++i)
-                        {
-                            var entity = arch_info.entities[i];
-                            world.entity_data[entity.index].version++;
-                            world.entity_data[entity.index].archetype_data = null;
-                            world.free_entities.Push(entity.index);
-                        }
-
-                        for (int i = 0; i < arch_info.component_count; ++i)
-                        {
-                            var pool = arch_info.component_buffers[i];
-                            var callback = world.GetData(pool.type_id);
-                            if (callback.has_remove_callback)
-                            {
-                                for (int e = 0; e < arch_info.entity_count; ++e)
-                                {
-                                    callback.InvokeRemove(arch_info.entities[e], pool.buffer.Get(e));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            public void DestroyWorld()
-            {
-                if (cache_events > 0)
-                    events.Enqueue(new EventData { type = EventType.DestroyWorld });
-                else
-                {
-                    ref var world_info = ref All[world.world.index];
-                    if (world_info.version == world.world.version)  // still needs to be checked incase multiple destorys are queued
-                    {
-                        world_info.version++;
-                        foreach (var archetype in world_info.data.archetypes)
-                        {
-                            var arche_info = archetype.data;
-                            if (arche_info == null) continue;
-
-                            for (int i = 0; i < arche_info.component_count; ++i)
-                            {
-                                var pool = arche_info.component_buffers[i];
-                                var world_data = world_info.data.GetData(pool.type_id);
-                                if (world_data.has_remove_callback)
-                                {
-                                    for (int e = 0; e < arche_info.entity_count; ++e)
-                                    {
-                                        world_data.InvokeRemove(arche_info.entities[e], pool.buffer.Get(e));
-                                    }
-                                }
-                            }
-                        }
-                        world_info.data = null;
-                    }
-                }
-            }
-
-            public Entity CreateEntity(Archetype_Info archetype_data)
-            {
-                int index = 0;
-                if (world.free_entities.Count > 0)
-                    index = world.free_entities.Pop();
-                else
-                {
-                    index = world.entity_data_count;
-                    if (index == world.entity_data.Length)
-                        System.Array.Resize(ref world.entity_data, index * 2);
-                    world.entity_data_count++;
-                }
-                var version = world.entity_data[index].version;
-                var entity = new Entity(world.world, index, version);
-
-                if (cache_events > 0)
-                {
-                    world.entity_data[index].version++;
-                    events.Enqueue(new EventData { type = EventType.CreateEntity, entity = entity, archetype = archetype_data.archetype });
-                }
-                else SetUpEntity(entity, archetype_data);
-                return entity;
-            }
-
-            void SetUpEntity(Entity entity, Archetype_Info archetype_data)
-            {
-                ref var entity_data = ref world.entity_data[entity.index];
-                entity_data.version = entity.version;
-                entity_data.archetype_data = archetype_data;
-                var arch_index = entity_data.arch_index = archetype_data.entity_count;
-                archetype_data.entity_count++;
-                archetype_data.EnsureCapacity(arch_index);
-                archetype_data.entities[arch_index] = entity;
-            }
-
-            ref Entity_Info GetEntityData(Entity entity) => ref world.entity_data[entity.index];
-
-            public void Set<Component>(Entity entity, in Component component)
-            {
-                if (cache_events == 0 && entity.TryGetArchetypeInfo(out var info) && info.TryGetArray<Component>(out var buffer))
-                {
-                    int index = world.entity_data[entity.index].arch_index;
-                    Component old = buffer[index];
-                    buffer[index] = component;
-                    world.GetData<Component>().set_callback?.Invoke(entity, old, ref buffer[index]);
-                }
-                else
-                    Set(entity, TypeID<Component>.Value, component);
-            }
-
-            public void Set(Entity entity, int type_id, object component)  // even with boxing, seems faster than the alternative
-            {
-                if (cache_events > 0)
-                {
-                    events.Enqueue(new EventData { type = EventType.SetComponent, entity = entity, obj_args = component, type_id = type_id });
-                }
-                else
-                {
-                    ref var entity_data = ref GetEntityData(entity);
-                    if (entity.version == entity_data.version)
-                    {
-                        var archetype = entity_data.archetype_data;
-                        if (archetype.TryGetCompBuffer(type_id, out var set_pool))  // if archetype already has component, just set and fire event
-                        {
-                            var original = set_pool.Get(entity_data.arch_index);
-                            set_pool.Set(entity_data.arch_index, component);
-                            var data = world.GetData(type_id);
-                            if (data.has_set_callback)
-                                data.InovkeSet(entity, original, set_pool.array, entity_data.arch_index);
-                        }
-                        else
-                        {
-                            var target_archetype = entity_data.archetype_data = world.GetArchetypeData(world.buffer_signature.Copy(archetype.signature).Add(type_id));
-                            // removing entity from current archetype
-                            var entity_index = entity_data.arch_index;
-                            archetype.entity_count--;
-                            var last = archetype.entities[entity_index] = archetype.entities[archetype.entity_count];
-                            GetEntityData(last).arch_index = entity_index; // reassign moved entity to to index
-
-                            // adding entity to target archetype
-                            var target_index = entity_data.arch_index = target_archetype.entity_count;
-                            target_archetype.EnsureCapacity(target_index);
-                            target_archetype.entity_count++;
-                            target_archetype.entities[target_index] = entity;
-
-                            // moving components over
-                            for (int i = 0; i < archetype.component_count; ++i)
-                                archetype.component_buffers[i].buffer.Move(entity_index, archetype.entity_count, target_archetype, target_index);
-
-                            // setting the added component and calling the callback event
-                            if (target_archetype.TryGetCompBuffer(type_id, out var target_buffer))
-                            {
-                                target_buffer.Set(target_index, component);
-                                var data = world.GetData(type_id);
-                                if (data.has_set_callback)
-                                    data.InovkeSet(entity, null, target_buffer.array, entity_data.arch_index);
-                            }
-                            else
-                                throw new System.Exception("Frame Work Bug");
-                        }
-                    }
-                }
-            }
-
-            public void Remove(Entity entity, int type_id)
-            {
-                if (cache_events > 0)
-                {
-                    events.Enqueue(new EventData { type = EventType.RemoveComponent, entity = entity, type_id = type_id });
-                }
-                else
-                {
-                    ref var entity_data = ref GetEntityData(entity);
-                    if (entity.version == entity_data.version)
-                    {
-                        var archetype = entity_data.archetype_data;
-                        if (archetype.TryGetCompBuffer(type_id, out var set_pool))  // only needs to be performed if entity actually has component
-                        {
-                            var target_archetype = entity_data.archetype_data = world.GetArchetypeData(world.buffer_signature.Copy(archetype.signature).Remove(type_id));
-                            // removing entity from current archetype
-                            var entity_arch_index = entity_data.arch_index;
-                            archetype.entity_count--;
-                            var last = archetype.entities[entity_arch_index] = archetype.entities[archetype.entity_count];
-                            GetEntityData(last).arch_index = entity_arch_index; // reassign moved entity to to index
-
-                            // adding entity to target archetype
-                            var target_index = entity_data.arch_index = target_archetype.entity_count;
-                            target_archetype.EnsureCapacity(target_index);
-                            target_archetype.entity_count++;
-                            target_archetype.entities[target_index] = entity;
-
-                            var removed = set_pool.Get(entity_arch_index);
-
-                            // moving components over
-                            for (int i = 0; i < archetype.component_count; ++i)
-                                archetype.component_buffers[i].buffer.Move(entity_arch_index, archetype.entity_count, target_archetype, target_index);
-
-                            // calling remove event if needed
-                            var data = world.GetData(type_id);
-                            if (data.has_remove_callback)
-                                world.GetData(type_id).InvokeRemove(entity, removed);
-                        }
-                    }
-                }
-            }
-
-            public void Transfer(Entity entity, World target_world)
-            {
-                if (cache_events > 0)
-                    events.Enqueue(new EventData { type = EventType.TransferEntity, entity = entity, obj_args = target_world });
-                else
-                {
-                    if (entity.IsValid() && target_world.TryGetWorldInfo(out var target_world_info))
-                    {
-                        ref var entity_data = ref GetEntityData(entity);
-                        var entity_archetype = entity_data.archetype_data;
-                        var target_archtype = target_world_info.GetArchetypeData(entity_archetype.signature);
-                        var target_entity = target_archtype.archetype.CreateEntity();
-                        var target_entity_data = target_world_info.StructureEvents.GetEntityData(target_entity);
-                        var entity_index = entity_data.arch_index;
-                        var target_index = target_entity_data.arch_index;
-                        target_archtype.EnsureCapacity(target_index);
-
-                        // swapping current entity with last entity
-                        entity_archetype.entity_count--;
-                        var last = entity_archetype.entities[entity_index] = entity_archetype.entities[entity_archetype.entity_count];
-                        GetEntityData(last).arch_index = entity_index;
-
-                        for (int i = 0; i < entity_archetype.component_count; ++i)  // move all components over to ntarget archetype
-                        {
-                            var entity_comp_buffer = entity_archetype.component_buffers[i].buffer;
-                            var target_array = target_archtype.component_buffers[i].buffer.array;
-                            entity_comp_buffer.Move(entity_index, entity_archetype.entity_count, target_array, target_index);
-                        }
-
-                        // freeing transfered entity in current world
-                        entity_data.version++;
-                        entity_data.archetype_data = default;
-                        world.free_entities.Push(entity.index);
-                    }
-                }
-            }
-
-            public void Destroy(Entity entity)
-            {
-                if (cache_events > 0)
-                    events.Enqueue(new EventData { type = EventType.DestroyEntity, entity = entity });
-                else
-                {
-                    if (entity)
-                    {
-                        ref var entity_data = ref GetEntityData(entity);
-                        var archetype_data = entity_data.archetype_data;
-                        var entity_index = entity_data.arch_index;
-                        entity_data.version++;  // remove entity from world
-                        entity_data.archetype_data = default;
-                        archetype_data.entity_count--;
-
-                        var last = archetype_data.entities[entity_index] = archetype_data.entities[archetype_data.entity_count];
-                        GetEntityData(last).arch_index = entity_index;  //switch the entity in archetype with the last entity in archetype
-
-                        int count = events.Count;
-                        object[] removed = new object[archetype_data.component_count];
-                        for (int i = 0; i < archetype_data.component_count; ++i) // collect all removed components
-                        {
-                            var pool_data = archetype_data.component_buffers[i];
-                            removed[i] = pool_data.buffer.Get(entity_index);
-                            pool_data.buffer.Remove(entity_index, archetype_data.entity_count);
-
-                        }
-                        world.free_entities.Push(entity.index); // add entity to the free indexes so it can be reused
-
-                        for (int i = 0; i < archetype_data.component_count; ++i)
-                        {
-                            var pool_data = archetype_data.component_buffers[i];
-                            var data = world.GetData(pool_data.type_id);
-                            if (data.has_remove_callback)
-                                data.InvokeRemove(entity, removed[i]);  // call any remove callbacks that need to be invoked
-                        }
-                    }
-                }
-            }
-
-            public void ResizeBackingArrays(Archetype archetype)
-            {
-                if (cache_events > 0)
-                    events.Enqueue(new EventData { type = EventType.ResizeBackingArrays, archetype = archetype });
-                else
-                    if (archetype.TryGetArchetypeInfo(out var info))
-                    info.ResizeBackingArrays();
+                var data = remove_queue.Dequeue();
+                remove_callback?.Invoke(data.entity, data.comp);
             }
         }
+
+        public Queue<(Entity entity, T  component)> remove_event_buffer = new Queue<(Entity entity, T component)>() ; // buffer to hold component values to avoid allocations    
     }
+
+    public struct StructureEventHandler
+    {
+        public StructureEventHandler(World_Info world)
+        {
+            cache_events = 0;
+            events = new Queue<EventData>();
+            this.world = world;
+        }
+
+        World_Info world;
+        int cache_events;
+        public int EnqueueEvents
+        {
+            get => cache_events;
+            set
+            {
+                cache_events = value;
+                ExecuteEventPlayback();
+            }
+        }
+        Queue<EventData> events;
+
+        struct EventData
+        {
+            public EventType type;
+            public Entity entity;
+            public int type_id;
+            public Archetype archetype;
+            public World world;
+        }
+
+        enum EventType
+        {
+            CreateEntity,
+            DestroyEntity,
+            SetComponent,
+            RemoveComponent,
+            TransferEntity,
+            DestroyArchetype,
+            DestroyWorld,
+            ResizeBackingArrays,
+        }
+
+        public void ExecuteEventPlayback()
+        {
+            while (cache_events == 0 && events.Count > 0)
+            {
+                var e = events.Dequeue();
+                switch (e.type)
+                {
+                    case EventType.CreateEntity:
+                    {
+                        if (e.archetype.IsValid())
+                        {
+                            SetUpEntity(e.entity, world.archetypes[e.archetype.index].data);
+                        }
+                        else Entities.Free.Enqueue(e.entity.index);
+                    }
+                    break;
+
+                    case EventType.SetComponent:
+                        world.GetData(e.type_id).Set(e.entity, this);
+                        //world.StructureEvents.Set(e.entity, e.type_id, );
+                        break;
+
+                    case EventType.RemoveComponent:
+                        world.GetData(e.type_id).Remove(e.entity, this);
+                        //Remove(e.entity, e.type_id);
+                        break;
+
+                    case EventType.DestroyEntity:
+                        Destroy(e.entity);
+                        break;
+
+                    case EventType.TransferEntity:
+                        Transfer(e.entity, e.world);
+                        break;
+
+                    case EventType.DestroyArchetype:
+                        DestroyArchetype(e.archetype);
+                        break;
+
+                    case EventType.DestroyWorld:
+                        DestroyWorld();
+                        break;
+
+                    case EventType.ResizeBackingArrays:
+                        ResizeBackingArrays(e.archetype);
+                        break;
+                }
+            }
+        }
+
+        public Entity CreateEntity(Archetype_Info archetype_data)
+        {
+            int index = 0;
+            if (Entities.Free.Count > 0)
+                index = Entities.Free.Dequeue();
+            else
+            {
+                index = Entities.Last;
+                if (index == Entities.All.Length)
+                    System.Array.Resize(ref Entities.All, index * 2);
+                Entities.Last++;
+            }
+            var version = Entities.All[index].version;
+            var entity = new Entity(index, version);
+
+            if (cache_events > 0)
+            {
+                Entities.All[index].version++;
+                events.Enqueue(new EventData { type = EventType.CreateEntity, entity = entity, archetype = archetype_data.archetype });
+            }
+            else SetUpEntity(entity, archetype_data);
+            return entity;
+        }
+
+        void SetUpEntity(Entity entity, Archetype_Info archetype_data)
+        {
+            ref var entity_data = ref Entities.All[entity.index];
+            entity_data.version = entity.version;
+            entity_data.arch_info = archetype_data;
+            var arch_index = entity_data.arch_index = archetype_data.entity_count;
+            archetype_data.entity_count++;
+            archetype_data.world_info.entity_count++;
+            archetype_data.EnsureCapacity(arch_index);
+            archetype_data.entities[arch_index] = entity;
+        }
+
+        public void Set<Component>(in Entity entity, in Component component)
+        {
+            var world_data  = world.GetData<Component>();
+            if (cache_events > 0)
+            {
+                world_data.set_queue.Enqueue(component);
+                events.Enqueue(new EventData { type = EventType.SetComponent, entity = entity, type_id = TypeID<Component>.Value });
+                return;
+            }
+
+            ref var entity_info = ref Entities.All[entity.index];
+            if (entity_info.version == entity.version && entity_info.arch_info.TryGetArray<Component>(out var buffer))
+            {
+                int index = entity_info.arch_index;
+                Component old = buffer[index];
+                buffer[index] = component;
+                world_data.set_callback?.Invoke(entity, old, ref buffer[index]);
+            }
+            else
+            {
+                var old_index = entity_info.arch_index;
+                var archetype = entity_info.arch_info;
+                var last_index = --archetype.entity_count;
+                var last = archetype.entities[old_index] = archetype.entities[last_index];
+                Entities.All[last.index].arch_index = old_index; // reassign moved entity to to index
+
+                // adding entity to target archetype
+                var target_archetype = entity_info.arch_info = world.GetArchetypeData(world.buffer_signature.Copy(archetype.signature).Add<Component>());
+                var target_index = entity_info.arch_index = target_archetype.entity_count;
+                target_archetype.EnsureCapacity(target_index);
+                target_archetype.entity_count++;
+
+                // moving components over
+                target_archetype.entities[target_index] = entity;
+                for (int i = 0; i < archetype.component_count; ++i)
+                    archetype.component_buffers[i].buffer.Move(old_index, last_index, target_archetype, target_index);
+
+                // setting the added component and calling the callback event
+                if (target_archetype.TryGetArray<Component>(out var target_buffer))
+                {
+                    target_buffer[target_index] = component;
+                    world_data.set_callback?.Invoke(entity, default, ref target_buffer[target_index]);
+                }
+                else
+                    throw new System.Exception("Frame Work Bug");
+            }
+        }
+
+        public void Remove<Component>(in Entity entity)
+        {
+            int type_id = TypeID<Component>.Value;
+            if (cache_events > 0)
+            {
+                events.Enqueue(new EventData { type = EventType.RemoveComponent, entity = entity, type_id = type_id });
+            }
+            else
+            {
+                ref var entity_info = ref Entities.All[entity.index];
+                if (entity.version == entity_info.version)
+                {
+                    var old_arch = entity_info.arch_info;
+                    if (old_arch.TryGetArray<Component>(out var old_buffer))  // if archetype already has component, just set and fire event
+                    {
+                        var old_index = entity_info.arch_index;
+
+                        var target_arch = world.GetArchetypeData(world.buffer_signature.Copy(old_arch.signature).Remove(type_id));
+                        var target_index = target_arch.entity_count;
+                        target_arch.entity_count++;
+                        target_arch.EnsureCapacity(target_index);
+
+                        old_arch.entity_count--;
+                        var last_index = old_arch.entity_count;
+                        var last = old_arch.entities[old_index] = old_arch.entities[last_index];
+                        Entities.All[last.index].arch_index = old_index;
+
+                        entity_info.arch_index = target_index;
+                        entity_info.arch_info = target_arch;
+
+                        target_arch.entities[target_index] = entity;
+                        var removed = old_buffer[old_index];
+                        for (int i = 0; i < old_arch.component_count; ++i)
+                            old_arch.component_buffers[i].buffer.Move(old_index, last_index, target_arch, target_index);
+                        world.GetData<Component>().remove_callback?.Invoke(entity, removed);
+                    }
+                }
+            }
+        }
+
+        public void Transfer(Entity entity, World target_world)
+        {
+            if (cache_events > 0)
+                events.Enqueue(new EventData { type = EventType.TransferEntity, entity = entity, world = target_world });
+            else
+            {
+                ref var entity_info = ref Entities.All[entity.index];
+                if (entity_info.version == entity.version
+                    && entity_info.arch_info.world_info.world != target_world
+                    && target_world.TryGetWorldInfo(out var target_world_info))
+                {
+                    var target_arch = target_world_info.GetArchetypeData(entity_info.arch_info.signature);
+                    var target_index = target_arch.entity_count;
+                    target_arch.EnsureCapacity(target_index);
+                    target_arch.entity_count++;
+                    target_arch.world_info.entity_count++;
+
+                    var old_index = entity_info.arch_index;
+                    var old_arch = entity_info.arch_info;
+                    var last_index = --old_arch.entity_count;
+                    --old_arch.world_info.entity_count;
+
+                    var last = old_arch.entities[old_index] = old_arch.entities[last_index];
+                    Entities.All[last.index].arch_index = old_index;
+                    target_arch.entities[target_index] = entity;
+
+                    for (int i = 0; i < old_arch.component_count; ++i)
+                        old_arch.component_buffers[i].buffer.Move(old_index, last_index, target_arch.component_buffers[i].buffer.array, target_index);
+
+                    entity_info.arch_index = target_index;
+                    entity_info.arch_info = target_arch;
+                }
+            }
+        }
+
+        public void Destroy(Entity entity)
+        {
+            if (cache_events > 0)
+                events.Enqueue(new EventData { type = EventType.DestroyEntity, entity = entity });
+            else
+            {
+                ref var entity_info = ref Entities.All[entity.index];
+                if (entity_info.version == entity.version)
+                {
+                    var old_arch = entity_info.arch_info;
+                    var old_index = entity_info.arch_index;
+                    --old_arch.entity_count;
+                    --world.entity_count;
+                    var last_index = old_arch.entity_count;
+                    var last = old_arch.entities[old_index] = old_arch.entities[last_index];    // swap 
+                    Entities.All[last.index].arch_index = old_index;
+
+                    var to_call = new (WorldData callback, object removed)[old_arch.component_count];   // this causes boxing, unsure how to cleanly do this
+                    int to_call_count = 0;
+
+                    for (int i = 0; i < old_arch.component_count; ++i)
+                    {
+                        var pool = old_arch.component_buffers[i];
+                        var callback = world.GetData(pool.type_id);
+                        if (callback.has_remove_callback)
+                        {
+                            to_call[to_call_count] = (callback, pool.buffer.Get(entity_info.arch_index));
+                            to_call_count ++;                    
+                        }
+                        pool.buffer.Remove(old_index, last_index);
+                    }
+
+                    entity_info.version++;
+                    entity_info.arch_info = default;
+                    Entities.Free.Enqueue(entity.index);
+
+                    for(int i = 0; i < to_call_count; ++ i)
+                        to_call[i].callback.InvokeRemoveCallback(entity, to_call[i].removed);
+                }
+            }
+        }
+
+        public void DestroyArchetype(Archetype archetype)
+        {
+            if (cache_events > 0)
+            {
+                events.Enqueue(new EventData { type = EventType.DestroyArchetype, archetype = archetype });
+            }
+            else
+            {
+                if (archetype.TryGetArchetypeInfo(out var arch_info))
+                {
+                    world.entity_count -= arch_info.entity_count;
+                    world.signature_to_archetype_index.Remove(arch_info.signature);   // update archetype references
+                    world.archetypes[archetype.index].version++;
+                    world.archetypes[archetype.index].data = default;
+                    world.free_archetypes.Push(archetype.index);
+                    world.archetype_structure_update_count++;
+
+                    for (int i = 0; i < arch_info.entity_count; ++i)    // remove entities from world
+                    {
+                        var entity = arch_info.entities[i];
+                        ref var info = ref Entities.All[entity.index];
+                        info.version++;
+                        info.arch_info = default;
+                        Entities.Free.Enqueue(entity.index);
+                    }
+
+                    for (int i = 0; i < arch_info.component_count; ++i) // invoke callbacks
+                    {
+                        var pool = arch_info.component_buffers[i];
+                        var callback = world.GetData(pool.type_id);
+                        if (callback.has_remove_callback)
+                        {
+                            callback.InvokeRemoveCallback(arch_info.entities, pool.buffer.array, arch_info.entity_count);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void DestroyWorld()
+        {
+            if (cache_events > 0)
+                events.Enqueue(new EventData { type = EventType.DestroyWorld });
+            else
+            {
+                ref var world_info = ref World_Info.All[world.world.index];
+                if (world_info.version == world.world.version)  // still needs to be checked incase multiple destorys are queued
+                {
+                    world_info.version++;
+                    var data = world_info.data;
+                    world_info.data = default;
+
+                    foreach (var archetype in data.archetypes)   // delete all entities first
+                    {
+                        var arche_info = archetype.data;
+                        if (arche_info == null) continue;
+
+                        for (int i = 0; i < arche_info.entity_count; ++i)
+                        {
+                            var index = arche_info.entities[i].index;
+                            ref var info = ref Entities.All[index];
+                            info.version++;
+                            info.arch_info = default;
+                            Entities.Free.Enqueue(index);
+                        }
+                    }
+                    
+                    foreach (var archetype in data.archetypes) // then do all their callbacks
+                    {
+                        var arche_info = archetype.data;
+                        if (arche_info == null) continue;
+                        for (int i = 0; i < arche_info.component_count; ++i)
+                        {
+                            var pool = arche_info.component_buffers[i];
+                            var world_data = data.GetData(pool.type_id);
+                            if (world_data.has_remove_callback)
+                            {
+                                world_data.InvokeRemoveCallback(arche_info.entities, pool.buffer.array, arche_info.entity_count);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public void ResizeBackingArrays(Archetype archetype)
+        {
+            if (cache_events > 0)
+                events.Enqueue(new EventData { type = EventType.ResizeBackingArrays, archetype = archetype });
+            else
+                if (archetype.TryGetArchetypeInfo(out var info))
+                info.ResizeBackingArrays();
+        }
+    }
+
 }

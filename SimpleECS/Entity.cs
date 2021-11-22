@@ -198,7 +198,7 @@ namespace SimpleECS
         /// <summary>
         /// transfers the entity to the target world
         /// </summary>
-        public void TransferTo(World target_world)
+        public void Transfer(World target_world)
         {
             ref var info = ref Entities.All[index];
             if (info.version == version)

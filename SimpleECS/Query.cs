@@ -2,6 +2,7 @@
 namespace SimpleECS
 {
     using System;
+    using System.Linq;
     using System.Collections;
     using System.Collections.Generic;
     using Internal;
@@ -201,6 +202,17 @@ namespace SimpleECS
             (include.Count > 0 ? $" -> Has {include.TypesToString()}" : "") +
             (exclude.Count > 0 ? $" -> Not {exclude.TypesToString()}" : "");
         }
+
+        /// <summary>
+        /// returns all the types in the queries' has filter
+        /// </summary>
+        public IReadOnlyList<Type> GetHasFilterTypes() => include.Types;
+
+        /// <summary>
+        /// returns all the types in the queries' not filter
+        /// </summary>
+        public IReadOnlyList<Type> GetNotFilterTypes() => exclude.Types;
+        
 
         IEnumerator<Archetype> IEnumerable<Archetype>.GetEnumerator()
         {

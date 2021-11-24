@@ -22,6 +22,12 @@ namespace SimpleECS
             => this.TryGetArchetypeInfo(out var archetype_Info) ? new TypeSignature(archetype_Info.signature) : new TypeSignature();
 
         /// <summary>
+        /// returns a copy of component types in this archetype
+        /// </summary>
+        public Type[] GetTypes()
+            => this.TryGetArchetypeInfo(out var archetype_Info) ? archetype_Info.GetComponentTypes() : new Type[0];
+        
+        /// <summary>
         /// the world this archetype belongs to
         /// </summary>
         public readonly World world;
@@ -53,7 +59,7 @@ namespace SimpleECS
         {
             Entity[] entities = new Entity[EntityCount];
             if (this.TryGetArchetypeInfo(out var archetype_info))
-                for (int i = 0; i < EntityCount; ++i)
+                for (int i = 0; i < archetype_info.entity_count; ++i)
                     entities[i] = archetype_info.entities[i];
             return entities;
         }
@@ -99,8 +105,8 @@ namespace SimpleECS
         /// </summary>
         public void Destroy()
         {
-            if (world.TryGetWorldInfo(out var world_info))
-                world_info.StructureEvents.DestroyArchetype(this);
+            if (world.IsValid())
+                World_Info.All[world.index].data.StructureEvents.DestroyArchetype(this);
         }
 
         /// <summary>
@@ -108,8 +114,8 @@ namespace SimpleECS
         /// </summary>
         public void ResizeBackingArrays()
         {
-            if (this.TryGetArchetypeInfo(out var arch_info))
-                arch_info.world_info.StructureEvents.ResizeBackingArrays(this);
+            if (world.IsValid())
+                World_Info.All[world.index].data.StructureEvents.ResizeBackingArrays(this);
         }
 
         bool IEquatable<Archetype>.Equals(Archetype other)
@@ -133,20 +139,17 @@ namespace SimpleECS
 
         public override int GetHashCode() => index;
 
-        public override string ToString() => $"{(IsValid() ? "" : "~")}Arch {GetTypeString()}";
+        public override string ToString() => $"{(IsValid() ? "" : "~")}Arch [{GetTypeString()}]";
 
         string GetTypeString()
         {
             string val = "";
             if (this.TryGetArchetypeInfo(out var archetype_info))
             {
-                val += "[";
                 for(int i = 0; i < archetype_info.component_count; ++ i)
                 {
-                    val += " ";
-                    val += TypeID.Get(archetype_info.component_buffers[i].type_id).Name;
+                    val += $" {TypeID.Get(archetype_info.component_buffers[i].type_id).Name}";
                 }
-                val += " ]";
             }
             return val;
         }
@@ -370,28 +373,6 @@ namespace SimpleECS.Internal
                 if (data.type_id == type_id)
                 {
                     buffer = data.buffer;
-                    return true;
-                }
-            }
-            buffer = default;
-            return false;
-        }
-
-        public bool TryGetCompBuffer<Component>(out CompBuffer<Component> buffer)
-        {
-            var type_id = TypeID<Component>.Value;
-            var data = component_buffers[type_id % component_buffers.Length];
-            if (data.type_id == type_id)
-            {
-                buffer = (CompBuffer<Component>)data.buffer;
-                return true;
-            }
-            while (data.next >= 0)
-            {
-                data = component_buffers[data.next];
-                if (data.type_id == type_id)
-                {
-                    buffer = (CompBuffer<Component>)data.buffer;
                     return true;
                 }
             }

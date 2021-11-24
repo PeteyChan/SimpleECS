@@ -293,9 +293,8 @@ namespace SimpleECS
         /// </summary>
         public void ResizeBackingArrays()
         {
-            if (this.TryGetWorldInfo(out var info))
-                foreach (var arch_info in info.archetypes)
-                    arch_info.data?.archetype.ResizeBackingArrays();
+            foreach(var archetype in GetArchetypes())
+                archetype.ResizeBackingArrays();
         }
 
         /// <summary>
@@ -303,14 +302,30 @@ namespace SimpleECS
         /// </summary>
         public void DestroyEmptyArchetypes()
         {
-            if (this.TryGetWorldInfo(out var world_info))
+            foreach (var archetype in GetArchetypes())
             {
-                foreach (var arch in world_info.archetypes)
-                {
-                    if (arch.data == null) continue;
-                    if (arch.data.entity_count == 0)
-                        arch.data.archetype.Destroy();
-                }
+                if (archetype.EntityCount == 0)
+                    archetype.Destroy();
+            }
+        }
+
+        /// <summary>
+        /// When enabled all structural changes will be cached like they are when iterating a query.
+        /// They will be applied once you disable caching.
+        /// Use to prevent iterator invalidation when manually iterating over entity or component buffers.
+        /// </summary>
+        public bool CacheStructuralEvents
+        {
+            get
+            {
+                if (this.TryGetWorldInfo(out var info))
+                    return info.cache_structural_changes;
+                return false;
+            }
+            set
+            {
+                if (this.TryGetWorldInfo(out var info))
+                    info.cache_structural_changes = value;
             }
         }
 
@@ -438,6 +453,17 @@ namespace SimpleECS.Internal
             StructureEvents = new StructureEventHandler(this);
         }
 
+        bool _cache_structural_changes;
+        public bool cache_structural_changes
+        {
+            get => _cache_structural_changes;
+            set
+            {
+                StructureEvents.EnqueueEvents += value ? 1 : -1;
+                _cache_structural_changes = value;
+            }
+        }
+
         public int archetype_count => archetype_terminating_index - free_archetypes.Count;
         public int entity_count;
         public int archetype_terminating_index;
@@ -515,6 +541,7 @@ namespace SimpleECS.Internal
     public struct Entity_Info
     {
         public Archetype_Info arch_info;
+        public World_Info world_info;
         public int version;
         public int arch_index;
     }
@@ -536,15 +563,11 @@ namespace SimpleECS.Internal
     public abstract class WorldData
     {
         public bool has_remove_callback, has_set_callback;
-
         public abstract void Set(in Entity entity, in StructureEventHandler handler);
         public abstract void Set(in Entity entity, object component, in StructureEventHandler handler);
         public abstract void Remove(in Entity entity, in StructureEventHandler handler);
         public abstract void InvokeRemoveCallback(in Entity[] entities, in object buffer, int count);
         public abstract void InvokeRemoveCallback(in Entity entity, in object obj);
-
-        public abstract void AddRemove(in Entity entity, object array, int index);
-        public abstract void PlayBackRemove();
     }
 
     public sealed class WorldData<T> : WorldData
@@ -555,7 +578,6 @@ namespace SimpleECS.Internal
         public RemoveComponentEvent<T> remove_callback;
 
         public Queue<T> set_queue = new Queue<T>();
-        public Queue<(Entity entity, T comp)> remove_queue = new Queue<(Entity entity, T comp)>();
 
         public override void Set(in Entity entity, in StructureEventHandler handler)
         {
@@ -567,38 +589,24 @@ namespace SimpleECS.Internal
             handler.Set(entity, (T)component);
         }
 
-        public override void Remove(in Entity entity, in StructureEventHandler handler) => handler.Remove<T>(entity); 
+        public override void Remove(in Entity entity, in StructureEventHandler handler) => handler.Remove<T>(entity);
         public override void InvokeRemoveCallback(in Entity[] entities, in object buffer, int count)
         {
             T[] array = (T[])buffer;
-            for(int i = 0; i < count; ++ i)
+            for (int i = 0; i < count; ++i)
                 remove_callback?.Invoke(entities[i], array[i]);
         }
 
         public override void InvokeRemoveCallback(in Entity entity, in object obj)
             => remove_callback?.Invoke(entity, (T)obj);
 
-        
+
         public void CallSetRefCallback(Entity entity, T old_comp, ref T new_comp)
         {
             set_ref_callback.Invoke(entity, ref new_comp);
         }
 
-        public override void AddRemove(in Entity entity, object array, int index)
-        {
-            remove_queue.Enqueue((entity, ((T[])array)[index]));
-        }
-
-        public override void PlayBackRemove()
-        {
-            while(remove_queue.Count > 0)
-            {
-                var data = remove_queue.Dequeue();
-                remove_callback?.Invoke(data.entity, data.comp);
-            }
-        }
-
-        public Queue<(Entity entity, T  component)> remove_event_buffer = new Queue<(Entity entity, T component)>() ; // buffer to hold component values to avoid allocations    
+        public Queue<(Entity entity, T component)> remove_event_buffer = new Queue<(Entity entity, T component)>(); // buffer to hold component values to avoid allocations    
     }
 
     public struct StructureEventHandler
@@ -653,22 +661,23 @@ namespace SimpleECS.Internal
                 {
                     case EventType.CreateEntity:
                     {
-                        if (e.archetype.IsValid())
-                        {
+                        ref var arch_data = ref world.archetypes[e.archetype.index];
+                        if (arch_data.version == e.archetype.version)
                             SetUpEntity(e.entity, world.archetypes[e.archetype.index].data);
+                        else
+                        {
+                            Entities.All[e.entity.index].world_info = default;                            
+                            Entities.Free.Enqueue(e.entity.index); 
                         }
-                        else Entities.Free.Enqueue(e.entity.index);
                     }
                     break;
 
                     case EventType.SetComponent:
                         world.GetData(e.type_id).Set(e.entity, this);
-                        //world.StructureEvents.Set(e.entity, e.type_id, );
                         break;
 
                     case EventType.RemoveComponent:
                         world.GetData(e.type_id).Remove(e.entity, this);
-                        //Remove(e.entity, e.type_id);
                         break;
 
                     case EventType.DestroyEntity:
@@ -708,6 +717,7 @@ namespace SimpleECS.Internal
             }
             var version = Entities.All[index].version;
             var entity = new Entity(index, version);
+            Entities.All[index].world_info = world;
 
             if (cache_events > 0)
             {
@@ -732,7 +742,7 @@ namespace SimpleECS.Internal
 
         public void Set<Component>(in Entity entity, in Component component)
         {
-            var world_data  = world.GetData<Component>();
+            var world_data = world.GetData<Component>();
             if (cache_events > 0)
             {
                 world_data.set_queue.Enqueue(component);
@@ -741,40 +751,43 @@ namespace SimpleECS.Internal
             }
 
             ref var entity_info = ref Entities.All[entity.index];
-            if (entity_info.version == entity.version && entity_info.arch_info.TryGetArray<Component>(out var buffer))
+            if (entity_info.version == entity.version)
             {
-                int index = entity_info.arch_index;
-                Component old = buffer[index];
-                buffer[index] = component;
-                world_data.set_callback?.Invoke(entity, old, ref buffer[index]);
-            }
-            else
-            {
-                var old_index = entity_info.arch_index;
-                var archetype = entity_info.arch_info;
-                var last_index = --archetype.entity_count;
-                var last = archetype.entities[old_index] = archetype.entities[last_index];
-                Entities.All[last.index].arch_index = old_index; // reassign moved entity to to index
-
-                // adding entity to target archetype
-                var target_archetype = entity_info.arch_info = world.GetArchetypeData(world.buffer_signature.Copy(archetype.signature).Add<Component>());
-                var target_index = entity_info.arch_index = target_archetype.entity_count;
-                target_archetype.EnsureCapacity(target_index);
-                target_archetype.entity_count++;
-
-                // moving components over
-                target_archetype.entities[target_index] = entity;
-                for (int i = 0; i < archetype.component_count; ++i)
-                    archetype.component_buffers[i].buffer.Move(old_index, last_index, target_archetype, target_index);
-
-                // setting the added component and calling the callback event
-                if (target_archetype.TryGetArray<Component>(out var target_buffer))
+                if (entity_info.arch_info.TryGetArray<Component>(out var buffer))
                 {
-                    target_buffer[target_index] = component;
-                    world_data.set_callback?.Invoke(entity, default, ref target_buffer[target_index]);
+                    int index = entity_info.arch_index;
+                    Component old = buffer[index];
+                    buffer[index] = component;
+                    world_data.set_callback?.Invoke(entity, old, ref buffer[index]);
                 }
                 else
-                    throw new System.Exception("Frame Work Bug");
+                {
+                    var old_index = entity_info.arch_index;
+                    var archetype = entity_info.arch_info;
+                    var last_index = --archetype.entity_count;
+                    var last = archetype.entities[old_index] = archetype.entities[last_index];
+                    Entities.All[last.index].arch_index = old_index; // reassign moved entity to to index
+
+                    // adding entity to target archetype
+                    var target_archetype = entity_info.arch_info = world.GetArchetypeData(world.buffer_signature.Copy(archetype.signature).Add<Component>());
+                    var target_index = entity_info.arch_index = target_archetype.entity_count;
+                    target_archetype.EnsureCapacity(target_index);
+                    target_archetype.entity_count++;
+
+                    // moving components over
+                    target_archetype.entities[target_index] = entity;
+                    for (int i = 0; i < archetype.component_count; ++i)
+                        archetype.component_buffers[i].buffer.Move(old_index, last_index, target_archetype, target_index);
+
+                    // setting the added component and calling the callback event
+                    if (target_archetype.TryGetArray<Component>(out var target_buffer))
+                    {
+                        target_buffer[target_index] = component;
+                        world_data.set_callback?.Invoke(entity, default, ref target_buffer[target_index]);
+                    }
+                    else
+                        throw new System.Exception("Frame Work Bug");
+                }
             }
         }
 
@@ -849,6 +862,7 @@ namespace SimpleECS.Internal
 
                     entity_info.arch_index = target_index;
                     entity_info.arch_info = target_arch;
+                    entity_info.world_info = target_world_info;
                 }
             }
         }
@@ -880,16 +894,17 @@ namespace SimpleECS.Internal
                         if (callback.has_remove_callback)
                         {
                             to_call[to_call_count] = (callback, pool.buffer.Get(entity_info.arch_index));
-                            to_call_count ++;                    
+                            to_call_count++;
                         }
                         pool.buffer.Remove(old_index, last_index);
                     }
 
                     entity_info.version++;
                     entity_info.arch_info = default;
+                    entity_info.world_info = default;
                     Entities.Free.Enqueue(entity.index);
 
-                    for(int i = 0; i < to_call_count; ++ i)
+                    for (int i = 0; i < to_call_count; ++i)
                         to_call[i].callback.InvokeRemoveCallback(entity, to_call[i].removed);
                 }
             }
@@ -918,6 +933,7 @@ namespace SimpleECS.Internal
                         ref var info = ref Entities.All[entity.index];
                         info.version++;
                         info.arch_info = default;
+                        info.world_info = default;
                         Entities.Free.Enqueue(entity.index);
                     }
 
@@ -958,10 +974,11 @@ namespace SimpleECS.Internal
                             ref var info = ref Entities.All[index];
                             info.version++;
                             info.arch_info = default;
+                            info.world_info = default;
                             Entities.Free.Enqueue(index);
                         }
                     }
-                    
+
                     foreach (var archetype in data.archetypes) // then do all their callbacks
                     {
                         var arche_info = archetype.data;

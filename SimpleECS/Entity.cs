@@ -22,7 +22,7 @@ namespace SimpleECS
             {
                 ref var info = ref Entities.All[index];
                 if (info.version == version)
-                    return info.arch_info.world_info.world;
+                    return info.world_info.world;
                 return default;
             }
         }
@@ -57,7 +57,8 @@ namespace SimpleECS
         public override string ToString()
         {
             string name;
-            if (!TryGet<string>(out name))
+            TryGet<string>(out name);
+            if (String.IsNullOrEmpty(name))
                 name = IsValid() ? "Entity" : "~Entity";
             return $"{name} {index}.{version}";
         }
@@ -95,9 +96,7 @@ namespace SimpleECS
         /// </summary>
         public Entity Remove<Component>()
         {
-            ref var info = ref Entities.All[index];
-            if (info.version == version)
-                info.arch_info.world_info.StructureEvents.Remove<Component>(this);//, TypeID<Component>.Value);
+            Entities.All[index].world_info?.StructureEvents.Remove<Component>(this);
             return this;
         }
 
@@ -108,9 +107,8 @@ namespace SimpleECS
         public Entity Remove(Type type)
         {
             ref var info = ref Entities.All[index];
-            if (info.version == version)
-                info.arch_info.world_info.GetData(TypeID.Get(type)).Remove(this, info.arch_info.world_info.StructureEvents);
-            //info.arch_info.world_info.StructureEvents.Remove(this, TypeID.Get(type));
+            if (info.world_info != null)
+                info.world_info.GetData(TypeID.Get(type)).Remove(this, info.world_info.StructureEvents);
             return this;
         }
 
@@ -121,10 +119,7 @@ namespace SimpleECS
         /// </summary>
         public Entity Set<Component>(in Component component)
         {
-            ref var info = ref Entities.All[index];
-            if (info.version == version)
-                info.arch_info.world_info.StructureEvents.Set(this, component);
-            //info.arch_info.world_info.StructureEvents.Set(this, TypeID<Component>.Value, component);
+            Entities.All[index].world_info?.StructureEvents.Set(this, component);
             return this;
         }
 
@@ -137,9 +132,8 @@ namespace SimpleECS
         public Entity Set(Type type, object component_of_type)
         {
             ref var info = ref Entities.All[index];
-            if (info.version == version)
-                info.arch_info.world_info.GetData(TypeID.Get(type)).Set(this, component_of_type, info.arch_info.world_info.StructureEvents);
-            //info.arch_info.world_info.StructureEvents.Set(this, TypeID.Get(type), component_of_type);
+            if (info.world_info != null)
+                info.world_info.GetData(TypeID.Get(type)).Set(this, component_of_type, info.world_info.StructureEvents);
             return this;
         }
 
@@ -192,7 +186,7 @@ namespace SimpleECS
                     return ref buffer[entity_info.arch_index];
                 throw new Exception($"{this} does not contain {typeof(Component).Name}");
             }
-            throw new Exception($"{this} is not valid entity, cannot get {typeof(Component).Name}");
+            throw new Exception($"{this} is not a valid entity, cannot get {typeof(Component).Name}");
         }
 
         /// <summary>
@@ -200,10 +194,7 @@ namespace SimpleECS
         /// </summary>
         public void Transfer(World target_world)
         {
-            ref var info = ref Entities.All[index];
-            if (info.version == version)
-                info.arch_info.world_info.StructureEvents.Transfer(this, target_world);
-
+            Entities.All[index].world_info?.StructureEvents.Transfer(this, target_world);
         }
 
         /// <summary>
@@ -211,11 +202,7 @@ namespace SimpleECS
         /// </summary>
         public void Destroy()
         {
-            ref var info = ref Entities.All[index];
-            if (info.version == version)
-            {
-                info.arch_info.world_info.StructureEvents.Destroy(this);
-            }
+            Entities.All[index].world_info?.StructureEvents.Destroy(this);
         }
 
         bool IEquatable<Entity>.Equals(Entity other) => index == other.index && version == other.version;

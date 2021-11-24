@@ -198,8 +198,8 @@ namespace SimpleECS
         public override string ToString()
         {
             return "Query" +
-            (include.Count > 0 ? $": Has {include.TypesToString()}" : "") +
-            (exclude.Count > 0 ? $": Not {exclude.TypesToString()}" : "");
+            (include.Count > 0 ? $" -> Has {include.TypesToString()}" : "") +
+            (exclude.Count > 0 ? $" -> Not {exclude.TypesToString()}" : "");
         }
 
         IEnumerator<Archetype> IEnumerable<Archetype>.GetEnumerator()

@@ -2,7 +2,6 @@
 namespace SimpleECS
 {
     using System;
-    using System.Linq;
     using System.Collections;
     using System.Collections.Generic;
     using Internal;
@@ -93,6 +92,7 @@ namespace SimpleECS
             return this;
         }
 
+
         /// <summary>
         /// filters entities to those that do not have component
         /// </summary>
@@ -101,6 +101,28 @@ namespace SimpleECS
             archetype_count = 0;
             structure_update = -1;
             exclude.Add<T>();
+            return this;
+        }
+
+        /// <summary>
+        /// filters entities to those that have components
+        /// </summary>
+        public Query Has(params Type[] types)
+        {
+            archetype_count = 0;
+            structure_update = -1;
+            include.Add(types);
+            return this;
+        }
+        
+        /// <summary>
+        /// filters entities to those that do not have components
+        /// </summary>
+        public Query Not(params Type[] types)
+        {
+            archetype_count = 0;
+            structure_update = -1;
+            exclude.Add(types);
             return this;
         }
 

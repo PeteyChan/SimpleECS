@@ -5,7 +5,6 @@ namespace SimpleECS
     using System.Collections.Generic;
     using Internal;
 
-
     /// <summary>
     /// manages all entities and archetype information
     /// </summary>
@@ -160,6 +159,7 @@ namespace SimpleECS
         }
 
         /// <summary>
+        /// [structural]
         /// Creates an entity in this world
         /// </summary>
         public Entity CreateEntity()
@@ -202,13 +202,24 @@ namespace SimpleECS
             => TryGetArchetype(out archetype, new TypeSignature(types));
 
         /// <summary>
+        /// Tries to get an archetype that has the supplied types.
+        /// Returns false if the world is destroyed or null
+        /// </summary>
+        public bool TryGetArchetype(out Archetype archetype, IEnumerable<Type> types)
+            => TryGetArchetype(out archetype, new TypeSignature(types));
+
+        /// <summary>
         /// WorldData is data unique to this world
         /// Set's the world's data to value.
         /// </summary>
         public World SetData<WorldData>(WorldData world_data)
         {
             if (this.TryGetWorldInfo(out var info))
-                info.GetData<WorldData>().data = world_data;
+            {
+                var stored = info.GetData<WorldData>();
+                stored.assigned_data = true;
+                stored.data = world_data;
+            }
             return this;
         }
 
@@ -220,8 +231,46 @@ namespace SimpleECS
         public ref WorldData GetData<WorldData>()
         {
             if (this.TryGetWorldInfo(out var info))
+            {
+                var stored = info.GetData<WorldData>();
+                stored.assigned_data = true;
                 return ref info.GetData<WorldData>().data;
+            }
             throw new Exception($"{this} is invalid, cannot get resource {typeof(WorldData).Name}");
+        }
+
+        /// <summary>
+        /// Returns a copy of all the world data currently assigned in the world
+        /// </summary>
+        public object[] GetAllWorldData()
+        {
+            List<object> all = new List<object>();
+            if (this.TryGetWorldInfo(out var info))
+            {
+                foreach (var stored in info.world_data)
+                {
+                    if (stored != null && stored.assigned_data)
+                        all.Add(stored.GetData());
+                }
+            }
+            return all.ToArray();
+        }
+
+        /// <summary>
+        /// Retuns a copy of all the Types of world data currently assigned in the world
+        /// </summary>
+        public Type[] GetAllWorldDataTypes()
+        {
+            List<Type> all = new List<Type>();
+            if (this.TryGetWorldInfo(out var info))
+            {
+                foreach (var stored in info.world_data)
+                {
+                    if (stored != null && stored.assigned_data)
+                        all.Add(stored.data_type);
+                }
+            }
+            return all.ToArray();
         }
 
         /// <summary>
@@ -271,6 +320,34 @@ namespace SimpleECS
         }
 
         /// <summary>
+        /// Adds a callback to be invoked whenever an entity sets a component of type
+        /// </summary>
+        /// <param name="callback">callback to invoke</param>
+        /// <param name="register">set true to add callback, false to remove the callback</param>
+        public World OnSet<Component>(SetComponentEventCompOnly<Component> callback, bool register = true)
+        {
+            if (this.TryGetWorldInfo(out var info))
+            {
+                var data = info.GetData<Component>();
+                if (register)
+                {
+                    if (data.set_comp_callback == null)
+                        data.set_callback += data.CallSetCompCallback;
+                    data.set_comp_callback += callback;
+                }
+                else
+                {
+                    data.set_comp_callback -= callback;
+                    if (data.set_comp_callback == null)
+                        data.set_callback -= data.CallSetCompCallback;
+                }
+
+                data.has_set_callback = data.set_callback != null;
+            }
+            return this;
+        }
+
+        /// <summary>
         /// Adds a callback to be invoked whenever an entity removes a component of type
         /// </summary>
         /// <param name="callback">callback to invoke</param>
@@ -289,15 +366,44 @@ namespace SimpleECS
         }
 
         /// <summary>
+        /// Adds a callback to be invoked whenever an entity removes a component of type
+        /// </summary>
+        /// <param name="callback">callback to invoke</param>
+        /// <param name="register">set true to add callback, false to remove the callback</param>
+        public World OnRemove<Component>(RemoveComponentEventCompOnly<Component> callback, bool register = true)
+        {
+            if (this.TryGetWorldInfo(out var world_info))
+            {
+                var data = world_info.GetData<Component>();
+                if (register)
+                {
+                    if (data.remove_comp_callback == null)
+                        data.remove_callback += data.CallRemoveCompCallback;
+                    data.remove_comp_callback += callback;
+                }
+                else
+                {
+                    data.remove_comp_callback -= callback;
+                    if (data.remove_comp_callback == null)
+                        data.remove_callback -= data.CallRemoveCompCallback;
+                }
+                data.has_remove_callback = data.remove_callback != null;
+            }
+            return this;
+        }
+
+        /// <summary>
+        /// [structural]
         /// Resizes all archetype's backing arrays to the minimum power of 2 needed to store their entities
         /// </summary>
         public void ResizeBackingArrays()
         {
-            foreach(var archetype in GetArchetypes())
+            foreach (var archetype in GetArchetypes())
                 archetype.ResizeBackingArrays();
         }
 
         /// <summary>
+        /// [structural]
         /// Destroys all archetypes with 0 entities
         /// </summary>
         public void DestroyEmptyArchetypes()
@@ -310,7 +416,7 @@ namespace SimpleECS
         }
 
         /// <summary>
-        /// When enabled all structural changes will be cached like they are when iterating a query.
+        /// When enabled all structural methods will be cached like they are when iterating a query.
         /// They will be applied once you disable caching.
         /// Use to prevent iterator invalidation when manually iterating over entity or component buffers.
         /// </summary>
@@ -415,9 +521,11 @@ namespace SimpleECS.Internal
 
     public delegate void SetComponentEvent<T>(Entity entity, T old_comp, ref T new_comp);
     public delegate void SetComponentEventRefOnly<T>(Entity entity, ref T new_comp);
+    public delegate void SetComponentEventCompOnly<T>(ref T new_comp);
     public delegate void RemoveComponentEvent<T>(Entity entity, T component);
+    public delegate void RemoveComponentEventCompOnly<T>(T component);
 
-    public static partial class InternalExtensions
+    public static partial class Extensions
     {
         public static bool TryGetWorldInfo(this World world, out World_Info info)
         {
@@ -471,6 +579,8 @@ namespace SimpleECS.Internal
 
         public Stack<int> free_archetypes = new Stack<int>();
         public WorldData[] world_data = new WorldData[32];
+
+        public List<int> assigned_world_data = new List<int>();
 
         public (Archetype_Info data, int version)[] archetypes = new (Archetype_Info, int)[32];
         public Dictionary<TypeSignature, int> signature_to_archetype_index = new Dictionary<TypeSignature, int>();
@@ -562,12 +672,15 @@ namespace SimpleECS.Internal
 
     public abstract class WorldData
     {
-        public bool has_remove_callback, has_set_callback;
+        public bool has_remove_callback, has_set_callback, assigned_data;
         public abstract void Set(in Entity entity, in StructureEventHandler handler);
         public abstract void Set(in Entity entity, object component, in StructureEventHandler handler);
         public abstract void Remove(in Entity entity, in StructureEventHandler handler);
-        public abstract void InvokeRemoveCallback(in Entity[] entities, in object buffer, int count);
-        public abstract void InvokeRemoveCallback(in Entity entity, in object obj);
+        public abstract void InvokeRemoveCallbackAll(in Entity[] entities, in object buffer, int count);
+        public abstract void InvokeRemoveCallback(in Entity entity, in object component);
+
+        public abstract object GetData();
+        public abstract System.Type data_type { get; }
     }
 
     public sealed class WorldData<T> : WorldData
@@ -575,7 +688,9 @@ namespace SimpleECS.Internal
         public T data;
         public SetComponentEvent<T> set_callback;
         public SetComponentEventRefOnly<T> set_ref_callback;
+        public SetComponentEventCompOnly<T> set_comp_callback;
         public RemoveComponentEvent<T> remove_callback;
+        public RemoveComponentEventCompOnly<T> remove_comp_callback;
 
         public Queue<T> set_queue = new Queue<T>();
 
@@ -590,15 +705,15 @@ namespace SimpleECS.Internal
         }
 
         public override void Remove(in Entity entity, in StructureEventHandler handler) => handler.Remove<T>(entity);
-        public override void InvokeRemoveCallback(in Entity[] entities, in object buffer, int count)
+        public override void InvokeRemoveCallbackAll(in Entity[] entities, in object buffer, int count)
         {
             T[] array = (T[])buffer;
             for (int i = 0; i < count; ++i)
                 remove_callback?.Invoke(entities[i], array[i]);
         }
 
-        public override void InvokeRemoveCallback(in Entity entity, in object obj)
-            => remove_callback?.Invoke(entity, (T)obj);
+        public override void InvokeRemoveCallback(in Entity entity, in object comp)
+            => remove_callback?.Invoke(entity, (T)comp);
 
 
         public void CallSetRefCallback(Entity entity, T old_comp, ref T new_comp)
@@ -606,7 +721,17 @@ namespace SimpleECS.Internal
             set_ref_callback.Invoke(entity, ref new_comp);
         }
 
-        public Queue<(Entity entity, T component)> remove_event_buffer = new Queue<(Entity entity, T component)>(); // buffer to hold component values to avoid allocations    
+        public void CallSetCompCallback(Entity entity, T old_comp, ref T new_comp)
+        {
+            set_comp_callback.Invoke(ref new_comp);
+        }
+
+        public void CallRemoveCompCallback(Entity entity, T component)
+            => remove_comp_callback.Invoke(component);
+
+        public override object GetData() => data;
+
+        public override System.Type data_type => typeof(T);
     }
 
     public struct StructureEventHandler
@@ -666,8 +791,8 @@ namespace SimpleECS.Internal
                             SetUpEntity(e.entity, world.archetypes[e.archetype.index].data);
                         else
                         {
-                            Entities.All[e.entity.index].world_info = default;                            
-                            Entities.Free.Enqueue(e.entity.index); 
+                            Entities.All[e.entity.index].world_info = default;
+                            Entities.Free.Enqueue(e.entity.index);
                         }
                     }
                     break;
@@ -876,6 +1001,7 @@ namespace SimpleECS.Internal
                 ref var entity_info = ref Entities.All[entity.index];
                 if (entity_info.version == entity.version)
                 {
+                    entity_info.version++;
                     var old_arch = entity_info.arch_info;
                     var old_index = entity_info.arch_index;
                     --old_arch.entity_count;
@@ -884,8 +1010,9 @@ namespace SimpleECS.Internal
                     var last = old_arch.entities[old_index] = old_arch.entities[last_index];    // swap 
                     Entities.All[last.index].arch_index = old_index;
 
-                    var to_call = new (WorldData callback, object removed)[old_arch.component_count];   // this causes boxing, unsure how to cleanly do this
-                    int to_call_count = 0;
+                    (WorldData callback, object value)[] removed =          // this causes allocations
+                        new (WorldData, object)[old_arch.component_count];  // but other means are quite convuluted
+                    int length = 0;
 
                     for (int i = 0; i < old_arch.component_count; ++i)
                     {
@@ -893,19 +1020,18 @@ namespace SimpleECS.Internal
                         var callback = world.GetData(pool.type_id);
                         if (callback.has_remove_callback)
                         {
-                            to_call[to_call_count] = (callback, pool.buffer.Get(entity_info.arch_index));
-                            to_call_count++;
+                            removed[length] = (callback, pool.buffer.array[entity_info.arch_index]); // this causes boxing :(
+                            length++;
                         }
                         pool.buffer.Remove(old_index, last_index);
                     }
-
                     entity_info.version++;
                     entity_info.arch_info = default;
                     entity_info.world_info = default;
                     Entities.Free.Enqueue(entity.index);
 
-                    for (int i = 0; i < to_call_count; ++i)
-                        to_call[i].callback.InvokeRemoveCallback(entity, to_call[i].removed);
+                    for (int i = 0; i < length; ++i)
+                        removed[i].callback.InvokeRemoveCallback(entity, removed[i].value);
                 }
             }
         }
@@ -943,7 +1069,7 @@ namespace SimpleECS.Internal
                         var callback = world.GetData(pool.type_id);
                         if (callback.has_remove_callback)
                         {
-                            callback.InvokeRemoveCallback(arch_info.entities, pool.buffer.array, arch_info.entity_count);
+                            callback.InvokeRemoveCallbackAll(arch_info.entities, pool.buffer.array, arch_info.entity_count);
                         }
                     }
                 }
@@ -989,7 +1115,7 @@ namespace SimpleECS.Internal
                             var world_data = data.GetData(pool.type_id);
                             if (world_data.has_remove_callback)
                             {
-                                world_data.InvokeRemoveCallback(arche_info.entities, pool.buffer.array, arche_info.entity_count);
+                                world_data.InvokeRemoveCallbackAll(arche_info.entities, pool.buffer.array, arche_info.entity_count);
                             }
                         }
                     }

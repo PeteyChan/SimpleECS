@@ -91,6 +91,7 @@ namespace SimpleECS
         }
 
         /// <summary>
+        /// [structural]
         /// removes the component from the entity.
         /// if component was removed will trigger the corresponding onremove component event
         /// </summary>
@@ -101,6 +102,7 @@ namespace SimpleECS
         }
 
         /// <summary>
+        /// [structural]
         /// removes the component from the entity.
         /// if component was removed will trigger the corresponding onremove component event
         /// </summary>
@@ -113,6 +115,7 @@ namespace SimpleECS
         }
 
         /// <summary>
+        /// [structural]
         /// sets the entity's component to value. 
         /// If the entity does not have the component, will move the entity to an archetype that does.
         /// will trigger the onset component event if component was set
@@ -124,6 +127,7 @@ namespace SimpleECS
         }
 
         /// <summary>
+        /// [structural]
         /// sets the entity's component to value. 
         /// If the entity does not have the component, will move the entity to an archetype that does.
         /// will trigger the onset component event if component was set
@@ -165,7 +169,7 @@ namespace SimpleECS
             {
                 if (info.arch_info.TryGetCompBuffer(TypeID.Get(type), out var buffer))
                 {
-                    component = buffer.Get(info.arch_index);
+                    component = buffer.array[info.arch_index];
                     return true;
                 }
             }
@@ -190,6 +194,7 @@ namespace SimpleECS
         }
 
         /// <summary>
+        /// [structural]
         /// transfers the entity to the target world
         /// </summary>
         public void Transfer(World target_world)
@@ -198,6 +203,7 @@ namespace SimpleECS
         }
 
         /// <summary>
+        /// [structural]
         /// destroys the entity
         /// </summary>
         public void Destroy()
@@ -252,6 +258,26 @@ namespace SimpleECS
             if (info.version == version)
                 return info.arch_info.component_count;
             return 0;
+        }
+    }
+}
+
+namespace SimpleECS.Internal
+{
+    public partial class Extensions
+    {
+        /// <summary>
+        /// Sets the value to entity only if entity is valid and has component.
+        /// Does not invoke set callback event
+        /// </summary>
+        public static void SetDirectNoInvoke(this Entity entity, System.Type type, in object value)
+        {
+            var entity_info = Entities.All[entity.index];
+            if (entity_info.version == entity.version)
+            {
+                if (entity_info.arch_info.TryGetCompBuffer(TypeID.Get(type), out var buffer))
+                    buffer.array[entity_info.arch_index] = value;
+            }
         }
     }
 }

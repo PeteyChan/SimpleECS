@@ -43,6 +43,7 @@ namespace SimpleECS
         public readonly int version;
 
         /// <summary>
+        /// [structural]
         /// creates an entity that matches this archetype
         /// </summary>
         public Entity CreateEntity()
@@ -101,6 +102,7 @@ namespace SimpleECS
         }
 
         /// <summary>
+        /// [structural]
         /// destroys the archetype along with all the entities within it
         /// </summary>
         public void Destroy()
@@ -110,6 +112,7 @@ namespace SimpleECS
         }
 
         /// <summary>
+        /// [structural]
         /// resizes the archetype's backing arrays to the minimum number of 2 needed to store the entities
         /// </summary>
         public void ResizeBackingArrays()
@@ -173,8 +176,9 @@ namespace SimpleECS
 namespace SimpleECS.Internal
 {
     using System;
+    using System.Collections;
 
-    public static partial class InternalExtensions
+    public static partial class Extensions
     {
         public static bool TryGetArchetypeInfo(this Archetype archetype, out World_Info world_info, out Archetype_Info arch_info)
         {
@@ -385,7 +389,7 @@ namespace SimpleECS.Internal
             object[] components = new object[component_count];
 
             for (int i = 0; i < component_count; ++i)
-                components[i] = component_buffers[i].buffer.Get(entity_arch_index);
+                components[i] = component_buffers[i].buffer.array[entity_arch_index];
             return components;
         }
 
@@ -399,7 +403,7 @@ namespace SimpleECS.Internal
 
         public abstract class CompBuffer    //handles component data
         {
-            public object array;
+            public IList array;
             public abstract void Resize(int capacity);
             /// <summary>
             /// returns removed component
@@ -407,8 +411,6 @@ namespace SimpleECS.Internal
             public abstract object Remove(int entity_arch_index, int last);
             public abstract void Move(int entity_arch_index, int last_entity_index, Archetype_Info target_archetype, int target_index);
             public abstract void Move(int entity_arch_index, int last_entity_index, object buffer, int target_index);
-            public abstract void Set(int index, object value);
-            public abstract object Get(int entity_arch_index);
         }
 
         public sealed class CompBuffer<Component> : CompBuffer
@@ -424,13 +426,6 @@ namespace SimpleECS.Internal
             {
                 System.Array.Resize(ref components, capacity);
                 array = components;
-            }
-
-            public override object Get(int entity_arch_index) => components[entity_arch_index];
-
-            public override void Set(int entity_arch_index, object value)
-            {
-                components[entity_arch_index] = (Component)value;
             }
 
             public override object Remove(int entity_arch_index, int last)

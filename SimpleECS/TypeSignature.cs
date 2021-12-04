@@ -83,6 +83,14 @@ namespace SimpleECS
             return this;
         }
 
+        public TypeSignature Add(params Type[] types)
+        {
+            foreach (var type in types)
+                if (type != null)
+                    Add(TypeID.Get(type));
+            return this;
+        }
+
         internal TypeSignature Add(int type_id)
         {
             for (int i = 0; i < type_count; ++i)
@@ -102,6 +110,14 @@ namespace SimpleECS
                 Array.Resize(ref type_ids, type_count + 4);
 
             type_ids[type_count - 1] = type_id;
+            return this;
+        }
+
+        public TypeSignature Remove(params Type[] types)
+        {
+            foreach (var type in types)
+                if (type != null)
+                    Remove(TypeID.Get(type));
             return this;
         }
 
@@ -319,7 +335,7 @@ namespace SimpleECS.Internal
         static Dictionary<Type, int> newIDs = new Dictionary<Type, int>();
         static Type[] id_to_type = new Type[64];
         public static Type Get(int type_id) => id_to_type[type_id];
-        
+
         public static int Get(Type type)
         {
             if (!newIDs.TryGetValue(type, out var id))

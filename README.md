@@ -204,11 +204,6 @@ if (archetype)  // use to check if archetype is valid
 {               // valid entities will always have valid archetypes
   //...         // shorthand for archetype.IsValid()
 }
-                                                  
-foreach(var entity in archetype.Entities) // you can get the entities in an archetype
-{                                         // with the Entities property
-    Console.WriteLine(entity);
-}
 
 archetype.GetTypeSignature();   // returns a copy of the archetype's type signature
   

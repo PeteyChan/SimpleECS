@@ -159,7 +159,7 @@ query.GetEntities();    // returns a copy of all entities currently matching the
 
 query.GetArchetypes();  // returns a copy of all archetypes currently matching the query
 
-query.Clear();          // clears query filters, the query will now match against all components
+query.Clear();          // clears query filters, since the query has no filters it'll match against all entities
 
 query.GetHasFilterTypes(); // returns all types in the Has() filter
 
@@ -168,7 +168,7 @@ query.GetNotFilterTypes(); // returns all types in the Not() filter
 query.DestroyMatching();   // destroys all archtypes and their entities matching the query
 ```
 
-During query.Foreach, fucntions that cause structural changes to the ECS are cached 
+During query.Foreach, functions that cause structural changes to the ECS are cached 
 and applied after iteration is complete. This is to prevent iterator invalidation. 
 Some functions that cause structural changes are:
   * entity.Set()
@@ -324,6 +324,11 @@ world.ResizeBackingArrays();            // resizes all archetype backing arrays 
 world.DestroyEmptyArchetypes();         // destroys all archetypes that have no entities
                                         // this can potentially speed up queries since they no longer
                                         // have to iterate over those archetypes
+                                        
+world.CacheStructuralEvents(true);      // manually sets the world to cache structural events like when executing queries
+                                        // set to false to apply all cached structural events
+                                        
+world.IsCachingStructuralEvents();      // returns true if the world is currently caching structural events
                                         
 world.Destroy();                        // destroys the world along with all the entities and
                                         // archetypes associated with it

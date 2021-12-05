@@ -69,44 +69,78 @@ entity.Destroy();     // destroys the entity leaving it invalid
 var newWorld = World.Create("new World");
 entity.Transfer(new_world);   // transfer moves entity to the specified world
 
+entity.GetAllComponents(); // returns a copy of all the components assigned to the entity
+
+entity.GetAllComponentTypes(); // returns a copy of all the component types assigned to the entity
 ```
 ## Component Callbacks
 There are 2 component callbacks in SimpleECS, world.OnSet() and world.OnRemove().
+
+### OnSet
+OnSet is invoked anytime a valid entity uses entity.Set(value).
+OnSet is also invoked on all components added during entity creation with world.CreateEntity().
+OnSet is not invoked on the defaulted components created during archetype.CreateEntity().
+On set has 3 overloads depending on how much information you need during the callback.
 ```C#
-world.OnSet((Entity entity, int old_value, ref int new_value) =>  // use world.OnSet to set a callback to invoke
-  Console.WriteLine($"{entity} added {value}"));                  // whenever an entity sets that component in that world
-                                                                  // old_value is the previous component's value
-                                                                  // the old_value parmeter is optional
-                                                                  // new value is the component that was set
+// whenever an entity in the world sets an int, it'll invoke this callback
+world.OnSet((ref int new_value) =>
+    Console.WriteLine($"an entity set an int to {new_value}"));
 
-world.OnRemove((Entity entity, int value) =>        // use world.OnRemove to set a callback  to invoke
-  Console.WriteLine($"{entity} removed {value}"));  // whenever an entity removes a component in that world
-                                                    // If the entity was destroyed, entity.IsValid() will
-                                                    // be false during the callback
+// if you need the invoking entity, put it as the first parameter
+world.OnSet((Entity entity, ref int new_value) => 
+    Console.WriteLine($"{entity} set int to {new_value}"));
 
-void MyCallback(Entity entity, int old, ref int value)       // additionally you can name your callbacks
+// if you need the previous value, simply put it between the entity
+// and the new value without any modifiers.
+// if the component did not have an old component, it'll be set to default
+world.OnSet((Entity entity, int old_value, ref int new_value) => 
+    Console.WriteLine($"{entity} set int {old_value} to {new_value}"));
+
+// you can also name your callback
+void IntSetCallback(ref int value)
 {
-  Console.WriteLine($"{entity} added int {value}");
+    // do something
 }
 
-world.OnSet<int>(MyCallback);         // then register the callback
-// do stuff...
-world.OnSet<int>(MyCallback, false);  // and by passing false as the second parameter you can later unregister the callback
-  
+world.OnSet<int>(IntSetCallback); // then register it
+world.OnSet<int>(IntSetCallback, false); // and later unregister by adding false as the second parameter
+```
+
+### OnRemove
+OnRemove is invoked anytime a valid entity removes that component.
+OnRemove is also invoked when an entity with that component is destroyed.
+OnRemove has 2 overloads depending on how much information you need during the callback.
+```C#
+// the callback is invoked whenever an entity in the world with the component removes the component or is destroyed
+world.OnRemove((int val) => 
+    Console.WriteLine($"an entity removed int {val}"));
+
+// put the entity as the first paramter to get the invoking entity
+world.OnRemove((Entity e, int val) => 
+    Console.WriteLine($"{e} removed int {val}");
+    
+// like OnSet, OnRemove can be named and registered and unregistered
+void IntRemoveCallback(int value)
+{
+    // do something
+}
+
+world.OnRemove<int>(IntRemoveCallback);
+world.OnRemove<int>(IntRemoveCallback, false);
 ```
 
 ## Queries
 
 Queries let you iterate over entities based on specified components.
 You can specify up to 12 components to iterate over.
-Queries cache their results and only update when new archetypes are created.
-
+Queries cache their results and only update when new archetypes are created or destroyed or their filter changes.
 ```C#
-var query = world.CreateQuery()                 // Queries operate on the world they are created with
-                 .Has<int>().Has<float>()       // Has() filters entities to those with components
-                 .Not<string>().Not<double>();  // Not() filters for those that do not
-                                                // there's no limit to the amount of filters you can add
-                                                // infact the more specific the better
+var query = world.CreateQuery()                     // Queries operate on the world they are created with
+                 .Has<int>()                        // your free to mix an match any filter overload
+                 .Has(typeof(float), typeof(short)) // Has() filters entities to those with components
+                 .Not<string>()                     // Not() filters for those that do not
+                 .Not(typeof(ushort));              // there's no limit to the amount of filters you can add
+                                                    // infact the more specific the better
 
 query.Foreach( (ref int int_value, ref float float_value) =>  // you then use the foreach function to update your components
 {                                                             // components must be prefaced with the ref modifier
@@ -114,25 +148,29 @@ query.Foreach( (ref int int_value, ref float float_value) =>  // you then use th
     float_value = int_value * 100;                            // queries operate only on entities that match both the query 
 }));                                                          // filter and contains all the foreach parameters
 
-
-query.Foreach( (Entity entity, ref int value ) =>         // you can access the owner entity by putting it before the components
+query.Foreach( (Entity entity, ref int value ) =>         // you can access the current entity by putting it before the components
 {                                                         // without modifiers. 
   Console.WriteLine($"{entity} value is {value}");        
 });
 
-var all_entities = world.CreateQuery();               // a simple way to match against all entities is to make a query with no filters
+var all_entities = world.CreateQuery();   // a simple way to match against all entities is to make a query with no filters
 
-foreach(var archetype in query)   // you can iterate over matching archetypes with foreach
-{
-  // do something
-}
+query.GetEntities();    // returns a copy of all entities currently matching the query
 
-query.DestroyMatching();          // destroys all archtypes and their entities matching the query
-                                  // its the most efficient way to destroy entities
+query.GetArchetypes();  // returns a copy of all archetypes currently matching the query
+
+query.Clear();          // clears query filters, the query will now match against all components
+
+query.GetHasFilterTypes(); // returns all types in the Has() filter
+
+query.GetNotFilterTypes(); // returns all types in the Not() filter
+
+query.DestroyMatching();   // destroys all archtypes and their entities matching the query
 ```
 
-During query.Foreach structural changes are cached and applied after iteration is complete. 
-This is to prevent iterator invalidation. Functions that cause structural changes are:
+During query.Foreach, fucntions that cause structural changes to the ECS are cached 
+and applied after iteration is complete. This is to prevent iterator invalidation. 
+Some functions that cause structural changes are:
   * entity.Set()
   * entity.Remove()
   * entity.Transfer()
@@ -142,9 +180,9 @@ This is to prevent iterator invalidation. Functions that cause structural change
   * world.CreateEntity()
   * world.Destroy()
   
-Entities created during query.Foreach() will be invalid during the function, but you can
-still use all entity functions on that entity, it will simply be applied when the 
-Foreach function completes.
+Entities created during query.Foreach() will be invalid during the function.
+However you can still set or remove components on that entity, 
+they will simply be applied when the Foreach function completes.
 
 ```C#
 var entity = world.Create("my entity", 3);
@@ -174,6 +212,9 @@ For maximum control over query iteration or a small performance boost, manual it
 When iterating manually though, make sure not to do any structural changes as
 this may invalidate iterators.
 ```C#
+// you can manually iterate over a query using foreach
+// however during manual iteration you should not do any structural changes
+// as this many invalidate internal iterators
 foreach(var archetype in query)
 {
     if (archetype.TryGetEntityBuffer(out Entity[] entity_buffer) &&
@@ -193,27 +234,39 @@ The entity in index 1 of the entity array owns the components in index 1 of each
 array. Queries don't match against single entities but archetypes since all
 entities within an archetype has the same component types by definition.
 ```C#
-var entity = world.Create(3);
+if (!world.TryGetArchetype(out var archetype, typeof(int), typeof(float))) // gets an archetype with components
+  return;                                                                  // returns false if world is invalid
 
-var archetype = entity.archetype;     // gets archetype that the entity belongs
-                                      // if entity is invalid, the archtype will also be invalid
-                                      // an entity's archetype changes when the component types it
-                                      // holds changes
+var entity = world.Create(3);
+var entity _archetype = entity.archetype;   // you can also get the archetype from valid entities
+                                            // if entity is invalid, the archtype will also be invalid
+                                            // an entity's archetype changes when the component types it
+                                            // holds changes
   
 if (archetype)  // use to check if archetype is valid
 {               // valid entities will always have valid archetypes
   //...         // shorthand for archetype.IsValid()
 }
 
-archetype.GetTypeSignature();   // returns a copy of the archetype's type signature
+var new_entity = archetype.CreateEntity();  // creates an entity using the archetype
+                                            // the entity created will have all the components of the archetype set to default values
+                                            // this is the most performant way to create entities
+                                            // world.OnSet() is not invoked for the defaulted components
+
+archetype.GetTypes();       // returns a copy of what components in the archetype
   
 archetype.GetEntities();    // returns a copy of all entities in the archetype
+
+archetype.ResizeBackingArrays(); // resizes the internal component and entity buffers to the minimum power of 2 needed to store them
+                                 // may be useful if a large amount of entities were recently destroyed
 
 if (archetype.TryGetEntityBuffer(out Entity[] entity_buffer))  // tries to get the raw entity storage buffer from
 {                                                         // the archetype. Should be treated as readonly as
     for (int i = 0; i < archetype.EntityCount; ++ i)      // changing their values will break the ecs.
         Console.WriteLine(entity_buffer[i]);              // Valid indexes are only up to archetype.EntityCount
 }                                                         // not entities.Length
+                                                          // while iterating over raw buffers, structural changes should not be performed
+                                                          // as this will possibly invalidate iterators
 
 if (archetype.TryGetComponentBuffer(out int[] int_buffer))  // tries to get the raw component storage buffer
 {                                                           // from the archetype. returns false if the archetype
@@ -237,15 +290,19 @@ world.SetData(3)            // sets the world data to value
      
 world.GetData<float>() = delta_time;    // alternately you can use GetData
                                         // to get a reference and change it directly
+                                        // throws an exception if the world is invalid
+                                        // if data was not set before hand, get data will create and return defaulted data
 
 query.Foreach((in float delta_time, Entity entity, ref Vector3 velocity) => 
 {                                                     // you can access world data directly in queries using
     velocity += delta_time * new Vector3(1, 0, 0);    // the 'in' modifier before any entity
 });                                                   // or component parameters
                                                       // you can add up to 4 world data in queries
+
+world.GetAllWorldData(); // gets all WorldData created with SetData or GetData
+
+world.GetAllWorldDataTypes(); // returns all the types of create world data
 ```
-
-
 
 ## World
 The world class is what manages all the underlying archetypes and their entities.
@@ -263,6 +320,7 @@ world.GetArchtypes();                   // returns a copy of all the current arc
 
 world.ResizeBackingArrays();            // resizes all archetype backing arrays to the minimum power 
                                         // of 2 needed to store their data
+                                        
 world.DestroyEmptyArchetypes();         // destroys all archetypes that have no entities
                                         // this can potentially speed up queries since they no longer
                                         // have to iterate over those archetypes

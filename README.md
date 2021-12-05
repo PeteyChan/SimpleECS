@@ -299,9 +299,9 @@ query.Foreach((in float delta_time, Entity entity, ref Vector3 velocity) =>
 });                                                   // or component parameters
                                                       // you can add up to 4 world data in queries
 
-world.GetAllWorldData(); // gets all WorldData created with SetData or GetData
+world.GetAllWorldData(); // gets all WorldData created with SetData() or GetData()
 
-world.GetAllWorldDataTypes(); // returns all the types of create world data
+world.GetAllWorldDataTypes(); // returns all the types of GetAllWorldData()
 ```
 
 ## World

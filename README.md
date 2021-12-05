@@ -24,6 +24,9 @@ var entity = world.CreateEntity("my entity", 3, 5f);
                                       // callbacks registered with world.OnSet()
                                       // setting the entity's string component
                                       // will change the entity's ToString() value
+
+world.Destroy();  // when your done with a world, destroy it to free up it's resourcess
+                  // This will automatically destroy all entities in that world
 ```
 Anything that can be put into a list can be a component.
 Only one component of each type can be associated with an entity, 
@@ -308,15 +311,15 @@ world.GetAllWorldDataTypes(); // returns all the types of GetAllWorldData()
 The world class is what manages all the underlying archetypes and their entities.
 
 ```C#
-World.GetAll();                         // returns a copy of all the current worlds
+World.GetAll();                         // returns a copy of all the currently valid worlds
 
 var world = World.Create("My World");   
 
-var count = world.EntityCount;          // how many current entities in the world
+var count = world.EntityCount;          // returns how many entities are in the world
 
-world.GetEntities();                    // returns a copy of all the entities currently in the world
+world.GetEntities();                    // returns a copy of all the entities in the world
 
-world.GetArchtypes();                   // returns a copy of all the current archetypes in the world
+world.GetArchtypes();                   // returns a copy of all the archetypes in the world
 
 world.ResizeBackingArrays();            // resizes all archetype backing arrays to the minimum power 
                                         // of 2 needed to store their data
@@ -329,7 +332,4 @@ world.CacheStructuralEvents(true);      // manually sets the world to cache stru
                                         // set to false to apply all cached structural events
                                         
 world.IsCachingStructuralEvents();      // returns true if the world is currently caching structural events
-                                        
-world.Destroy();                        // destroys the world along with all the entities and
-                                        // archetypes associated with it
 ```

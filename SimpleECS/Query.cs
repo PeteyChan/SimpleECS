@@ -9,7 +9,7 @@ namespace SimpleECS
     /// <summary>
     /// Operates on all entities that match it's filters
     /// </summary>
-    public partial class Query: IEnumerable<Archetype>
+    public partial class Query : IEnumerable<Archetype>
     {
         public Query() { }
 
@@ -69,7 +69,7 @@ namespace SimpleECS
                 {
                     if (matching_archetypes[i].TryGetArchetypeInfo(out var arch_info))
                     {
-                        for(int e = 0; e < arch_info.entity_count; ++ e)
+                        for (int e = 0; e < arch_info.entity_count; ++e)
                         {
                             entities[count] = arch_info.entities[e];
                             count++;
@@ -114,7 +114,7 @@ namespace SimpleECS
             include.Add(types);
             return this;
         }
-        
+
         /// <summary>
         /// filters entities to those that do not have components
         /// </summary>
@@ -123,6 +123,28 @@ namespace SimpleECS
             archetype_count = 0;
             structure_update = -1;
             exclude.Add(types);
+            return this;
+        }
+
+        /// <summary>
+        /// filters entities to those that have components
+        /// </summary>
+        public Query Has(IEnumerable<Type> types)
+        {
+            if (types != null)
+                foreach (var type in types)
+                    Has(type);
+            return this;
+        }
+
+        /// <summary>
+        /// filters entities to those that do not have components
+        /// </summary>
+        public Query Not(IEnumerable<Type> types)
+        {
+            if (types != null)
+                foreach (var type in types)
+                    Not(type);
             return this;
         }
 
@@ -137,7 +159,7 @@ namespace SimpleECS
             structure_update = -1;
             return this;
         }
-        
+
         /// <summary>
         /// iterates and peforms action on all entities that match the query
         /// </summary>
@@ -168,7 +190,7 @@ namespace SimpleECS
         public void DestroyMatching()
         {
             if (Update(out var world_info))
-                foreach(var archetype in GetArchetypes()) // using a copy is safer
+                foreach (var archetype in GetArchetypes()) // using a copy is safer
                     archetype.Destroy();
         }
 
@@ -234,13 +256,13 @@ namespace SimpleECS
         /// returns all the types in the queries' not filter
         /// </summary>
         public IReadOnlyList<Type> GetNotFilterTypes() => exclude.Types;
-        
+
 
         IEnumerator<Archetype> IEnumerable<Archetype>.GetEnumerator()
         {
             if (Update(out var info))
             {
-                for(int i = 0; i < archetype_count; ++ i)
+                for (int i = 0; i < archetype_count; ++i)
                 {
                     yield return info.archetypes[matching_archetypes[i]].data.archetype;
                 }
@@ -251,7 +273,7 @@ namespace SimpleECS
         {
             if (Update(out var info))
             {
-                for(int i = 0; i < archetype_count; ++ i)
+                for (int i = 0; i < archetype_count; ++i)
                 {
                     yield return info.archetypes[matching_archetypes[i]].data.archetype;
                 }

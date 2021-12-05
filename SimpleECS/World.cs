@@ -420,20 +420,22 @@ namespace SimpleECS
         /// They will be applied once you disable caching.
         /// Use to prevent iterator invalidation when manually iterating over entity or component buffers.
         /// </summary>
-        public bool CacheStructuralEvents
+        public void CacheStructuralEvents(bool enable)
         {
-            get
-            {
-                if (this.TryGetWorldInfo(out var info))
-                    return info.cache_structural_changes;
-                return false;
-            }
-            set
-            {
-                if (this.TryGetWorldInfo(out var info))
-                    info.cache_structural_changes = value;
-            }
+            if (this.TryGetWorldInfo(out var info))
+                info.cache_structural_changes = enable;
         }
+
+        /// <summary>
+        /// Returns true if the world is currently caching structural changes
+        /// </summary>
+        public bool IsCachingStructuralEvents()
+        {
+            if (this.TryGetWorldInfo(out var info))
+                return info.StructureEvents.EnqueueEvents > 0;
+            return false;
+        }
+
 
         public override string ToString()
          => $"{(IsValid() ? "" : "~")}{Name} {index}.{version}";

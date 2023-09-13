@@ -3481,7 +3481,7 @@ namespace SimpleECS
             if (Update(out var world_info))
             {
                 world_info.StructureEvents.EnqueueEvents++;
-                for (int archetype_index = 0; archetype_index < archetype_count; archetype_index++)
+                for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)
                 {
                     var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;
                     int count = archetype.entity_count;
@@ -3505,7 +3505,7 @@ namespace SimpleECS
             if (Update(out var world_info))
             {
                 world_info.StructureEvents.EnqueueEvents++;
-                for (int archetype_index = 0; archetype_index < archetype_count; archetype_index++)
+                for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)
                 {
                     var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;
                     int count = archetype.entity_count;
@@ -3529,7 +3529,7 @@ namespace SimpleECS
             if (Update(out var world_info))
             {
                 world_info.StructureEvents.EnqueueEvents++;
-                for (int archetype_index = 0; archetype_index < archetype_count; archetype_index++)
+                for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)
                 {
                     var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;
                     int count = archetype.entity_count;
@@ -3553,7 +3553,7 @@ namespace SimpleECS
             if (Update(out var world_info))
             {
                 world_info.StructureEvents.EnqueueEvents++;
-                for (int archetype_index = 0; archetype_index < archetype_count; archetype_index++)
+                for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)
                 {
                     var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;
                     int count = archetype.entity_count;

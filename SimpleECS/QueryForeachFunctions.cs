@@ -3278,5 +3278,294 @@ namespace SimpleECS
                 world_info.StructureEvents.EnqueueEvents--;
             }
         }
+        /// <summary>
+        /// iterates over the entities that match the query and returns a tuple of the entity and the components
+        /// possible to use continue and break
+        /// NOTE: it is only possible to modity a refernce type in the tuple, like a class. You can not modify a value type, like int, float, bool, etc.
+        /// </summary>
+        public IEnumerable<Tuple<Entity, C1>> Foreach<C1>()
+        {
+            if (Update(out var world_info))
+            {
+                world_info.StructureEvents.EnqueueEvents++;
+                for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)
+                {
+                    var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;
+                    int count = archetype.entity_count;
+                    var entities = archetype.entities;
+                    if (count > 0 && archetype.TryGetArray(out C1[] c1))
+                    {
+                        for (int e = 0; e < count; ++e)
+                            yield return Tuple.Create(entities[e], c1[e]);
+                    }
+                }
+                world_info.StructureEvents.EnqueueEvents--;
+            }
+        }
+        /// <summary>
+        /// iterates over the entities that match the query and returns a tuple of the entity and the components
+        /// possible to use continue and break
+        /// NOTE: it is only possible to modity a refernce type in the tuple, like a class. You can not modify a value type, like int, float, bool, etc.
+        /// </summary>
+        public IEnumerable<Tuple<Entity, C1, C2>> Foreach<C1, C2>()
+        {
+            if (Update(out var world_info))
+            {
+                world_info.StructureEvents.EnqueueEvents++;
+                for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)
+                {
+                    var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;
+                    int count = archetype.entity_count;
+                    var entities = archetype.entities;
+                    if (count > 0 && archetype.TryGetArray(out C1[] c1) && archetype.TryGetArray(out C2[] c2))
+                    {
+                        for (int e = 0; e < count; ++e)
+                            yield return Tuple.Create(entities[e], c1[e], c2[e]);
+                    }
+                }
+                world_info.StructureEvents.EnqueueEvents--;
+            }
+        }
+        /// <summary>
+        /// iterates over the entities that match the query and returns a tuple of the entity and the components
+        /// possible to use continue and break
+        /// NOTE: it is only possible to modity a refernce type in the tuple, like a class. You can not modify a value type, like int, float, bool, etc.
+        /// </summary>
+        public IEnumerable<Tuple<Entity, C1, C2, C3>> Foreach<C1, C2, C3>()
+        {
+            if (Update(out var world_info))
+            {
+                world_info.StructureEvents.EnqueueEvents++;
+                for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)
+                {
+                    var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;
+                    int count = archetype.entity_count;
+                    var entities = archetype.entities;
+
+                    if (count > 0 && archetype.TryGetArray(out C1[] c1) && archetype.TryGetArray(out C2[] c2) && archetype.TryGetArray(out C3[] c3))
+                    {
+                        for (int e = 0; e < count; ++e)
+                            yield return Tuple.Create(entities[e], c1[e], c2[e], c3[e]);
+                    }
+                }
+                world_info.StructureEvents.EnqueueEvents--;
+            }
+        }
+        /// <summary>
+        /// iterates over the entities that match the query and returns a tuple of the entity and the components
+        /// possible to use continue and break
+        /// NOTE: it is only possible to modity a refernce type in the tuple, like a class. You can not modify a value type, like int, float, bool, etc.
+        /// </summary>
+        public IEnumerable<Tuple<Entity, C1, C2, C3, C4>> Foreach<C1, C2, C3, C4>()
+        {
+            if (Update(out var world_info))
+            {
+                world_info.StructureEvents.EnqueueEvents++;
+                for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)
+                {
+                    var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;
+                    int count = archetype.entity_count;
+                    var entities = archetype.entities;
+                    if (count > 0 && archetype.TryGetArray(out C1[] c1) && archetype.TryGetArray(out C2[] c2) && archetype.TryGetArray(out C3[] c3) && archetype.TryGetArray(out C4[] c4))
+                    {
+                        for (int e = 0; e < count; ++e)
+                            yield return Tuple.Create(entities[e], c1[e], c2[e], c3[e], c4[e]);
+                    }
+                }
+                world_info.StructureEvents.EnqueueEvents--;
+            }
+        }
+        /// <summary>
+        /// iterates over the entities that match the query and returns a tuple of the entity and the components
+        /// possible to use continue and break
+        /// NOTE: it is only possible to modity a refernce type in the tuple, like a class. You can not modify a value type, like int, float, bool, etc.
+        /// </summary>
+        public IEnumerable<Tuple<Entity, C1, C2, C3, C4, C5>> Foreach<C1, C2, C3, C4, C5>()
+        {
+            if (Update(out var world_info))
+            {
+                world_info.StructureEvents.EnqueueEvents++;
+                for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)
+                {
+                    var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;
+                    int count = archetype.entity_count;
+                    var entities = archetype.entities;
+                    if (count > 0 && archetype.TryGetArray(out C1[] c1) && archetype.TryGetArray(out C2[] c2) && archetype.TryGetArray(out C3[] c3) && archetype.TryGetArray(out C4[] c4) && archetype.TryGetArray(out C5[] c5))
+                    {
+                        for (int e = 0; e < count; ++e)
+                            yield return Tuple.Create(entities[e], c1[e], c2[e], c3[e], c4[e], c5[e]);
+                    }
+                }
+                world_info.StructureEvents.EnqueueEvents--;
+            }
+        }
+        /// <summary>
+        /// iterates over the entities that match the query and returns a tuple of the entity and the components
+        /// possible to use continue and break
+        /// NOTE: it is only possible to modity a refernce type in the tuple, like a class. You can not modify a value type, like int, float, bool, etc.
+        /// </summary>
+        public IEnumerable<Tuple<Entity, C1, C2, C3, C4, C5, C6>> Foreach<C1, C2, C3, C4, C5, C6>()
+        {
+            if (Update(out var world_info))
+            {
+                world_info.StructureEvents.EnqueueEvents++;
+                for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)
+                {
+                    var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;
+                    int count = archetype.entity_count;
+                    var entities = archetype.entities;
+                    if (count > 0 && archetype.TryGetArray(out C1[] c1) && archetype.TryGetArray(out C2[] c2) && archetype.TryGetArray(out C3[] c3) && archetype.TryGetArray(out C4[] c4) && archetype.TryGetArray(out C5[] c5) && archetype.TryGetArray(out C6[] c6))
+                    {
+                        for (int e = 0; e < count; ++e)
+                            yield return Tuple.Create(entities[e], c1[e], c2[e], c3[e], c4[e], c5[e], c6[e]);
+                    }
+                }
+                world_info.StructureEvents.EnqueueEvents--;
+            }
+        }
+        /// <summary>
+        /// iterates over the entities that match the query and returns a tuple of the entity and the components
+        /// possible to use continue and break
+        /// NOTE: it is only possible to modity a refernce type in the tuple, like a class. You can not modify a value type, like int, float, bool, etc.
+        /// </summary>
+        public IEnumerable<Tuple<Entity, C1, C2, C3, C4, C5, Tuple<C6, C7>>> Foreach<C1, C2, C3, C4, C5, C6, C7>()
+        {
+            if (Update(out var world_info))
+            {
+                world_info.StructureEvents.EnqueueEvents++;
+                for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)
+                {
+                    var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;
+                    int count = archetype.entity_count;
+                    var entities = archetype.entities;
+                    if (count > 0 && archetype.TryGetArray(out C1[] c1) && archetype.TryGetArray(out C2[] c2) && archetype.TryGetArray(out C3[] c3) && archetype.TryGetArray(out C4[] c4) && archetype.TryGetArray(out C5[] c5) && archetype.TryGetArray(out C6[] c6) && archetype.TryGetArray(out C7[] c7))
+                    {
+                        for (int e = 0; e < count; ++e)
+                            yield return Tuple.Create(entities[e], c1[e], c2[e], c3[e], c4[e], c5[e], Tuple.Create(c6[e], c7[e]));
+                    }
+                }
+                world_info.StructureEvents.EnqueueEvents--;
+            }
+        }
+        /// <summary>
+        /// iterates over the entities that match the query and returns a tuple of the entity and the components
+        /// possible to use continue and break
+        /// NOTE: it is only possible to modity a refernce type in the tuple, like a class. You can not modify a value type, like int, float, bool, etc.
+        /// </summary>
+        public IEnumerable<Tuple<Entity, C1, C2, C3, C4, C5, Tuple<C6, C7, C8>>> Foreach<C1, C2, C3, C4, C5, C6, C7, C8>()
+        {
+            if (Update(out var world_info))
+            {
+                world_info.StructureEvents.EnqueueEvents++;
+                for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)
+                {
+                    var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;
+                    int count = archetype.entity_count;
+                    var entities = archetype.entities;
+                    if (count > 0 && archetype.TryGetArray(out C1[] c1) && archetype.TryGetArray(out C2[] c2) && archetype.TryGetArray(out C3[] c3) && archetype.TryGetArray(out C4[] c4) && archetype.TryGetArray(out C5[] c5) && archetype.TryGetArray(out C6[] c6) && archetype.TryGetArray(out C7[] c7) && archetype.TryGetArray(out C8[] c8))
+                    {
+                        for (int e = 0; e < count; ++e)
+                            yield return Tuple.Create(entities[e], c1[e], c2[e], c3[e], c4[e], c5[e], Tuple.Create(c6[e], c7[e], c8[e]));
+                    }
+                }
+                world_info.StructureEvents.EnqueueEvents--;
+            }
+        }
+        /// <summary>
+        /// iterates over the entities that match the query and returns a tuple of the entity and the components
+        /// possible to use continue and break
+        /// NOTE: it is only possible to modity a refernce type in the tuple, like a class. You can not modify a value type, like int, float, bool, etc.
+        /// </summary>
+        public IEnumerable<Tuple<Entity, C1, C2, C3, C4, C5, Tuple<C6, C7, C8, C9>>> Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9>()
+        {
+            if (Update(out var world_info))
+            {
+                world_info.StructureEvents.EnqueueEvents++;
+                for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)
+                {
+                    var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;
+                    int count = archetype.entity_count;
+                    var entities = archetype.entities;
+                    if (count > 0 && archetype.TryGetArray(out C1[] c1) && archetype.TryGetArray(out C2[] c2) && archetype.TryGetArray(out C3[] c3) && archetype.TryGetArray(out C4[] c4) && archetype.TryGetArray(out C5[] c5) && archetype.TryGetArray(out C6[] c6) && archetype.TryGetArray(out C7[] c7) && archetype.TryGetArray(out C8[] c8) && archetype.TryGetArray(out C9[] c9))
+                    {
+                        for (int e = 0; e < count; ++e)
+                            yield return Tuple.Create(entities[e], c1[e], c2[e], c3[e], c4[e], c5[e], Tuple.Create(c6[e], c7[e], c8[e], c9[e]));
+                    }
+                }
+                world_info.StructureEvents.EnqueueEvents--;
+            }
+        }
+        /// <summary>
+        /// iterates over the entities that match the query and returns a tuple of the entity and the components
+        /// possible to use continue and break
+        /// NOTE: it is only possible to modity a refernce type in the tuple, like a class. You can not modify a value type, like int, float, bool, etc.
+        /// </summary>
+        public IEnumerable<Tuple<Entity, C1, C2, C3, C4, C5, Tuple<C6, C7, C8, C9, C10>>> Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10>()
+        {
+            if (Update(out var world_info))
+            {
+                world_info.StructureEvents.EnqueueEvents++;
+                for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)
+                {
+                    var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;
+                    int count = archetype.entity_count;
+                    var entities = archetype.entities;
+                    if (count > 0 && archetype.TryGetArray(out C1[] c1) && archetype.TryGetArray(out C2[] c2) && archetype.TryGetArray(out C3[] c3) && archetype.TryGetArray(out C4[] c4) && archetype.TryGetArray(out C5[] c5) && archetype.TryGetArray(out C6[] c6) && archetype.TryGetArray(out C7[] c7) && archetype.TryGetArray(out C8[] c8) && archetype.TryGetArray(out C9[] c9) && archetype.TryGetArray(out C10[] c10))
+                    {
+                        for (int e = 0; e < count; ++e)
+                            yield return Tuple.Create(entities[e], c1[e], c2[e], c3[e], c4[e], c5[e], Tuple.Create(c6[e], c7[e], c8[e], c9[e], c10[e]));
+                    }
+                }
+                world_info.StructureEvents.EnqueueEvents--;
+            }
+        }
+        /// <summary>
+        /// iterates over the entities that match the query and returns a tuple of the entity and the components
+        /// possible to use continue and break
+        /// NOTE: it is only possible to modity a refernce type in the tuple, like a class. You can not modify a value type, like int, float, bool, etc.
+        /// </summary>
+        public IEnumerable<Tuple<Entity, C1, C2, C3, C4, C5, Tuple<C6, C7, C8, C9, C10, C11>>> Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11>()
+        {
+            if (Update(out var world_info))
+            {
+                world_info.StructureEvents.EnqueueEvents++;
+                for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)
+                {
+                    var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;
+                    int count = archetype.entity_count;
+                    var entities = archetype.entities;
+                    if (count > 0 && archetype.TryGetArray(out C1[] c1) && archetype.TryGetArray(out C2[] c2) && archetype.TryGetArray(out C3[] c3) && archetype.TryGetArray(out C4[] c4) && archetype.TryGetArray(out C5[] c5) && archetype.TryGetArray(out C6[] c6) && archetype.TryGetArray(out C7[] c7) && archetype.TryGetArray(out C8[] c8) && archetype.TryGetArray(out C9[] c9) && archetype.TryGetArray(out C10[] c10) && archetype.TryGetArray(out C11[] c11))
+                    {
+                        for (int e = 0; e < count; ++e)
+                            yield return Tuple.Create(entities[e], c1[e], c2[e], c3[e], c4[e], c5[e], Tuple.Create(c6[e], c7[e], c8[e], c9[e], c10[e], c11[e]));
+                    }
+                }
+                world_info.StructureEvents.EnqueueEvents--;
+            }
+        }
+        /// <summary>
+        /// iterates over the entities that match the query and returns a tuple of the entity and the components
+        /// possible to use continue and break
+        /// NOTE: it is only possible to modity a refernce type in the tuple, like a class. You can not modify a value type, like int, float, bool, etc.
+        /// </summary>
+        public IEnumerable<Tuple<Entity, C1, C2, C3, C4, C5, Tuple<C6, C7, C8, C9, C10, C11, C12>>> Foreach<C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12>()
+        {
+            if (Update(out var world_info))
+            {
+                world_info.StructureEvents.EnqueueEvents++;
+                for (int archetype_index = 0; archetype_index < archetype_count; ++archetype_index)
+                {
+                    var archetype = world_info.archetypes[matching_archetypes[archetype_index]].data;
+                    int count = archetype.entity_count;
+                    var entities = archetype.entities;
+                    if (count > 0 && archetype.TryGetArray(out C1[] c1) && archetype.TryGetArray(out C2[] c2) && archetype.TryGetArray(out C3[] c3) && archetype.TryGetArray(out C4[] c4) && archetype.TryGetArray(out C5[] c5) && archetype.TryGetArray(out C6[] c6) && archetype.TryGetArray(out C7[] c7) && archetype.TryGetArray(out C8[] c8) && archetype.TryGetArray(out C9[] c9) && archetype.TryGetArray(out C10[] c10) && archetype.TryGetArray(out C11[] c11) && archetype.TryGetArray(out C12[] c12))
+                    {
+                        for (int e = 0; e < count; ++e)
+                            yield return Tuple.Create(entities[e], c1[e], c2[e], c3[e], c4[e], c5[e], Tuple.Create(c6[e], c7[e], c8[e], c9[e], c10[e], c11[e], c12[e]));
+                    }
+                }
+                world_info.StructureEvents.EnqueueEvents--;
+            }
+        }
     }
 }

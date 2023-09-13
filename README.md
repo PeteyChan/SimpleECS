@@ -156,6 +156,28 @@ query.Foreach( (Entity entity, ref int value ) =>         // you can access the 
   Console.WriteLine($"{entity} value is {value}");        
 });
 
+foreach ((Entity entity, int value) in query.Foreach<int>()) // foreach makes so you can use continue and break
+{
+    if (value > 0)
+    {
+        continue;
+    }
+
+    if (value < 0)
+    {
+        break;
+    }
+
+    Console.WriteLine($"{entity} value is {value}"); 
+}
+
+// having more then 5 components makes so you have to put double parenthesis.
+// the reason is that a tuple only can hold in 8 values, so you create a second tuple in the tuple
+foreach ((Entity entity, A aa, B bb, C cc, D dd, E ee, (F ff, G gg, H hh, I ii, J jj)) in query.Foreach<A, B, C, D, E, F, G, H, I, J>())   
+{                     
+    Console.WriteLine($"value x is {aa.x} value y is {aa.y}");
+}
+
 var all_entities = world.CreateQuery();   // a simple way to match against all entities is to make a query with no filters
 
 query.GetEntities();    // returns a copy of all entities currently matching the query

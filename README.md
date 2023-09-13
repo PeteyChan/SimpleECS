@@ -158,17 +158,17 @@ query.Foreach( (Entity entity, ref int value ) =>         // you can access the 
 
 foreach ((Entity entity, int value) in query.Foreach<int>()) // foreach makes so you can use continue and break
 {
-    if (aa.x > 0)
+    if (value > 0)
     {
         continue;
     }
 
-    if (bb.x > 0)
+    if (value < 0)
     {
         break;
     }
 
-    Console.WriteLine($"value x is {aa.x} value y is {aa.y}");
+    Console.WriteLine($"{entity} value is {value}"); 
 }
 
 // having more then 5 components makes so you have to put double parenthesis.

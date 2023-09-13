@@ -173,7 +173,7 @@ foreach ((Entity entity, int value) in query.Foreach<int>()) // foreach makes so
 
 // having more then 5 components makes so you have to put double parenthesis.
 // the reason is that a tuple only can hold in 8 values, so you create a second tuple in the tuple
-foreach ((var entity, A aa, B bb, C cc, D dd, E ee, (F ff, G gg, H hh, I ii, J jj)) in query.Foreach<A, B, C, D, E, F, G, H, I, J>())   
+foreach ((Entity entity, A aa, B bb, C cc, D dd, E ee, (F ff, G gg, H hh, I ii, J jj)) in query.Foreach<A, B, C, D, E, F, G, H, I, J>())   
 {                     
     Console.WriteLine($"value x is {aa.x} value y is {aa.y}");
 }
